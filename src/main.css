@@ -139,10 +139,7 @@ input, select {
 }
 
 .grid-stack-item {
-    /* Styles pour le conteneur externe (placeholder) */
-     /* background-color: rgba(0, 123, 255, 0.05); */
-     /* border: 1px dashed var(--primary-color); */
-     overflow: visible !important; /* Peut aider à rendre les bords cliquables */
+     pointer-events: auto;
 }
 
 .grid-stack-item-content {
@@ -152,19 +149,18 @@ input, select {
     overflow: hidden; /* Garder hidden pour le contenu interne */
     display: flex;
     flex-direction: column;
-    /* --- Modification --- */
-    /* height: 100%; /* Supprimé */
-    /* --- Fin Modification --- */
     color: var(--text-color);
-    border: 1px solid var(--border-color); /* Bordure du contenu */
-    pointer-events: auto; /* Le contenu doit être interactif */
+    border: 1px solid var(--border-color);
+    pointer-events: auto;
 }
 
-/* Masquer la poignée visuelle par défaut */
-.ui-resizable-handle {
+/* --- Modification --- */
+/* Supprimer complètement la règle qui masque les poignées pour les voir */
+/* .ui-resizable-handle {
     display: none !important;
     visibility: hidden !important;
-}
+} */
+/* --- Fin Modification --- */
 
 
 /* Styles des Widgets Généraux */
@@ -199,7 +195,7 @@ input, select {
     flex-grow: 1;
     overflow-y: auto;
     overflow-x: hidden;
-    min-height: 0; /* Important pour flex-grow avec overflow */
+    min-height: 0;
 }
 
 .widget-back-button,
