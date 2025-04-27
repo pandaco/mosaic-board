@@ -1,5 +1,4 @@
 import { GridStack, GridStackOptions, GridStackWidget, GridStackElement } from 'gridstack';
-// Removed unused 'DashboardLayout' import
 import { WidgetLayout, WidgetType } from './types';
 import { loadLayout, saveLayout } from './storage-service';
 
@@ -15,11 +14,16 @@ interface GridStackWidgetWithElement extends GridStackWidget {
 const gridOptions: GridStackOptions = {
     column: 12,
     margin: 10,
-    cellHeight: 'auto',
-    disableResize: false,
+    // --- Modification ---
+    // Essayez une hauteur fixe ou 'initial' au lieu de 'auto'
+    // cellHeight: 'auto', // Original
+    cellHeight: 80, // Option 1: Hauteur fixe en pixels (ajustez la valeur)
+    // cellHeight: 'initial', // Option 2: Laisse les éléments déterminer leur hauteur initiale
+    // --- Fin Modification ---
+    disableResize: false, // Resizing should be enabled
     disableDrag: false,
     float: true,
-    alwaysShowResizeHandle: false,
+    alwaysShowResizeHandle: false, // Keep this false for final look, but handles might appear due to CSS change
     animate: true,
 };
 
@@ -31,8 +35,6 @@ const gridOptions: GridStackOptions = {
 export function initGrid(containerSelector: string, onChange: (items: GridStackWidget[]) => void): GridStack {
     grid = GridStack.init(gridOptions, containerSelector);
 
-    // Add event listener for changes
-    // Prefix 'event' with '_' to indicate it's unused
     grid.on('change', (_event, items) => {
          if (items && Array.isArray(items)) {
             onChange(items as GridStackWidget[]);
@@ -79,17 +81,14 @@ export function saveGridState(): void {
         console.error("Grid not initialized.");
         return;
     }
-    // Explicitly cast the result of grid.save to the expected array type
     const savedItems = grid.save(false) as GridStackWidgetWithElement[];
 
     const layout: WidgetLayout[] = savedItems.map((item: GridStackWidgetWithElement) => {
         let widgetType: WidgetType = WidgetType.Bookmarks; // Default fallback
-        // Check if el exists and is an HTMLElement before accessing dataset
         if (item.el && item.el instanceof HTMLElement && item.el.dataset.widgetType) {
             widgetType = item.el.dataset.widgetType as WidgetType;
         } else {
              console.warn(`Could not determine widget type for item ID: ${item.id}. Defaulting to Bookmarks.`);
-             // Attempt to find the node in the engine to get the element again if needed
              const node = grid?.engine.nodes.find(n => n.id === item.id);
              if (node?.el instanceof HTMLElement && node.el.dataset.widgetType) {
                  widgetType = node.el.dataset.widgetType as WidgetType;
@@ -102,7 +101,7 @@ export function saveGridState(): void {
             y: item.y ?? 0,
             w: item.w ?? 4,
             h: item.h ?? 3,
-            id: item.id ?? `error_id_${Date.now()}`, // Ensure id is a string, provide fallback
+            id: item.id ?? `error_id_${Date.now()}`,
             type: widgetType
         };
     });
@@ -115,27 +114,23 @@ export function saveGridState(): void {
  * Loads the layout from storage and applies it to the grid.
  * @param createWidget Async function to create the widget element based on layout data.
  */
-// Updated signature to accept async createWidget function
 export async function loadGridState(createWidget: (item: WidgetLayout) => Promise<HTMLElement | null>): Promise<void> {
     if (!grid) {
         console.error("Grid not initialized.");
         return;
     }
-    grid.removeAll(false); // Remove existing widgets without triggering events
+    grid.removeAll(false);
 
     const layout = await loadLayout();
     if (layout && layout.length > 0) {
-        // Use Promise.all to handle asynchronous widget creation concurrently
         const widgetPromises = layout.map(async (item) => {
             if (!item || typeof item.id === 'undefined' || typeof item.type === 'undefined') {
                 console.warn("Skipping invalid layout item:", item);
-                return null; // Skip this item
+                return null;
             }
 
-            // Await the result of the async createWidget function
             const widgetElement = await createWidget(item);
             if (widgetElement) {
-                // Return an object containing element and layout options for Gridstack
                 return {
                     element: widgetElement,
                     options: {
@@ -148,14 +143,12 @@ export async function loadGridState(createWidget: (item: WidgetLayout) => Promis
                 };
             } else {
                  console.warn(`Failed to create widget of type ${item.type} with id ${item.id}`);
-                 return null; // Skip this item if creation failed
+                 return null;
             }
         });
 
-        // Wait for all widget creation promises to resolve
         const createdWidgets = (await Promise.all(widgetPromises)).filter(w => w !== null);
 
-        // Add valid widgets to the grid
         createdWidgets.forEach(widgetData => {
              if (widgetData) {
                 addWidgetToGrid(widgetData.element, widgetData.options);

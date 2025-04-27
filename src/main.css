@@ -134,31 +134,38 @@ input, select {
 
 /* Gridstack */
 .grid-stack {
-    background-color: transparent; /* Ou une couleur de fond légère si désiré */
-    flex-grow: 1; /* Pour prendre l'espace restant */
+    background-color: transparent;
+    flex-grow: 1;
 }
 
 .grid-stack-item {
-    /* Styles par défaut pour les éléments de la grille */
+    /* Styles pour le conteneur externe (placeholder) */
+     /* background-color: rgba(0, 123, 255, 0.05); */
+     /* border: 1px dashed var(--primary-color); */
+     overflow: visible !important; /* Peut aider à rendre les bords cliquables */
 }
 
 .grid-stack-item-content {
     background-color: var(--widget-background);
     border-radius: var(--border-radius);
     box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
-    overflow: hidden; /* Important pour contenir les éléments internes */
+    overflow: hidden; /* Garder hidden pour le contenu interne */
     display: flex;
     flex-direction: column;
-    height: 100%; /* Assure que le contenu remplit l'item */
+    /* --- Modification --- */
+    /* height: 100%; /* Supprimé */
+    /* --- Fin Modification --- */
     color: var(--text-color);
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--border-color); /* Bordure du contenu */
+    pointer-events: auto; /* Le contenu doit être interactif */
 }
 
-/* Masquer les poignées de redimensionnement visuelles mais garder la fonctionnalité */
+/* Masquer la poignée visuelle par défaut */
 .ui-resizable-handle {
     display: none !important;
     visibility: hidden !important;
 }
+
 
 /* Styles des Widgets Généraux */
 .widget-header {
@@ -167,8 +174,9 @@ input, select {
     justify-content: space-between;
     padding: calc(var(--spacing-unit) * 0.5) var(--spacing-unit);
     border-bottom: 1px solid var(--border-color);
-    background-color: #f8f9fa; /* Léger fond pour l'en-tête */
-    min-height: 40px; /* Hauteur minimale pour l'alignement */
+    background-color: #f8f9fa;
+    min-height: 40px;
+    flex-shrink: 0;
 }
 
 .widget-header h3 {
@@ -179,18 +187,19 @@ input, select {
     overflow: hidden;
     text-overflow: ellipsis;
     flex-grow: 1;
-    padding: 0 calc(var(--spacing-unit) * 0.5); /* Espace autour du titre */
+    padding: 0 calc(var(--spacing-unit) * 0.5);
 }
 
 .widget-title[title]:hover {
-    cursor: default; /* Ou pointeur si cliquable */
+    cursor: default;
 }
 
 .widget-content {
     padding: var(--spacing-unit);
-    flex-grow: 1; /* Prend l'espace restant dans le widget */
-    overflow-y: auto; /* Ajoute le défilement si nécessaire */
+    flex-grow: 1;
+    overflow-y: auto;
     overflow-x: hidden;
+    min-height: 0; /* Important pour flex-grow avec overflow */
 }
 
 .widget-back-button,
@@ -200,7 +209,7 @@ input, select {
     padding: calc(var(--spacing-unit) * 0.25);
     font-size: 0.9rem;
     color: var(--secondary-color);
-    line-height: 1; /* Empêche le décalage de hauteur */
+    line-height: 1;
 }
 
 .widget-back-button:hover,
@@ -210,12 +219,12 @@ input, select {
 
 /* Menu des paramètres de widget */
 .widget-settings-menu {
-    position: absolute; /* Positionné par rapport au body/viewport */
+    position: absolute;
     background-color: var(--widget-background);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-    z-index: 1000; /* Au-dessus des autres éléments */
+    z-index: 1000;
     min-width: 180px;
     padding: calc(var(--spacing-unit) * 0.5) 0;
 }
@@ -224,10 +233,6 @@ input, select {
     list-style: none;
     margin: 0;
     padding: 0;
-}
-
-.widget-settings-menu li {
-    /* Styles pour les éléments de liste si nécessaire */
 }
 
 .widget-settings-menu .settings-option,
@@ -249,7 +254,7 @@ input, select {
 
 .widget-settings-menu .settings-option i {
     margin-right: calc(var(--spacing-unit) * 0.5);
-    width: 1em; /* Alignement des icônes */
+    width: 1em;
     text-align: center;
 }
 
@@ -272,11 +277,11 @@ input, select {
     font-size: 0.9rem;
 }
 
-.widget-settings-menu .settings-group label {
+.widget-settings-menu .settings-group > label {
     display: block;
     margin-bottom: calc(var(--spacing-unit) * 0.25);
     font-weight: 600;
-    padding: 0; /* Reset padding for labels */
+    padding: 0;
 }
 
 .widget-settings-menu .settings-group input[type="radio"],
@@ -292,10 +297,11 @@ input, select {
 
 .widget-settings-menu .settings-group .radio-group label,
 .widget-settings-menu .settings-group .checkbox-group label {
-    font-weight: normal; /* Labels for radio/checkbox are normal weight */
-    display: inline-flex; /* Align checkbox/radio with text */
+    font-weight: normal;
+    display: inline-flex;
     align-items: center;
     margin-right: var(--spacing-unit);
+    padding: 0;
 }
 
 .widget-settings-menu .folder-setting-button {
@@ -320,7 +326,7 @@ input, select {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 100px; /* Adjust as needed */
+    max-width: 100px;
     display: inline-block;
     vertical-align: bottom;
 }
@@ -337,7 +343,7 @@ input, select {
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1050; /* Au-dessus du menu paramètres */
+    z-index: 1050;
     opacity: 1;
     visibility: visible;
     transition: opacity 0.3s ease, visibility 0.3s ease;
@@ -373,7 +379,7 @@ input, select {
     opacity: 0.5;
     background: transparent;
     border: 0;
-    padding: 0; /* Ajustement pour alignement */
+    padding: 0;
 }
 
 .modal-close-button:hover {
@@ -417,7 +423,7 @@ input, select {
 }
 
 #widget-selection-list li i {
-    width: 1.2em; /* Alignement icônes */
+    width: 1.2em;
     text-align: center;
     color: var(--primary-color);
 }
@@ -427,14 +433,14 @@ input, select {
     border: 1px solid var(--border-color);
     padding: var(--spacing-unit);
     margin-bottom: var(--spacing-unit);
-    max-height: 40vh; /* Limite la hauteur */
+    max-height: 40vh;
     overflow-y: auto;
     border-radius: var(--border-radius);
 }
 
 #folder-tree-container ul {
     list-style: none;
-    padding-left: 0; /* Pas de padding par défaut */
+    padding-left: 0;
 }
 
 #folder-tree-container li {
@@ -456,7 +462,7 @@ input, select {
     color: white;
 }
 #folder-tree-container .folder-item.selected i {
-    color: white; /* Assure que l'icône reste visible */
+    color: white;
 }
 
 
@@ -467,18 +473,19 @@ input, select {
     display: inline-block;
     transition: transform 0.15s ease;
 }
-#folder-tree-container .folder-toggle.collapsed {
-    transform: rotate(-90deg);
-}
 
 #folder-tree-container .folder-icon {
     margin-right: calc(var(--spacing-unit) * 0.3);
-    color: #ffc107; /* Jaune pour les dossiers */
+    color: #ffc107;
 }
 
 #folder-tree-container ul ul {
-    padding-left: calc(var(--spacing-unit) * 1.5); /* Indentation pour les sous-dossiers */
+    padding-left: calc(var(--spacing-unit) * 1.5);
 }
+#folder-tree-container ul ul.hidden {
+    display: none;
+}
+
 
 #selected-folder-name {
     font-weight: bold;
