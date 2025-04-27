@@ -1,0 +1,485 @@
+/* Styles Globaux et Reset Léger */
+:root {
+    --primary-color: #007bff;
+    --secondary-color: #6c757d;
+    --background-color: #f8f9fa;
+    --widget-background: #ffffff;
+    --text-color: #212529;
+    --border-color: #dee2e6;
+    --danger-color: #dc3545;
+    --border-radius: 0.375rem; /* 6px */
+    --spacing-unit: 1rem; /* 16px */
+    --font-family-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-size: 16px; /* Base pour les unités rem */
+}
+
+body {
+    font-family: var(--font-family-sans-serif);
+    background-color: var(--background-color);
+    color: var(--text-color);
+    line-height: 1.5;
+    padding: var(--spacing-unit);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    margin-bottom: calc(var(--spacing-unit) * 0.5);
+    font-weight: 500;
+}
+
+button {
+    font-family: inherit;
+    font-size: inherit;
+    cursor: pointer;
+    border-radius: var(--border-radius);
+    padding: calc(var(--spacing-unit) * 0.5) var(--spacing-unit);
+    border: 1px solid transparent;
+    transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+button:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+button:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+}
+
+input, select {
+    font-family: inherit;
+    font-size: inherit;
+    padding: calc(var(--spacing-unit) * 0.375) calc(var(--spacing-unit) * 0.75);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+}
+
+/* Utilitaires */
+.hidden {
+    display: none !important;
+}
+
+/* Header */
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-unit);
+    padding-bottom: var(--spacing-unit);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.dashboard-header h1 {
+    font-size: 1.75rem;
+    margin-bottom: 0;
+}
+
+/* Boutons */
+.button {
+    display: inline-flex;
+    align-items: center;
+    gap: calc(var(--spacing-unit) * 0.3);
+    font-weight: 400;
+    text-align: center;
+    vertical-align: middle;
+    user-select: none;
+    background-color: transparent;
+    border: 1px solid transparent;
+}
+
+.primary-button {
+    color: #fff;
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.primary-button:hover {
+    background-color: #0056b3;
+    border-color: #004085;
+}
+
+.secondary-button {
+    color: #fff;
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
+.secondary-button:hover {
+    background-color: #5a6268;
+    border-color: #545b62;
+}
+
+.danger-button {
+    color: #fff;
+    background-color: var(--danger-color);
+    border-color: var(--danger-color);
+}
+
+.danger-button:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+}
+
+/* Gridstack */
+.grid-stack {
+    background-color: transparent; /* Ou une couleur de fond légère si désiré */
+    flex-grow: 1; /* Pour prendre l'espace restant */
+}
+
+.grid-stack-item {
+    /* Styles par défaut pour les éléments de la grille */
+}
+
+.grid-stack-item-content {
+    background-color: var(--widget-background);
+    border-radius: var(--border-radius);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+    overflow: hidden; /* Important pour contenir les éléments internes */
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* Assure que le contenu remplit l'item */
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+}
+
+/* Masquer les poignées de redimensionnement visuelles mais garder la fonctionnalité */
+.ui-resizable-handle {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* Styles des Widgets Généraux */
+.widget-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: calc(var(--spacing-unit) * 0.5) var(--spacing-unit);
+    border-bottom: 1px solid var(--border-color);
+    background-color: #f8f9fa; /* Léger fond pour l'en-tête */
+    min-height: 40px; /* Hauteur minimale pour l'alignement */
+}
+
+.widget-header h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-grow: 1;
+    padding: 0 calc(var(--spacing-unit) * 0.5); /* Espace autour du titre */
+}
+
+.widget-title[title]:hover {
+    cursor: default; /* Ou pointeur si cliquable */
+}
+
+.widget-content {
+    padding: var(--spacing-unit);
+    flex-grow: 1; /* Prend l'espace restant dans le widget */
+    overflow-y: auto; /* Ajoute le défilement si nécessaire */
+    overflow-x: hidden;
+}
+
+.widget-back-button,
+.widget-settings-button {
+    background: none;
+    border: none;
+    padding: calc(var(--spacing-unit) * 0.25);
+    font-size: 0.9rem;
+    color: var(--secondary-color);
+    line-height: 1; /* Empêche le décalage de hauteur */
+}
+
+.widget-back-button:hover,
+.widget-settings-button:hover {
+    color: var(--text-color);
+}
+
+/* Menu des paramètres de widget */
+.widget-settings-menu {
+    position: absolute; /* Positionné par rapport au body/viewport */
+    background-color: var(--widget-background);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    z-index: 1000; /* Au-dessus des autres éléments */
+    min-width: 180px;
+    padding: calc(var(--spacing-unit) * 0.5) 0;
+}
+
+.widget-settings-menu ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.widget-settings-menu li {
+    /* Styles pour les éléments de liste si nécessaire */
+}
+
+.widget-settings-menu .settings-option,
+.widget-settings-menu .settings-group label {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: calc(var(--spacing-unit) * 0.5) var(--spacing-unit);
+    background: none;
+    border: none;
+    font-size: 0.9rem;
+    color: var(--text-color);
+    white-space: nowrap;
+}
+
+.widget-settings-menu .settings-option:hover {
+    background-color: #e9ecef;
+}
+
+.widget-settings-menu .settings-option i {
+    margin-right: calc(var(--spacing-unit) * 0.5);
+    width: 1em; /* Alignement des icônes */
+    text-align: center;
+}
+
+.widget-settings-menu .delete-widget-button {
+    color: var(--danger-color);
+}
+
+.widget-settings-menu .delete-widget-button:hover {
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+.widget-settings-menu hr {
+    border: none;
+    border-top: 1px solid var(--border-color);
+    margin: calc(var(--spacing-unit) * 0.5) 0;
+}
+
+.widget-settings-menu .settings-group {
+    padding: calc(var(--spacing-unit) * 0.5) var(--spacing-unit);
+    font-size: 0.9rem;
+}
+
+.widget-settings-menu .settings-group label {
+    display: block;
+    margin-bottom: calc(var(--spacing-unit) * 0.25);
+    font-weight: 600;
+    padding: 0; /* Reset padding for labels */
+}
+
+.widget-settings-menu .settings-group input[type="radio"],
+.widget-settings-menu .settings-group input[type="checkbox"] {
+    margin-right: calc(var(--spacing-unit) * 0.3);
+}
+
+.widget-settings-menu .settings-group input[type="text"],
+.widget-settings-menu .settings-group select {
+    width: 100%;
+    margin-top: calc(var(--spacing-unit) * 0.25);
+}
+
+.widget-settings-menu .settings-group .radio-group label,
+.widget-settings-menu .settings-group .checkbox-group label {
+    font-weight: normal; /* Labels for radio/checkbox are normal weight */
+    display: inline-flex; /* Align checkbox/radio with text */
+    align-items: center;
+    margin-right: var(--spacing-unit);
+}
+
+.widget-settings-menu .folder-setting-button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: calc(var(--spacing-unit) * 0.5) var(--spacing-unit);
+    font-size: 0.9rem;
+    background: none;
+    border: none;
+    color: var(--text-color);
+    cursor: pointer;
+}
+.widget-settings-menu .folder-setting-button:hover {
+     background-color: #e9ecef;
+}
+.widget-settings-menu .folder-setting-button .current-folder-name {
+    font-weight: normal;
+    color: var(--secondary-color);
+    margin-left: 5px;
+    font-style: italic;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100px; /* Adjust as needed */
+    display: inline-block;
+    vertical-align: bottom;
+}
+
+
+/* Modales */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1050; /* Au-dessus du menu paramètres */
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.modal.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.modal-content {
+    background-color: #fff;
+    padding: calc(var(--spacing-unit) * 1.5);
+    border-radius: var(--border-radius);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    position: relative;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-close-button {
+    position: absolute;
+    top: calc(var(--spacing-unit) * 0.5);
+    right: calc(var(--spacing-unit) * 0.75);
+    font-size: 1.5rem;
+    font-weight: bold;
+    line-height: 1;
+    color: #000;
+    text-shadow: 0 1px 0 #fff;
+    opacity: 0.5;
+    background: transparent;
+    border: 0;
+    padding: 0; /* Ajustement pour alignement */
+}
+
+.modal-close-button:hover {
+    opacity: 0.75;
+}
+
+.modal-content h2 {
+    margin-top: 0;
+    margin-bottom: var(--spacing-unit);
+    font-size: 1.5rem;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: calc(var(--spacing-unit) * 0.5);
+    margin-top: var(--spacing-unit);
+    padding-top: var(--spacing-unit);
+    border-top: 1px solid var(--border-color);
+}
+
+/* Modale Ajout Widget */
+#widget-selection-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#widget-selection-list li {
+    padding: calc(var(--spacing-unit) * 0.75) var(--spacing-unit);
+    cursor: pointer;
+    border-radius: var(--border-radius);
+    transition: background-color 0.15s ease;
+    display: flex;
+    align-items: center;
+    gap: calc(var(--spacing-unit) * 0.5);
+}
+
+#widget-selection-list li:hover {
+    background-color: #e9ecef;
+}
+
+#widget-selection-list li i {
+    width: 1.2em; /* Alignement icônes */
+    text-align: center;
+    color: var(--primary-color);
+}
+
+/* Modale Sélecteur Dossier */
+#folder-tree-container {
+    border: 1px solid var(--border-color);
+    padding: var(--spacing-unit);
+    margin-bottom: var(--spacing-unit);
+    max-height: 40vh; /* Limite la hauteur */
+    overflow-y: auto;
+    border-radius: var(--border-radius);
+}
+
+#folder-tree-container ul {
+    list-style: none;
+    padding-left: 0; /* Pas de padding par défaut */
+}
+
+#folder-tree-container li {
+    padding: calc(var(--spacing-unit) * 0.25) 0;
+}
+
+#folder-tree-container .folder-item {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: calc(var(--spacing-unit) * 0.25) calc(var(--spacing-unit) * 0.5);
+    border-radius: calc(var(--border-radius) * 0.5);
+}
+#folder-tree-container .folder-item:hover {
+    background-color: #e9ecef;
+}
+#folder-tree-container .folder-item.selected {
+    background-color: var(--primary-color);
+    color: white;
+}
+#folder-tree-container .folder-item.selected i {
+    color: white; /* Assure que l'icône reste visible */
+}
+
+
+#folder-tree-container .folder-toggle {
+    margin-right: calc(var(--spacing-unit) * 0.3);
+    width: 1em;
+    text-align: center;
+    display: inline-block;
+    transition: transform 0.15s ease;
+}
+#folder-tree-container .folder-toggle.collapsed {
+    transform: rotate(-90deg);
+}
+
+#folder-tree-container .folder-icon {
+    margin-right: calc(var(--spacing-unit) * 0.3);
+    color: #ffc107; /* Jaune pour les dossiers */
+}
+
+#folder-tree-container ul ul {
+    padding-left: calc(var(--spacing-unit) * 1.5); /* Indentation pour les sous-dossiers */
+}
+
+#selected-folder-name {
+    font-weight: bold;
+}

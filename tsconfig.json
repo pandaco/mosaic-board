@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+      "target": "ESNext",
+      "useDefineForClassFields": true,
+      "module": "ESNext",
+      "lib": ["ESNext", "DOM", "DOM.Iterable"],
+      "moduleResolution": "bundler",
+      "strict": true,
+      "sourceMap": true,
+      "resolveJsonModule": true,
+      "esModuleInterop": true,
+      "noEmit": true, // Vite gère l'émission, sauf si vous utilisez tsc séparément
+      "noUnusedLocals": true,
+      "noUnusedParameters": true,
+      "noImplicitReturns": true,
+      "skipLibCheck": true,
+      "types": ["vite/client", "@types/chrome"] // Ajout des types Chrome
+  },
+  "include": ["src/**/*.ts"], // Inclut tous les fichiers TS dans src
+  "exclude": ["node_modules", "dist"] // Exclut node_modules et le dossier de build
+}

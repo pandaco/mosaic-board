@@ -1,0 +1,14 @@
+/* Styles specific to the Weather Widget */
+.weather-widget .widget-content {
+    /* Add specific styles if needed */
+    text-align: center;
+    font-size: 1.1rem;
+}
+
+.weather-widget .location {
+    font-weight: bold;
+}
+
+/* Add styles for displaying actual weather data later */
+/* e.g., .weather-icon, .temperature, .description */
+

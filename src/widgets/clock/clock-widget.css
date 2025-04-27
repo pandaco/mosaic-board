@@ -1,0 +1,62 @@
+/* Styles specific to the Clock Widget */
+.clock-widget .widget-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: calc(var(--spacing-unit) * 0.75);
+}
+
+.clock-widget .clock-display {
+    font-size: 2.5rem; /* Larger font for the clock/stopwatch */
+    font-family: 'Courier New', Courier, monospace; /* Monospace font */
+    background-color: #e9ecef;
+    padding: calc(var(--spacing-unit) * 0.5) var(--spacing-unit);
+    border-radius: var(--border-radius);
+    min-width: 180px; /* Ensure minimum width */
+    text-align: center;
+}
+
+.clock-widget .stopwatch-controls {
+    display: flex;
+    gap: calc(var(--spacing-unit) * 0.5);
+}
+
+.clock-widget .stopwatch-controls button {
+    padding: calc(var(--spacing-unit) * 0.3) calc(var(--spacing-unit) * 0.6);
+    font-size: 0.9rem;
+    min-width: 60px; /* Minimum button width */
+}
+.clock-widget .stopwatch-controls button:nth-child(1) { /* Start */
+    background-color: #28a745;
+    border-color: #28a745;
+    color: white;
+}
+.clock-widget .stopwatch-controls button:nth-child(1):hover:not(:disabled) {
+    background-color: #218838;
+    border-color: #1e7e34;
+}
+.clock-widget .stopwatch-controls button:nth-child(2) { /* Stop */
+     background-color: var(--danger-color);
+     border-color: var(--danger-color);
+     color: white;
+}
+.clock-widget .stopwatch-controls button:nth-child(2):hover:not(:disabled) {
+    background-color: #c82333;
+    border-color: #bd2130;
+}
+.clock-widget .stopwatch-controls button:nth-child(3) { /* Reset */
+     background-color: var(--secondary-color);
+     border-color: var(--secondary-color);
+     color: white;
+}
+.clock-widget .stopwatch-controls button:nth-child(3):hover:not(:disabled) {
+    background-color: #5a6268;
+    border-color: #545b62;
+}
+
+
+.clock-widget .alerts-info {
+    font-size: 0.9rem;
+    color: var(--secondary-color);
+}
