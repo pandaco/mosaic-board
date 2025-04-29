@@ -14,7 +14,8 @@ const navigationHistory: Record<string, NavigationState[]> = {};
 function displayWidgetError(element: HTMLElement, message: string): void {
     const contentElement = element.querySelector<HTMLElement>('.widget-content');
     if (contentElement) {
-        contentElement.innerHTML = `<p class="error">${message}</p>`;
+        // Changed text
+        contentElement.innerHTML = `<p class="error">${message || 'An error occurred.'}</p>`;
     }
 }
 
@@ -29,42 +30,40 @@ export function initBookmarkWidget(widgetId: string, element: HTMLElement, prefs
 
     const defaultFolderId = prefs.defaultFolderId || '1'; // Default to Bookmarks Bar or Root
 
-    // Fetch initial folder name for the title and history
     try {
         chrome.bookmarks.get(defaultFolderId, (nodes) => {
             if (chrome.runtime.lastError) {
                 console.error(`Error fetching default folder ${defaultFolderId}:`, chrome.runtime.lastError);
-                displayWidgetError(element, `Erreur: Dossier par défaut (${defaultFolderId}) introuvable.`);
-                // Optionally, try navigating to root '0' or '1' as fallback
-                // navigateToFolder(widgetId, element, '1', 'Favoris', '0', prefs, true);
+                // Changed text
+                displayWidgetError(element, `Error: Default folder (${defaultFolderId}) not found.`);
                 return;
             }
 
-            let initialFolderName = 'Favoris';
+            // Changed default text
+            let initialFolderName = 'Bookmarks';
             let initialParentId: string | null = null;
 
             if (nodes && nodes.length > 0) {
-                 initialFolderName = nodes[0].title || `Dossier ${defaultFolderId}`;
+                 // Changed fallback text
+                 initialFolderName = nodes[0].title || `Folder ${defaultFolderId}`;
                  initialParentId = nodes[0].parentId ?? null;
             } else {
                 console.warn(`Default folder with ID ${defaultFolderId} not found, though no API error occurred.`);
-                displayWidgetError(element, `Dossier par défaut (${defaultFolderId}) non trouvé.`);
-                // Optionally fallback
-                // navigateToFolder(widgetId, element, '1', 'Favoris', '0', prefs, true);
+                // Changed text
+                displayWidgetError(element, `Default folder (${defaultFolderId}) not found.`);
                 return;
             }
             navigateToFolder(widgetId, element, defaultFolderId, initialFolderName, initialParentId, prefs, true);
         });
     } catch (error) {
          console.error("Unexpected error during initial bookmark fetch:", error);
-         displayWidgetError(element, "Erreur inattendue lors de l'initialisation.");
+         // Changed text
+         displayWidgetError(element, "Unexpected error during initialization.");
     }
 }
 
 /**
  * Updates the bookmark widget display based on new preferences.
- * @param widgetId The unique ID of the widget instance.
- * @param prefs The updated preferences.
  */
 export function updateBookmarkWidgetPreferences(widgetId: string, prefs: BookmarkWidgetPreferences): void {
     const widgetContainer = document.getElementById(widgetId);
@@ -73,23 +72,21 @@ export function updateBookmarkWidgetPreferences(widgetId: string, prefs: Bookmar
     if (widgetElement) {
         const currentState = getCurrentNavigationState(widgetId);
         if (currentState) {
-            // Check if defaultFolderId exists before navigating
             const folderIdToRender = currentState.folderId;
             try {
                  chrome.bookmarks.get(folderIdToRender, (nodes) => {
                      if (chrome.runtime.lastError || !nodes || nodes.length === 0) {
                          console.warn(`Current folder ${folderIdToRender} seems invalid after pref update. Navigating to new default.`);
-                         // If current folder is invalid, navigate to the new default folder
                          initBookmarkWidget(widgetId, widgetElement, prefs);
                      } else {
-                         // Current folder is valid, refresh view and navigation state
                          renderFolderContents(widgetId, widgetElement, folderIdToRender, prefs);
                          navigateToFolder(widgetId, widgetElement, folderIdToRender, currentState.folderName, currentState.parentId, prefs, true); // Treat as refresh
                      }
                  });
             } catch (error) {
                  console.error(`Error checking current folder ${folderIdToRender} validity:`, error);
-                 displayWidgetError(widgetElement, "Erreur lors de la mise à jour.");
+                 // Changed text
+                 displayWidgetError(widgetElement, "Error during update.");
             }
 
         } else {
@@ -104,14 +101,6 @@ export function updateBookmarkWidgetPreferences(widgetId: string, prefs: Bookmar
 
 /**
  * Navigates to a specific bookmark folder and renders its content.
- * Manages the internal navigation history for the widget.
- * @param widgetId Widget instance ID.
- * @param element Widget's content element (.grid-stack-item-content).
- * @param folderId ID of the folder to navigate to.
- * @param folderName Name of the folder (for title).
- * @param parentId Parent folder ID (string | null).
- * @param prefs Current preferences.
- * @param isInitialLoadOrRefresh Flag to prevent pushing state on initial load or state refresh.
  */
 function navigateToFolder(
     widgetId: string,
@@ -128,16 +117,15 @@ function navigateToFolder(
     const effectiveDefaultFolderId = prefs.defaultFolderId || '1';
 
     if (titleElement) {
-        titleElement.textContent = folderName || 'Favoris';
-        titleElement.title = folderName || 'Favoris';
+        // Changed default text
+        titleElement.textContent = folderName || 'Bookmarks';
+        titleElement.title = folderName || 'Bookmarks';
         titleElement.onclick = null;
         titleElement.style.cursor = 'default';
 
-        // Only add back navigation via title if not at default AND parent exists
         if (folderId !== effectiveDefaultFolderId && parentId) {
              try {
                 chrome.bookmarks.get(parentId, (parentNodes) => {
-                    // Check for errors *and* if nodes were returned
                     if (!chrome.runtime.lastError && parentNodes && parentNodes.length > 0) {
                         titleElement.style.cursor = 'pointer';
                         titleElement.onclick = (e) => {
@@ -148,7 +136,6 @@ function navigateToFolder(
                          if (chrome.runtime.lastError) {
                               console.warn(`Error checking parent folder ${parentId} for title click: ${chrome.runtime.lastError.message}`);
                          }
-                         // Keep cursor default if parent check fails or parent doesn't exist
                          titleElement.style.cursor = 'default';
                     }
                 });
@@ -176,17 +163,12 @@ function navigateToFolder(
         backButton.onclick = showBackButton ? () => handleGoBack(widgetId, element, prefs) : null;
     }
 
-    // Render content *after* updating UI elements like title/back button
     renderFolderContents(widgetId, element, folderId, prefs);
 }
 
 
 /**
  * Renders the contents (subfolders and bookmarks) of a given folder.
- * @param widgetId Widget instance ID.
- * @param element Widget's content element (.grid-stack-item-content).
- * @param folderId ID of the folder to render.
- * @param prefs Current preferences.
  */
 async function renderFolderContents(widgetId: string, element: HTMLElement, folderId: string, prefs: BookmarkWidgetPreferences): Promise<void> {
     const contentElement = element.querySelector<HTMLElement>('.widget-content');
@@ -195,20 +177,19 @@ async function renderFolderContents(widgetId: string, element: HTMLElement, fold
         return;
     }
 
-    contentElement.innerHTML = '<p>Chargement...</p>';
+    // Changed text
+    contentElement.innerHTML = '<p>Loading...</p>';
 
     try {
-        // Use async/await version for cleaner error handling if available,
-        // otherwise stick to callback with error checking.
-        // Assuming chrome.bookmarks.getChildren still uses callbacks:
         chrome.bookmarks.getChildren(folderId, (children) => {
              if (chrome.runtime.lastError) {
                 console.error(`Error fetching children for folder ${folderId}:`, chrome.runtime.lastError);
-                displayWidgetError(element, `Erreur chargement dossier (${folderId}).`);
+                // Changed text
+                displayWidgetError(element, `Error loading folder (${folderId}).`);
                 return;
             }
 
-            contentElement.innerHTML = ''; // Clear loading
+            contentElement.innerHTML = '';
 
             const folders = children.filter(node => !node.url).sort(compareNodes);
             const bookmarks = children.filter(node => node.url).sort(compareNodes);
@@ -219,7 +200,7 @@ async function renderFolderContents(widgetId: string, element: HTMLElement, fold
             if (folders.length > 0) {
                 const folderList = document.createElement('ul');
                 folderList.className = `folder-list view-${prefs.view}`;
-                folderList.setAttribute('role', 'list'); // ARIA role
+                folderList.setAttribute('role', 'list');
                 folders.forEach(folder => {
                     const parentIdForFolder = folder.parentId ?? null;
                     const li = createFolderElement(widgetId, element, folder, parentIdForFolder, prefs);
@@ -232,7 +213,7 @@ async function renderFolderContents(widgetId: string, element: HTMLElement, fold
             if (bookmarks.length > 0) {
                 const bookmarkList = document.createElement('ul');
                 bookmarkList.className = `bookmark-list view-${prefs.view}`;
-                bookmarkList.setAttribute('role', 'list'); // ARIA role
+                bookmarkList.setAttribute('role', 'list');
                 bookmarks.forEach(bookmark => {
                     const li = createBookmarkElement(bookmark, prefs);
                     bookmarkList.appendChild(li);
@@ -242,27 +223,23 @@ async function renderFolderContents(widgetId: string, element: HTMLElement, fold
             }
 
             if (!hasContent) {
-                contentElement.innerHTML = '<p class="empty-folder">Ce dossier est vide.</p>';
+                // Changed text
+                contentElement.innerHTML = '<p class="empty-folder">This folder is empty.</p>';
             } else {
                 contentElement.appendChild(fragment);
             }
         });
 
-    } catch (error: any) { // Catch unexpected errors synchronous errors if any
+    } catch (error: any) {
         console.error(`Unexpected error in renderFolderContents for folder ${folderId}:`, error);
-        displayWidgetError(element, "Erreur inattendue.");
+        // Changed text
+        displayWidgetError(element, "Unexpected error.");
     }
 }
 
 
 /**
  * Creates the HTML element for a folder item.
- * @param widgetId Widget instance ID.
- * @param widgetElement Widget's content element (.grid-stack-item-content).
- * @param folderNode The bookmark node representing the folder.
- * @param parentId The ID of the parent folder (string | null).
- * @param prefs Current preferences.
- * @returns The created LI element.
  */
 function createFolderElement(
     widgetId: string,
@@ -273,19 +250,19 @@ function createFolderElement(
 ): HTMLLIElement {
     const li = document.createElement('li');
     li.className = 'bookmark-item folder-item';
-    li.setAttribute('role', 'listitem'); // ARIA role
+    li.setAttribute('role', 'listitem');
 
     const link = document.createElement('a');
     link.href = '#';
-    link.title = folderNode.title || 'Dossier sans nom';
+    // Changed fallback text
+    link.title = folderNode.title || 'Unnamed folder';
     link.dataset.folderId = folderNode.id;
-    link.setAttribute('role', 'button'); // Treat like a button for interaction
+    link.setAttribute('role', 'button');
 
     link.addEventListener('click', (e) => {
         e.preventDefault();
         navigateToFolder(widgetId, widgetElement, folderNode.id, folderNode.title, parentId, prefs);
     });
-     // Allow activation with Enter/Space for accessibility
      link.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
@@ -300,7 +277,8 @@ function createFolderElement(
 
     const titleSpan = document.createElement('span');
     titleSpan.className = 'item-title';
-    titleSpan.textContent = folderNode.title || 'Dossier sans nom';
+    // Changed fallback text
+    titleSpan.textContent = folderNode.title || 'Unnamed folder';
 
     link.appendChild(icon);
     link.appendChild(titleSpan);
@@ -311,7 +289,8 @@ function createFolderElement(
              const countSpan = document.createElement('span');
              countSpan.className = 'item-count';
              countSpan.textContent = ` (${count})`;
-             countSpan.setAttribute('aria-label', `${count} éléments`);
+             // Changed aria-label
+             countSpan.setAttribute('aria-label', `${count} items`);
              link.appendChild(countSpan);
         }
     }
@@ -323,14 +302,11 @@ function createFolderElement(
 
 /**
  * Creates the HTML element for a bookmark item.
- * @param bookmarkNode The bookmark node.
- * @param prefs Current preferences (used for view type, potentially).
- * @returns The created LI element.
  */
 function createBookmarkElement(bookmarkNode: BookmarkTreeNode, _prefs: BookmarkWidgetPreferences): HTMLLIElement {
     const li = document.createElement('li');
     li.className = 'bookmark-item bookmark-link';
-     li.setAttribute('role', 'listitem'); // ARIA role
+     li.setAttribute('role', 'listitem');
 
     const link = document.createElement('a');
     const url = bookmarkNode.url || '#';
@@ -387,9 +363,6 @@ function createBookmarkElement(bookmarkNode: BookmarkTreeNode, _prefs: BookmarkW
 
 /**
  * Handles the logic for going back in the widget's navigation history.
- * @param widgetId Widget instance ID.
- * @param element Widget's content element (.grid-stack-item-content).
- * @param prefs Current preferences.
  */
 function handleGoBack(widgetId: string, element: HTMLElement, prefs: BookmarkWidgetPreferences): void {
     const history = navigationHistory[widgetId];

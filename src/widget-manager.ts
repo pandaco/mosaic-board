@@ -32,11 +32,11 @@ const widgetCleaners: { [key in WidgetType]?: (id: string) => void } = {
  * @returns The created HTMLElement (outer grid-stack-item) or null if template not found.
  */
 function createWidgetElement(id: string, type: WidgetType): HTMLElement | null {
-    const templateId = `${type}-widget-template`;
+    const templateId = `${type}-widget-template`; // Uses enum value directly (e.g., 'bookmarks')
     const template = document.getElementById(templateId) as HTMLTemplateElement | null;
 
     if (!template) {
-        console.error(`Template not found for widget type: ${type}`);
+        console.error(`Template not found for widget type: ${type} (expected ID: ${templateId})`);
         return null;
     }
 
@@ -87,14 +87,12 @@ export async function addWidget(type: WidgetType): Promise<void> {
         const initializer = widgetInitializers[type];
         if (initializer) {
             const defaultPrefs = getDefaultPreferences(type);
-            // Ensure defaultPrefs is not null before saving/initializing
             if (defaultPrefs) {
                  initializer(id, contentElement, defaultPrefs);
                  await savePreferences(id, type, defaultPrefs);
             } else {
                  console.warn(`No default preferences found for ${type}, cannot initialize or save.`);
-                 // Initialize with empty prefs or handle error state
-                 initializer(id, contentElement, {}); // Example: init with empty object
+                 initializer(id, contentElement, {});
             }
 
         } else {
@@ -177,7 +175,8 @@ async function toggleWidgetSettingsMenu(widgetId: string, widgetType: WidgetType
      if (deleteButton) {
          deleteButton.addEventListener('click', (e) => {
              e.stopPropagation();
-             if (confirm('Êtes-vous sûr de vouloir supprimer ce widget ?')) {
+             // Changed confirmation message to English
+             if (confirm('Are you sure you want to delete this widget?')) {
                  removeWidget(widgetId);
              }
          });
@@ -208,7 +207,7 @@ async function toggleWidgetSettingsMenu(widgetId: string, widgetType: WidgetType
     }
     if (left < 10) {
          left = 10;
-    }
+     }
 
     menuElement.style.position = 'absolute';
     menuElement.style.top = `${top}px`;
@@ -229,7 +228,6 @@ async function toggleWidgetSettingsMenu(widgetId: string, widgetType: WidgetType
  */
 function addSpecificSettingsOptions(list: HTMLUListElement, widgetId: string, widgetType: WidgetType, currentPrefs: any | null): void {
 
-    // Find the delete button's list item to insert before it
     const deleteButtonLi = list.querySelector('.delete-widget-button')?.closest('li');
 
     let separatorAdded = false;
@@ -238,7 +236,6 @@ function addSpecificSettingsOptions(list: HTMLUListElement, widgetId: string, wi
             const hr = document.createElement('hr');
             const li = document.createElement('li');
             li.appendChild(hr);
-            // Insert before the delete button Li, or at the end if not found
             list.insertBefore(li, deleteButtonLi ?? null);
             separatorAdded = true;
         }
@@ -247,7 +244,6 @@ function addSpecificSettingsOptions(list: HTMLUListElement, widgetId: string, wi
     switch (widgetType) {
         case WidgetType.Bookmarks:
             addSeparatorIfNeeded();
-            // Pass deleteButtonLi ?? null to ensure it's HTMLLIElement | null
             addBookmarkSettings(list, widgetId, currentPrefs, deleteButtonLi ?? null);
             break;
         case WidgetType.Weather:
@@ -272,20 +268,21 @@ function addBookmarkSettings(list: HTMLUListElement, widgetId: string, prefs: an
     const showCount = prefs?.showCount ?? false;
     const defaultFolderId = prefs?.defaultFolderId || null;
 
-    const viewGroupLi = createSettingsGroup(list, 'Affichage', insertBeforeLi);
-    const listRadio = createRadioOption(widgetId, WidgetType.Bookmarks, 'view', 'list', 'Vue Liste', currentView === 'list');
-    const gridRadio = createRadioOption(widgetId, WidgetType.Bookmarks, 'view', 'grid', 'Vue Grille', currentView === 'grid');
+    // Changed labels to English
+    const viewGroupLi = createSettingsGroup(list, 'Display', insertBeforeLi);
+    const listRadio = createRadioOption(widgetId, WidgetType.Bookmarks, 'view', 'list', 'List View', currentView === 'list');
+    const gridRadio = createRadioOption(widgetId, WidgetType.Bookmarks, 'view', 'grid', 'Grid View', currentView === 'grid');
     viewGroupLi.appendChild(listRadio);
     viewGroupLi.appendChild(gridRadio);
 
     const countGroupLi = createSettingsGroup(list, 'Options', insertBeforeLi);
-    const countCheckbox = createCheckboxOption(widgetId, WidgetType.Bookmarks, 'showCount', 'Afficher le nombre d\'éléments', showCount);
+    const countCheckbox = createCheckboxOption(widgetId, WidgetType.Bookmarks, 'showCount', 'Show item count', showCount);
     countGroupLi.appendChild(countCheckbox);
 
-    const folderGroupLi = createSettingsGroup(list, 'Dossier par Défaut', insertBeforeLi);
+    const folderGroupLi = createSettingsGroup(list, 'Default Folder', insertBeforeLi);
     const folderButton = document.createElement('button');
     folderButton.className = 'folder-setting-button settings-option';
-    folderButton.innerHTML = `Sélectionner... <span class="current-folder-name">(Racine)</span>`;
+    folderButton.innerHTML = `Select... <span class="current-folder-name">(Root)</span>`; // Changed text
     folderButton.addEventListener('click', (e) => {
         e.stopPropagation();
         openFolderSelectorModal(widgetId);
@@ -300,11 +297,12 @@ function addWeatherSettings(list: HTMLUListElement, widgetId: string, prefs: any
     const location = prefs?.location || '';
     const unit = prefs?.unit || 'metric';
 
-    const locationGroupLi = createSettingsGroup(list, 'Lieu', insertBeforeLi);
-    const locationInput = createTextInputOption(widgetId, WidgetType.Weather, 'location', 'Entrez une ville', location);
+    // Changed labels to English
+    const locationGroupLi = createSettingsGroup(list, 'Location', insertBeforeLi);
+    const locationInput = createTextInputOption(widgetId, WidgetType.Weather, 'location', 'Enter a city', location);
     locationGroupLi.appendChild(locationInput);
 
-    const unitGroupLi = createSettingsGroup(list, 'Unité', insertBeforeLi);
+    const unitGroupLi = createSettingsGroup(list, 'Unit', insertBeforeLi);
     const unitSelect = createSelectOption(widgetId, WidgetType.Weather, 'unit', [
         { value: 'metric', text: 'Celsius (°C)' },
         { value: 'imperial', text: 'Fahrenheit (°F)' },
@@ -315,8 +313,9 @@ function addWeatherSettings(list: HTMLUListElement, widgetId: string, prefs: any
 function addClockSettings(list: HTMLUListElement, widgetId: string, prefs: any, insertBeforeLi: HTMLLIElement | null): void {
      const showStopwatch = prefs?.showStopwatch ?? false;
 
-     const stopwatchGroupLi = createSettingsGroup(list, 'Fonctionnalités', insertBeforeLi);
-     const stopwatchCheckbox = createCheckboxOption(widgetId, WidgetType.Clock, 'showStopwatch', 'Afficher le chronomètre', showStopwatch);
+     // Changed labels to English
+     const stopwatchGroupLi = createSettingsGroup(list, 'Features', insertBeforeLi);
+     const stopwatchCheckbox = createCheckboxOption(widgetId, WidgetType.Clock, 'showStopwatch', 'Show stopwatch', showStopwatch);
      stopwatchGroupLi.appendChild(stopwatchCheckbox);
 }
 
@@ -327,7 +326,7 @@ function createSettingsGroup(list: HTMLUListElement, title: string, insertBefore
     const li = document.createElement('li');
     li.className = 'settings-group';
     const label = document.createElement('label');
-    label.textContent = title;
+    label.textContent = title; // Title is now passed in English
     li.appendChild(label);
     list.insertBefore(li, insertBeforeLi);
     return li;
@@ -344,7 +343,7 @@ function createRadioOption(widgetId: string, type: WidgetType, key: string, valu
     radio.checked = isChecked;
     radio.addEventListener('change', () => updatePreference(widgetId, type, key, value));
     label.appendChild(radio);
-    label.appendChild(document.createTextNode(` ${labelText}`));
+    label.appendChild(document.createTextNode(` ${labelText}`)); // labelText is now passed in English
     return label;
 }
 
@@ -356,14 +355,14 @@ function createCheckboxOption(widgetId: string, type: WidgetType, key: string, l
     checkbox.checked = isChecked;
     checkbox.addEventListener('change', (e) => updatePreference(widgetId, type, key, (e.target as HTMLInputElement).checked));
     label.appendChild(checkbox);
-    label.appendChild(document.createTextNode(` ${labelText}`));
+    label.appendChild(document.createTextNode(` ${labelText}`)); // labelText is now passed in English
     return label;
 }
 
 function createTextInputOption(widgetId: string, type: WidgetType, key: string, placeholder: string, currentValue: string): HTMLInputElement {
     const input = document.createElement('input');
     input.type = 'text';
-    input.placeholder = placeholder;
+    input.placeholder = placeholder; // placeholder is now passed in English
     input.value = currentValue;
     input.addEventListener('blur', (e) => updatePreference(widgetId, type, key, (e.target as HTMLInputElement).value));
      input.addEventListener('keydown', (e) => {
@@ -381,7 +380,7 @@ function createSelectOption(widgetId: string, type: WidgetType, key: string, opt
     options.forEach(opt => {
         const option = document.createElement('option');
         option.value = opt.value;
-        option.textContent = opt.text;
+        option.textContent = opt.text; // option text is now passed in English
         option.selected = opt.value === currentValue;
         select.appendChild(option);
     });
@@ -391,10 +390,6 @@ function createSelectOption(widgetId: string, type: WidgetType, key: string, opt
 
 /**
  * Generic function to update a widget's preference.
- * @param widgetId The ID of the widget.
- * @param type The type of the widget.
- * @param key The preference key to update.
- * @param value The new value for the preference.
  */
 async function updatePreference(widgetId: string, type: WidgetType, key: string, value: any): Promise<void> {
     try {
@@ -463,10 +458,8 @@ function handleEscapeKey(event: KeyboardEvent): void {
 
 /**
  * Loads and creates all widgets based on the saved layout.
- * Calls the appropriate widget initializer for each widget.
  */
 export async function loadWidgets(): Promise<void> {
-    // Pass the async widget creation function to loadGridState
     await loadGridState(async (item: WidgetLayout): Promise<HTMLElement | null> => {
         const widgetContainer = createWidgetElement(item.id, item.type);
         if (widgetContainer) {
@@ -475,30 +468,28 @@ export async function loadWidgets(): Promise<void> {
                 const initializer = widgetInitializers[item.type];
                 if (initializer) {
                     try {
-                        // Prefs loading is already async
                         const prefs = await getWidgetPreferences<any>(item.id, item.type) || getDefaultPreferences(item.type);
-                        // Ensure prefs is not null before initializing
                         if (prefs) {
                              initializer(item.id, contentElement, prefs);
                         } else {
                              console.warn(`Could not load or get default preferences for ${item.type} widget ${item.id}. Initializing with empty state.`);
-                             initializer(item.id, contentElement, {}); // Initialize with empty object
+                             initializer(item.id, contentElement, {});
                         }
 
                     } catch (error) {
                         console.error(`Error initializing widget ${item.id} of type ${item.type}:`, error);
-                        contentElement.innerHTML = `<p class="error">Erreur d'initialisation</p>`;
+                        contentElement.innerHTML = `<p class="error">Initialization error</p>`; // Changed text
                     }
                 } else {
                     console.warn(`No initializer found for widget type: ${item.type}`);
-                     contentElement.innerHTML = `<p class="error">Type de widget inconnu</p>`;
+                     contentElement.innerHTML = `<p class="error">Unknown widget type</p>`; // Changed text
                 }
             } else {
                  console.error(`Could not find .grid-stack-item-content for loaded widget ${item.id}`);
                  return null;
             }
         }
-        return widgetContainer; // Return the outer container
+        return widgetContainer;
     });
 }
 
@@ -511,7 +502,7 @@ function getDefaultPreferences(type: WidgetType): BaseWidgetPreferences | null {
         case WidgetType.Bookmarks:
             return { view: 'list', showCount: false, defaultFolderId: '1' };
         case WidgetType.Weather:
-            return { location: 'Lille', unit: 'metric' };
+            return { location: 'Lille', unit: 'metric' }; // Keep Lille for now
         case WidgetType.Clock:
             return { showStopwatch: false };
         default:
@@ -527,7 +518,6 @@ let currentWidgetIdForFolderSelection: string | null = null;
 
 /**
  * Opens the folder selector modal and populates the tree.
- * @param widgetId The ID of the bookmark widget instance requesting the folder selection.
  */
 async function openFolderSelectorModal(widgetId: string): Promise<void> {
     currentWidgetIdForFolderSelection = widgetId;
@@ -541,8 +531,9 @@ async function openFolderSelectorModal(widgetId: string): Promise<void> {
         return;
     }
 
-    treeContainer.innerHTML = '<p>Chargement des dossiers...</p>';
-    selectedFolderNameSpan.textContent = 'Aucun';
+    // Changed loading/default texts to English
+    treeContainer.innerHTML = '<p>Loading folders...</p>';
+    selectedFolderNameSpan.textContent = 'None';
     confirmButton.disabled = true;
     confirmButton.dataset.selectedFolderId = '';
 
@@ -556,14 +547,13 @@ async function openFolderSelectorModal(widgetId: string): Promise<void> {
              const rootNode = bookmarkTreeRoots[0];
              const rootUl = document.createElement('ul');
              treeContainer.appendChild(rootUl);
-             // Check if children exist before calling forEach
              rootNode.children?.forEach(childNode => {
                  if (!childNode.url) {
                      buildFolderTree(childNode, rootUl, 0);
                  }
              });
         } else {
-             treeContainer.innerHTML = '<p>Aucun dossier de favoris trouvé.</p>';
+             treeContainer.innerHTML = '<p>No bookmark folders found.</p>'; // Changed text
         }
 
         treeContainer.removeEventListener('click', handleFolderTreeClick);
@@ -571,16 +561,12 @@ async function openFolderSelectorModal(widgetId: string): Promise<void> {
 
     } catch (error) {
         console.error("Error loading bookmark tree:", error);
-        treeContainer.innerHTML = '<p>Erreur lors du chargement des dossiers.</p>';
+        treeContainer.innerHTML = '<p>Error loading folders.</p>'; // Changed text
     }
 }
 
 /**
  * Recursively builds the HTML for the folder tree.
- * Appends folder items (LI) to the parent UL element.
- * @param node The current bookmark tree node (must be a folder).
- * @param parentUlElement The parent UL element to append the new LI to.
- * @param level The current depth level for indentation.
  */
 function buildFolderTree(node: chrome.bookmarks.BookmarkTreeNode, parentUlElement: HTMLUListElement, level: number): void {
 
@@ -588,7 +574,8 @@ function buildFolderTree(node: chrome.bookmarks.BookmarkTreeNode, parentUlElemen
     const folderItem = document.createElement('div');
     folderItem.className = 'folder-item';
     folderItem.dataset.folderId = node.id;
-    folderItem.dataset.folderName = node.title || `Dossier ${node.id}`;
+    // Changed fallback text
+    folderItem.dataset.folderName = node.title || `Folder ${node.id}`;
 
     const toggle = document.createElement('span');
     toggle.className = 'folder-toggle';
@@ -600,14 +587,13 @@ function buildFolderTree(node: chrome.bookmarks.BookmarkTreeNode, parentUlElemen
 
     const title = document.createElement('span');
     title.className = 'folder-title';
-    title.textContent = node.title || `Dossier ${node.id}`;
+    title.textContent = node.title || `Folder ${node.id}`; // Changed fallback text
 
     folderItem.appendChild(toggle);
     folderItem.appendChild(icon);
     folderItem.appendChild(title);
     li.appendChild(folderItem);
 
-    // Check for subfolders safely using optional chaining
     const subFolders = node.children?.filter(child => !child.url) ?? [];
 
     if (subFolders.length > 0) {
@@ -632,7 +618,6 @@ function buildFolderTree(node: chrome.bookmarks.BookmarkTreeNode, parentUlElemen
 
 /**
  * Handles clicks within the folder tree container (event delegation).
- * @param event The MouseEvent.
  */
 function handleFolderTreeClick(event: MouseEvent): void {
     const target = event.target as HTMLElement;
@@ -669,7 +654,8 @@ function handleFolderTreeClick(event: MouseEvent): void {
     folderItem.classList.add('selected');
 
     const folderId = folderItem.dataset.folderId;
-    const folderName = folderItem.dataset.folderName || 'Dossier sélectionné';
+    // Changed fallback text
+    const folderName = folderItem.dataset.folderName || 'Selected folder';
     selectedFolderNameSpan.textContent = folderName;
     confirmButton.disabled = false;
     confirmButton.dataset.selectedFolderId = folderId;
@@ -709,8 +695,6 @@ export async function confirmFolderSelection(): Promise<void> {
 
 /**
  * Updates the text of the "Default Folder" button in the settings menu.
- * @param widgetId The ID of the widget.
- * @param folderId The ID of the selected folder.
  */
 async function updateSettingsMenuFolderButton(widgetId: string, folderId: string | null): Promise<void> {
     const menu = document.getElementById('active-widget-settings-menu');
@@ -718,32 +702,31 @@ async function updateSettingsMenuFolderButton(widgetId: string, folderId: string
 
     const folderButtonSpan = menu.querySelector<HTMLElement>('.folder-setting-button .current-folder-name');
     if (folderButtonSpan) {
-        // No need to await here if updateFolderButtonText remains synchronous or handles its own async logic internally
         updateFolderButtonText(folderButtonSpan, folderId);
     }
 }
 
 /**
  * Helper to fetch folder name and update the button text. Now async.
- * @param spanElement The span element inside the button to update.
- * @param folderId The folder ID.
  */
 async function updateFolderButtonText(spanElement: HTMLElement | null, folderId: string | null): Promise<void> {
      if (!spanElement) return;
 
-     let folderName = 'Racine';
+     // Changed default text
+     let folderName = 'Root';
      if (folderId && folderId !== '0') {
          try {
              const nodes = await chrome.bookmarks.get(folderId);
              if (nodes && nodes.length > 0) {
-                 folderName = nodes[0].title || `Dossier ${folderId}`;
+                 // Changed fallback text
+                 folderName = nodes[0].title || `Folder ${folderId}`;
              } else {
                   console.warn(`Folder with ID ${folderId} not found.`);
-                  folderName = 'Inconnu';
+                  folderName = 'Unknown'; // Changed text
              }
          } catch (e) {
              console.warn(`Could not get folder name for ID: ${folderId}`, e);
-             folderName = 'Erreur';
+             folderName = 'Error'; // Changed text
          }
      }
      spanElement.textContent = `(${folderName})`;
