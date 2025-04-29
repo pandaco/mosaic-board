@@ -10,6 +10,14 @@ interface NavigationState {
 // Store navigation history per widget instance
 const navigationHistory: Record<string, NavigationState[]> = {};
 
+/** Helper to display error messages within the widget content area */
+function displayWidgetError(element: HTMLElement, message: string): void {
+    const contentElement = element.querySelector<HTMLElement>('.widget-content');
+    if (contentElement) {
+        contentElement.innerHTML = `<p class="error">${message}</p>`;
+    }
+}
+
 /**
  * Initializes the bookmark widget instance.
  * @param widgetId The unique ID of the widget instance.
@@ -22,23 +30,35 @@ export function initBookmarkWidget(widgetId: string, element: HTMLElement, prefs
     const defaultFolderId = prefs.defaultFolderId || '1'; // Default to Bookmarks Bar or Root
 
     // Fetch initial folder name for the title and history
-    chrome.bookmarks.get(defaultFolderId, (nodes) => {
-        let initialFolderName = 'Favoris'; // Default name
-        let initialParentId: string | null = null; // Default parent ID
+    try {
+        chrome.bookmarks.get(defaultFolderId, (nodes) => {
+            if (chrome.runtime.lastError) {
+                console.error(`Error fetching default folder ${defaultFolderId}:`, chrome.runtime.lastError);
+                displayWidgetError(element, `Erreur: Dossier par défaut (${defaultFolderId}) introuvable.`);
+                // Optionally, try navigating to root '0' or '1' as fallback
+                // navigateToFolder(widgetId, element, '1', 'Favoris', '0', prefs, true);
+                return;
+            }
 
-        if (chrome.runtime.lastError) {
-            console.warn(`Error fetching default folder ${defaultFolderId}:`, chrome.runtime.lastError.message);
-            initialFolderName = "Erreur de dossier";
-        } else if (nodes && nodes.length > 0) {
-             initialFolderName = nodes[0].title || `Dossier ${defaultFolderId}`;
-             initialParentId = nodes[0].parentId ?? null;
-        } else {
-            console.warn(`Default folder with ID ${defaultFolderId} not found.`);
-             initialFolderName = "Dossier introuvable";
-        }
+            let initialFolderName = 'Favoris';
+            let initialParentId: string | null = null;
 
-        navigateToFolder(widgetId, element, defaultFolderId, initialFolderName, initialParentId, prefs, true); // isInitialLoad = true
-    });
+            if (nodes && nodes.length > 0) {
+                 initialFolderName = nodes[0].title || `Dossier ${defaultFolderId}`;
+                 initialParentId = nodes[0].parentId ?? null;
+            } else {
+                console.warn(`Default folder with ID ${defaultFolderId} not found, though no API error occurred.`);
+                displayWidgetError(element, `Dossier par défaut (${defaultFolderId}) non trouvé.`);
+                // Optionally fallback
+                // navigateToFolder(widgetId, element, '1', 'Favoris', '0', prefs, true);
+                return;
+            }
+            navigateToFolder(widgetId, element, defaultFolderId, initialFolderName, initialParentId, prefs, true);
+        });
+    } catch (error) {
+         console.error("Unexpected error during initial bookmark fetch:", error);
+         displayWidgetError(element, "Erreur inattendue lors de l'initialisation.");
+    }
 }
 
 /**
@@ -53,8 +73,25 @@ export function updateBookmarkWidgetPreferences(widgetId: string, prefs: Bookmar
     if (widgetElement) {
         const currentState = getCurrentNavigationState(widgetId);
         if (currentState) {
-            renderFolderContents(widgetId, widgetElement, currentState.folderId, prefs);
-            navigateToFolder(widgetId, widgetElement, currentState.folderId, currentState.folderName, currentState.parentId, prefs, true); // Treat as refresh
+            // Check if defaultFolderId exists before navigating
+            const folderIdToRender = currentState.folderId;
+            try {
+                 chrome.bookmarks.get(folderIdToRender, (nodes) => {
+                     if (chrome.runtime.lastError || !nodes || nodes.length === 0) {
+                         console.warn(`Current folder ${folderIdToRender} seems invalid after pref update. Navigating to new default.`);
+                         // If current folder is invalid, navigate to the new default folder
+                         initBookmarkWidget(widgetId, widgetElement, prefs);
+                     } else {
+                         // Current folder is valid, refresh view and navigation state
+                         renderFolderContents(widgetId, widgetElement, folderIdToRender, prefs);
+                         navigateToFolder(widgetId, widgetElement, folderIdToRender, currentState.folderName, currentState.parentId, prefs, true); // Treat as refresh
+                     }
+                 });
+            } catch (error) {
+                 console.error(`Error checking current folder ${folderIdToRender} validity:`, error);
+                 displayWidgetError(widgetElement, "Erreur lors de la mise à jour.");
+            }
+
         } else {
              console.warn(`No navigation state found for widget ${widgetId} during preference update. Re-initializing.`);
              initBookmarkWidget(widgetId, widgetElement, prefs);
@@ -96,21 +133,29 @@ function navigateToFolder(
         titleElement.onclick = null;
         titleElement.style.cursor = 'default';
 
+        // Only add back navigation via title if not at default AND parent exists
         if (folderId !== effectiveDefaultFolderId && parentId) {
-             chrome.bookmarks.get(parentId, (parentNodes) => {
-                 if (!chrome.runtime.lastError && parentNodes && parentNodes.length > 0) {
-                     titleElement.style.cursor = 'pointer';
-                     titleElement.onclick = (e) => {
-                         e.preventDefault();
-                         handleGoBack(widgetId, element, prefs);
-                     };
-                 } else {
-                      if (chrome.runtime.lastError) {
-                           console.warn(`Error checking parent folder ${parentId}: ${chrome.runtime.lastError.message}`);
-                      }
-                      titleElement.style.cursor = 'default';
-                 }
-             });
+             try {
+                chrome.bookmarks.get(parentId, (parentNodes) => {
+                    // Check for errors *and* if nodes were returned
+                    if (!chrome.runtime.lastError && parentNodes && parentNodes.length > 0) {
+                        titleElement.style.cursor = 'pointer';
+                        titleElement.onclick = (e) => {
+                            e.preventDefault();
+                            handleGoBack(widgetId, element, prefs);
+                        };
+                    } else {
+                         if (chrome.runtime.lastError) {
+                              console.warn(`Error checking parent folder ${parentId} for title click: ${chrome.runtime.lastError.message}`);
+                         }
+                         // Keep cursor default if parent check fails or parent doesn't exist
+                         titleElement.style.cursor = 'default';
+                    }
+                });
+             } catch (error) {
+                 console.error(`Unexpected error checking parent folder ${parentId}:`, error);
+                 titleElement.style.cursor = 'default';
+             }
         }
     }
 
@@ -127,15 +172,11 @@ function navigateToFolder(
     const showBackButton = folderId !== effectiveDefaultFolderId && history.length > 1;
 
     if (backButton) {
-        if (showBackButton) {
-            backButton.classList.remove('hidden');
-            backButton.onclick = () => handleGoBack(widgetId, element, prefs);
-        } else {
-            backButton.classList.add('hidden');
-            backButton.onclick = null;
-        }
+        backButton.classList.toggle('hidden', !showBackButton);
+        backButton.onclick = showBackButton ? () => handleGoBack(widgetId, element, prefs) : null;
     }
 
+    // Render content *after* updating UI elements like title/back button
     renderFolderContents(widgetId, element, folderId, prefs);
 }
 
@@ -157,51 +198,59 @@ async function renderFolderContents(widgetId: string, element: HTMLElement, fold
     contentElement.innerHTML = '<p>Chargement...</p>';
 
     try {
-        const children = await chrome.bookmarks.getChildren(folderId);
-        contentElement.innerHTML = '';
+        // Use async/await version for cleaner error handling if available,
+        // otherwise stick to callback with error checking.
+        // Assuming chrome.bookmarks.getChildren still uses callbacks:
+        chrome.bookmarks.getChildren(folderId, (children) => {
+             if (chrome.runtime.lastError) {
+                console.error(`Error fetching children for folder ${folderId}:`, chrome.runtime.lastError);
+                displayWidgetError(element, `Erreur chargement dossier (${folderId}).`);
+                return;
+            }
 
-        const folders = children.filter(node => !node.url).sort(compareNodes);
-        const bookmarks = children.filter(node => node.url).sort(compareNodes);
+            contentElement.innerHTML = ''; // Clear loading
 
-        const fragment = document.createDocumentFragment();
-        let hasContent = false;
+            const folders = children.filter(node => !node.url).sort(compareNodes);
+            const bookmarks = children.filter(node => node.url).sort(compareNodes);
 
-        if (folders.length > 0) {
-            const folderList = document.createElement('ul');
-            folderList.className = `folder-list view-${prefs.view}`;
-            folders.forEach(folder => {
-                const parentIdForFolder = folder.parentId ?? null;
-                const li = createFolderElement(widgetId, element, folder, parentIdForFolder, prefs);
-                folderList.appendChild(li);
-            });
-            fragment.appendChild(folderList);
-            hasContent = true;
-        }
+            const fragment = document.createDocumentFragment();
+            let hasContent = false;
 
-        if (bookmarks.length > 0) {
-            const bookmarkList = document.createElement('ul');
-            bookmarkList.className = `bookmark-list view-${prefs.view}`;
-            bookmarks.forEach(bookmark => {
-                const li = createBookmarkElement(bookmark, prefs);
-                bookmarkList.appendChild(li);
-            });
-            fragment.appendChild(bookmarkList);
-            hasContent = true;
-        }
+            if (folders.length > 0) {
+                const folderList = document.createElement('ul');
+                folderList.className = `folder-list view-${prefs.view}`;
+                folderList.setAttribute('role', 'list'); // ARIA role
+                folders.forEach(folder => {
+                    const parentIdForFolder = folder.parentId ?? null;
+                    const li = createFolderElement(widgetId, element, folder, parentIdForFolder, prefs);
+                    folderList.appendChild(li);
+                });
+                fragment.appendChild(folderList);
+                hasContent = true;
+            }
 
-        if (!hasContent) {
-            contentElement.innerHTML = '<p class="empty-folder">Ce dossier est vide.</p>';
-        } else {
-            contentElement.appendChild(fragment);
-        }
+            if (bookmarks.length > 0) {
+                const bookmarkList = document.createElement('ul');
+                bookmarkList.className = `bookmark-list view-${prefs.view}`;
+                bookmarkList.setAttribute('role', 'list'); // ARIA role
+                bookmarks.forEach(bookmark => {
+                    const li = createBookmarkElement(bookmark, prefs);
+                    bookmarkList.appendChild(li);
+                });
+                fragment.appendChild(bookmarkList);
+                hasContent = true;
+            }
 
-    } catch (error: any) {
-        console.error(`Error fetching bookmarks for folder ${folderId}:`, error);
-        if (error.message && error.message.includes('not found')) {
-             contentElement.innerHTML = '<p class="error">Dossier non trouvé.</p>';
-        } else {
-             contentElement.innerHTML = '<p class="error">Erreur lors du chargement des favoris.</p>';
-        }
+            if (!hasContent) {
+                contentElement.innerHTML = '<p class="empty-folder">Ce dossier est vide.</p>';
+            } else {
+                contentElement.appendChild(fragment);
+            }
+        });
+
+    } catch (error: any) { // Catch unexpected errors synchronous errors if any
+        console.error(`Unexpected error in renderFolderContents for folder ${folderId}:`, error);
+        displayWidgetError(element, "Erreur inattendue.");
     }
 }
 
@@ -224,15 +273,26 @@ function createFolderElement(
 ): HTMLLIElement {
     const li = document.createElement('li');
     li.className = 'bookmark-item folder-item';
+    li.setAttribute('role', 'listitem'); // ARIA role
+
     const link = document.createElement('a');
     link.href = '#';
     link.title = folderNode.title || 'Dossier sans nom';
     link.dataset.folderId = folderNode.id;
+    link.setAttribute('role', 'button'); // Treat like a button for interaction
 
     link.addEventListener('click', (e) => {
         e.preventDefault();
         navigateToFolder(widgetId, widgetElement, folderNode.id, folderNode.title, parentId, prefs);
     });
+     // Allow activation with Enter/Space for accessibility
+     link.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            navigateToFolder(widgetId, widgetElement, folderNode.id, folderNode.title, parentId, prefs);
+        }
+    });
+
 
     const icon = document.createElement('i');
     icon.className = 'fas fa-folder item-icon';
@@ -270,6 +330,8 @@ function createFolderElement(
 function createBookmarkElement(bookmarkNode: BookmarkTreeNode, _prefs: BookmarkWidgetPreferences): HTMLLIElement {
     const li = document.createElement('li');
     li.className = 'bookmark-item bookmark-link';
+     li.setAttribute('role', 'listitem'); // ARIA role
+
     const link = document.createElement('a');
     const url = bookmarkNode.url || '#';
     const title = bookmarkNode.title || url;
@@ -294,25 +356,19 @@ function createBookmarkElement(bookmarkNode: BookmarkTreeNode, _prefs: BookmarkW
          console.warn(`Invalid URL for favicon: ${url}`);
     }
 
-    // --- Fallback Icon SVG ---
-    // Simple globe icon representing a generic website
     const fallbackSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="bi bi-globe"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm7.5-6.923c-.67.204-1.335.82-1.887 1.855A7.97 7.97 0 0 0 5.145 4H7.5V1.077zM4.09 4a9.267 9.267 0 0 1 .64-1.539 6.7 6.7 0 0 1 .597-.933A7.025 7.025 0 0 0 2.255 4H4.09zm-.582 3.5c.03-.877.138-1.718.312-2.5H1.674a6.958 6.958 0 0 0-.656 2.5h2.49zM4.847 5a12.5 12.5 0 0 0-.338 2.5H7.5V5H4.847zM8.5 5v2.5h2.99a12.495 12.495 0 0 0-.337-2.5H8.5zM4.51 8.5a12.5 12.5 0 0 0 .337 2.5H7.5V8.5H4.51zm3.99 0V11h2.653c.187-.765.306-1.608.338-2.5H8.5zM5.145 12c.138.386.295.744.468 1.068.552 1.035 1.218 1.65 1.887 1.855V12H5.145zm.182 2.472a6.696 6.696 0 0 1-.597-.933A9.268 9.268 0 0 1 4.09 12H2.255a7.024 7.024 0 0 0 3.072 2.472zM3.82 11a13.652 13.652 0 0 1-.312-2.5h-2.49c.062.89.291 1.733.656 2.5H3.82zm6.853 3.472A7.024 7.024 0 0 0 13.745 12H11.91a9.27 9.27 0 0 1-.64 1.539 6.688 6.688 0 0 1-.597.933zM8.5 12h2.855c.173-.324.33-.682.468-1.068.552-1.035 1.218-1.65 1.887-1.855V12H8.5zm3.68-1h2.49a6.959 6.959 0 0 0-.656-2.5H12.18c.03.877.138 1.718.312 2.5zM11.91 4a9.27 9.27 0 0 1 .64-1.539 6.688 6.688 0 0 1 .597-.933A7.025 7.025 0 0 0 13.745 4H11.91zm-.468 2.5c-.138-.386-.295-.744-.468-1.068-.552-1.035-1.218-1.65-1.887-1.855V5H11.44z"/></svg>`;
     const fallbackSvgDataUri = `data:image/svg+xml,${encodeURIComponent(fallbackSvg)}`;
-    // --- Fin Fallback Icon SVG ---
 
     if (domain) {
         favicon.src = `https://www.google.com/s2/favicons?sz=32&domain_url=${encodeURIComponent(domain)}`;
     } else {
-        favicon.src = fallbackSvgDataUri; // Utiliser le fallback immédiatement si pas de domaine
+        favicon.src = fallbackSvgDataUri;
         favicon.style.filter = 'grayscale(1)';
     }
 
     favicon.alt = ''; // Decorative
     favicon.onerror = () => {
-        // --- Modification ---
-        // Utiliser le même SVG de secours en cas d'erreur de chargement du favicon Google
         favicon.src = fallbackSvgDataUri;
-        // --- Fin Modification ---
         favicon.style.filter = 'grayscale(1)';
         favicon.onerror = null;
     };

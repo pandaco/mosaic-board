@@ -1,14 +1,99 @@
 /* Styles specific to the Weather Widget */
 .weather-widget .widget-content {
-    /* Add specific styles if needed */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center; /* Centre verticalement quand peu de contenu */
     text-align: center;
+    padding: var(--spacing-unit);
+    position: relative; /* Pour positionner les états */
+    min-height: 100px; /* Hauteur minimale pour éviter le rétrécissement */
+}
+
+/* États: Affichage, Chargement, Erreur */
+.weather-widget .loading-state,
+.weather-widget .error-state {
+    /* position: absolute; /* Décommenter si superposition souhaitée */
+    /* top: 0; left: 0; */
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: calc(var(--spacing-unit) * 0.5);
+    padding: var(--spacing-unit); /* Ajoute du padding interne */
+}
+
+.weather-widget .loading-state p,
+.weather-widget .error-state p {
+    margin: 0;
+}
+.weather-widget .loading-state i,
+.weather-widget .error-state i {
+    font-size: 1.5rem;
+    color: var(--secondary-color);
+}
+.weather-widget .error-state i {
+    color: var(--danger-color);
+}
+
+
+/* Affichage principal des données météo */
+.weather-widget .weather-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: calc(var(--spacing-unit) * 0.5);
+    width: 100%;
+}
+
+.weather-widget .weather-main {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--spacing-unit) * 0.5);
+}
+
+.weather-widget .weather-icon {
+    font-size: 3rem; /* Taille de l'icône météo */
+    /* Ajoutez ici les styles pour votre bibliothèque d'icônes (ex: Weather Icons) */
+    /* Exemple pour Weather Icons: */
+    font-family: 'weathericons';
+    line-height: 1;
+    color: var(--primary-color); /* Couleur de l'icône */
+}
+
+.weather-widget .temperature {
+    font-size: 2.5rem;
+    font-weight: 500;
+}
+
+.weather-widget .unit {
+    font-size: 1.5rem;
+    font-weight: 300;
+    margin-left: -5px; /* Rapproche l'unité de la température */
+}
+
+.weather-widget .description {
     font-size: 1.1rem;
+    text-transform: capitalize; /* Met la première lettre en majuscule */
+    margin: 0;
 }
 
 .weather-widget .location {
-    font-weight: bold;
+    font-size: 0.9rem;
+    color: var(--secondary-color);
+    margin-top: calc(var(--spacing-unit) * 0.5);
 }
 
-/* Add styles for displaying actual weather data later */
-/* e.g., .weather-icon, .temperature, .description */
+/* Classe utilitaire pour cacher des éléments */
+.weather-widget .hidden {
+    display: none !important;
+}
+
+/* Styles pour les icônes Font Awesome utilisées dans les états */
+.weather-widget .fa-spinner,
+.weather-widget .fa-exclamation-triangle {
+    /* Styles spécifiques si nécessaire */
+}
 

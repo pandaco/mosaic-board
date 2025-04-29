@@ -11,7 +11,7 @@
     <header class="dashboard-header">
         <h1>Votre tableau de bord</h1>
         <button id="add-widget-button" class="button primary-button">
-            <i class="fas fa-plus"></i> Ajouter un Widget
+            <i class="fas fa-plus" aria-hidden="true"></i> Ajouter un Widget
         </button>
     </header>
 
@@ -20,23 +20,23 @@
             </div>
     </main>
 
-    <div id="add-widget-modal" class="modal hidden">
+    <div id="add-widget-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="add-widget-modal-title">
         <div class="modal-content">
             <button class="modal-close-button" aria-label="Fermer la modale">&times;</button>
-            <h2>Choisir un widget</h2>
-            <ul id="widget-selection-list">
-                <li data-widget-type="bookmarks" role="button" tabindex="0"><i class="fas fa-book-bookmark"></i> Favoris</li>
-                <li data-widget-type="weather" role="button" tabindex="0"><i class="fas fa-cloud-sun"></i> Météo</li>
-                <li data-widget-type="clock" role="button" tabindex="0"><i class="fas fa-clock"></i> Horloge</li>
+            <h2 id="add-widget-modal-title">Choisir un widget</h2>
+            <ul id="widget-selection-list" role="listbox">
+                <li data-widget-type="bookmarks" role="option" tabindex="0"><i class="fas fa-book-bookmark" aria-hidden="true"></i> Favoris</li>
+                <li data-widget-type="weather" role="option" tabindex="0"><i class="fas fa-cloud-sun" aria-hidden="true"></i> Météo</li>
+                <li data-widget-type="clock" role="option" tabindex="0"><i class="fas fa-clock" aria-hidden="true"></i> Horloge</li>
             </ul>
         </div>
     </div>
 
-    <div id="folder-selector-modal" class="modal hidden">
+    <div id="folder-selector-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="folder-selector-modal-title">
         <div class="modal-content">
              <button class="modal-close-button" aria-label="Fermer la modale">&times;</button>
-             <h2>Sélectionner un dossier par défaut</h2>
-             <div id="folder-tree-container">
+             <h2 id="folder-selector-modal-title">Sélectionner un dossier par défaut</h2>
+             <div id="folder-tree-container" aria-label="Arborescence des dossiers de favoris">
                  <p>Chargement des dossiers...</p>
              </div>
              <p>Dossier sélectionné : <span id="selected-folder-name">Aucun</span></p>
@@ -48,9 +48,9 @@
     </div>
 
     <template id="widget-settings-menu-template">
-        <div class="widget-settings-menu">
+        <div class="widget-settings-menu" role="menu">
             <ul>
-                <li><button class="settings-option delete-widget-button"><i class="fas fa-trash-alt"></i> Supprimer le widget</button></li>
+                <li role="presentation"><button class="settings-option delete-widget-button" role="menuitem"><i class="fas fa-trash-alt" aria-hidden="true"></i> Supprimer le widget</button></li>
             </ul>
         </div>
     </template>
@@ -58,9 +58,9 @@
     <template id="bookmarks-widget-template">
         <div class="grid-stack-item-content bookmark-widget">
             <div class="widget-header">
-                <button class="widget-back-button hidden" aria-label="Retour au dossier parent"><i class="fas fa-arrow-left"></i></button>
+                <button class="widget-back-button hidden" aria-label="Retour au dossier parent"><i class="fas fa-arrow-left" aria-hidden="true"></i></button>
                 <h3 class="widget-title" title="Cliquez pour naviguer">Favoris</h3>
-                <button class="widget-settings-button" aria-label="Paramètres du widget"><i class="fas fa-cog"></i></button>
+                <button class="widget-settings-button" aria-label="Paramètres du widget Favoris"><i class="fas fa-cog" aria-hidden="true"></i></button>
             </div>
             <div class="widget-content">
                 <p>Chargement...</p>
@@ -70,12 +70,26 @@
 
      <template id="weather-widget-template">
         <div class="grid-stack-item-content weather-widget">
-            <div class="widget-header">
+             <div class="widget-header">
                  <h3 class="widget-title">Météo</h3>
-                 <button class="widget-settings-button" aria-label="Paramètres du widget"><i class="fas fa-cog"></i></button>
+                 <button class="widget-settings-button" aria-label="Paramètres du widget Météo"><i class="fas fa-cog" aria-hidden="true"></i></button>
              </div>
-             <div class="widget-content">
-                 <p>Météo pour <span class="location">[Lieu]</span> (<span class="unit">[Unité]</span>) - Chargement...</p>
+             <div class="widget-content" aria-live="polite">
+                 <div class="loading-state">
+                     <p>Chargement de la météo pour <span class="location-name">[Lieu]</span>...</p>
+                     <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
+                 </div>
+                 <div class="weather-display hidden">
+                     <div class="weather-main">
+                         <i class="weather-icon wi" aria-hidden="true"></i> <span class="temperature">--</span><span class="unit">°C</span>
+                     </div>
+                     <p class="description">--</p>
+                     <p class="location">Météo à <span class="location-name">[Lieu]</span></p>
+                 </div>
+                 <div class="error-state hidden">
+                     <p class="error-message">Impossible de charger la météo.</p>
+                     <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                 </div>
              </div>
         </div>
     </template>
@@ -84,14 +98,14 @@
          <div class="grid-stack-item-content clock-widget">
              <div class="widget-header">
                  <h3 class="widget-title">Horloge</h3>
-                 <button class="widget-settings-button" aria-label="Paramètres du widget"><i class="fas fa-cog"></i></button>
+                 <button class="widget-settings-button" aria-label="Paramètres du widget Horloge"><i class="fas fa-cog" aria-hidden="true"></i></button>
              </div>
              <div class="widget-content">
                  <div class="clock-display" aria-live="polite">--:--:--</div>
                  <div class="stopwatch-controls hidden">
-                     <button disabled>Start</button>
-                     <button disabled>Stop</button>
-                     <button disabled>Reset</button>
+                     <button class="start-stopwatch" aria-label="Démarrer le chronomètre">Start</button>
+                     <button class="stop-stopwatch" disabled aria-label="Arrêter le chronomètre">Stop</button>
+                     <button class="reset-stopwatch" disabled aria-label="Réinitialiser le chronomètre">Reset</button>
                  </div>
                  <p class="alerts-info">Alertes : Aucune</p>
              </div>

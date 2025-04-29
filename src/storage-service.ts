@@ -2,7 +2,7 @@ import {
     StoredPreferences,
     BaseWidgetPreferences,
     WidgetType,
-    WidgetLayout // Added missing import
+    WidgetLayout
 } from './types';
 
 const LAYOUT_KEY = 'dashboardLayout';
@@ -31,22 +31,25 @@ function getPreferencesKey(widgetType: WidgetType): string {
  * Loads the dashboard layout from storage.
  * Returns an empty array if no layout is found or on error.
  */
-export async function loadLayout(): Promise<WidgetLayout[]> { // Return specific type WidgetLayout[]
+export async function loadLayout(): Promise<WidgetLayout[]> {
     try {
         const result = await chrome.storage.local.get(LAYOUT_KEY);
+        if (chrome.runtime.lastError) {
+            console.error("Error loading layout from storage:", chrome.runtime.lastError);
+            return [];
+        }
         if (result[LAYOUT_KEY] && Array.isArray(result[LAYOUT_KEY])) {
              const validLayout = result[LAYOUT_KEY].filter(item =>
                  item && typeof item.id !== 'undefined' && typeof item.type !== 'undefined'
-                 // Add more checks if needed (e.g., x, y, w, h are numbers)
              );
              if (validLayout.length !== result[LAYOUT_KEY].length) {
                  console.warn("Some invalid layout items were filtered out during load.");
              }
-             return validLayout as WidgetLayout[]; // Cast to specific type
+             return validLayout as WidgetLayout[];
         }
         return [];
     } catch (error) {
-        console.error("Error loading dashboard layout:", error);
+        console.error("Unexpected error loading dashboard layout:", error);
         return [];
     }
 }
@@ -54,12 +57,11 @@ export async function loadLayout(): Promise<WidgetLayout[]> { // Return specific
 /**
  * Saves the dashboard layout to storage.
  */
-export async function saveLayout(layout: WidgetLayout[]): Promise<void> { // Use specific type WidgetLayout[]
+export async function saveLayout(layout: WidgetLayout[]): Promise<void> {
     if (!Array.isArray(layout)) {
         console.error("Attempted to save invalid layout:", layout);
         return;
     }
-    // Optional: Add validation for each item in the layout array before saving
     const validLayout = layout.filter(item =>
          item && typeof item.id === 'string' && typeof item.type === 'string' &&
          typeof item.x === 'number' && typeof item.y === 'number' &&
@@ -71,8 +73,12 @@ export async function saveLayout(layout: WidgetLayout[]): Promise<void> { // Use
 
     try {
         await chrome.storage.local.set({ [LAYOUT_KEY]: validLayout });
+        if (chrome.runtime.lastError) {
+            console.error("Error saving layout to storage:", chrome.runtime.lastError);
+            // Handle potential quota exceeded errors, etc.
+        }
     } catch (error) {
-        console.error("Error saving dashboard layout:", error);
+        console.error("Unexpected error saving dashboard layout:", error);
     }
 }
 
@@ -86,10 +92,13 @@ export async function loadAllPreferences<T extends BaseWidgetPreferences>(
     const key = getPreferencesKey(widgetType);
     try {
         const result = await chrome.storage.local.get(key);
-        // Optional: Validate structure of result[key]
+         if (chrome.runtime.lastError) {
+            console.error(`Error loading ${widgetType} preferences:`, chrome.runtime.lastError);
+            return {};
+        }
         return result[key] || {};
     } catch (error) {
-        console.error(`Error loading ${widgetType} preferences:`, error);
+        console.error(`Unexpected error loading ${widgetType} preferences:`, error);
         return {};
     }
 }
@@ -109,15 +118,24 @@ export async function savePreferences<T extends BaseWidgetPreferences>(
     }
     const key = getPreferencesKey(widgetType);
     try {
+        // Use a transaction-like pattern: get, modify, set
         const result = await chrome.storage.local.get(key);
+         if (chrome.runtime.lastError) {
+             console.error(`Error getting existing ${widgetType} preferences before saving:`, chrome.runtime.lastError);
+             // Decide how to proceed: overwrite or abort? Aborting might be safer.
+             return;
+         }
         const existingPrefs = result[key] || {};
         const updatedPrefs = {
             ...existingPrefs,
             [widgetId]: prefs,
         };
         await chrome.storage.local.set({ [key]: updatedPrefs });
+         if (chrome.runtime.lastError) {
+            console.error(`Error saving ${widgetType} preferences for widget ${widgetId}:`, chrome.runtime.lastError);
+        }
     } catch (error) {
-        console.error(`Error saving ${widgetType} preferences for widget ${widgetId}:`, error);
+        console.error(`Unexpected error saving ${widgetType} preferences for widget ${widgetId}:`, error);
     }
 }
 
@@ -135,15 +153,22 @@ export async function deletePreferences(
     const key = getPreferencesKey(widgetType);
     try {
         const result = await chrome.storage.local.get(key);
-        const existingPrefs = result[key] || {}; // Provide default empty object
+         if (chrome.runtime.lastError) {
+             console.error(`Error getting existing ${widgetType} preferences before deleting:`, chrome.runtime.lastError);
+             return; // Abort deletion if cannot read existing data
+         }
+        const existingPrefs = result[key] || {};
         if (existingPrefs && typeof existingPrefs === 'object' && existingPrefs[widgetId]) {
             delete existingPrefs[widgetId];
             await chrome.storage.local.set({ [key]: existingPrefs });
+             if (chrome.runtime.lastError) {
+                 console.error(`Error setting ${widgetType} preferences after deleting key ${widgetId}:`, chrome.runtime.lastError);
+             }
         } else {
             console.warn(`Preferences not found for widget ${widgetId} of type ${widgetType} during delete, or storage structure invalid.`);
         }
     } catch (error) {
-        console.error(`Error deleting ${widgetType} preferences for widget ${widgetId}:`, error);
+        console.error(`Unexpected error deleting ${widgetType} preferences for widget ${widgetId}:`, error);
     }
 }
 
@@ -161,14 +186,14 @@ export async function getWidgetPreferences<T extends BaseWidgetPreferences>(
         return null;
     }
      try {
-        const allPrefs = await loadAllPreferences<T>(widgetType);
-        // Ensure allPrefs is an object before accessing property
+        const allPrefs = await loadAllPreferences<T>(widgetType); // This already handles storage errors
         if (allPrefs && typeof allPrefs === 'object') {
              return allPrefs[widgetId] || null;
         }
-        return null; // Return null if allPrefs is not a valid object
+        return null;
     } catch (error) {
-        // Error already logged in loadAllPreferences
+        // Catch unexpected errors during preference access, though loadAllPreferences should handle storage errors.
+        console.error(`Unexpected error getting preferences for widget ${widgetId}:`, error);
         return null;
     }
 }

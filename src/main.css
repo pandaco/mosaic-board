@@ -149,17 +149,14 @@ input, select {
     overflow: hidden; /* Garder hidden pour le contenu interne */
     display: flex;
     flex-direction: column;
+    /* height: 100%; /* Supprimé */
     color: var(--text-color);
     border: 1px solid var(--border-color);
     pointer-events: auto;
 }
 
 /* --- Modification --- */
-/* Supprimer complètement la règle qui masque les poignées pour les voir */
-/* .ui-resizable-handle {
-    display: none !important;
-    visibility: hidden !important;
-} */
+/* Suppression complète des règles pour .ui-resizable-handle */
 /* --- Fin Modification --- */
 
 
