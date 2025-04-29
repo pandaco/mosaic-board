@@ -8,6 +8,8 @@
       "storage"
     ],
     "host_permissions": [
+      "https://*/*",
+      "http://*/*"
     ],
     "chrome_url_overrides": {
       "newtab": "new-tab.html"

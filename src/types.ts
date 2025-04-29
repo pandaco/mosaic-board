@@ -22,7 +22,7 @@ export enum WidgetType {
     Bookmarks = 'bookmarks',
     Weather = 'weather',
     Clock = 'clock',
-    // Add other widget types here
+    WebsiteEmbed = 'website-embed' // Standardized name
 }
 
 /**
@@ -54,8 +54,19 @@ export interface WeatherWidgetPreferences extends BaseWidgetPreferences {
  */
 export interface ClockWidgetPreferences extends BaseWidgetPreferences {
     showStopwatch: boolean;
-    // alert settings could go here
 }
+
+/**
+ * Preferences specific to the Website Embed widget.
+ * Standardized name
+ */
+export interface WebsiteEmbedWidgetPreferences extends BaseWidgetPreferences {
+    url: string; // URL to embed
+    refreshInterval: number; // Interval in milliseconds (0 for no refresh)
+    offsetTop: number; // Offset from top in pixels
+    offsetLeft: number; // Offset from left in pixels
+}
+
 
 /**
  * Union type for all possible widget preferences.
@@ -63,7 +74,8 @@ export interface ClockWidgetPreferences extends BaseWidgetPreferences {
 export type WidgetPreferences =
     | BookmarkWidgetPreferences
     | WeatherWidgetPreferences
-    | ClockWidgetPreferences;
+    | ClockWidgetPreferences
+    | WebsiteEmbedWidgetPreferences; // Standardized name
 
 /**
  * Structure for storing widget preferences in chrome.storage.

@@ -1,0 +1,53 @@
+/* Styles specific to the Website Embed Widget */
+/* Corrected class name */
+.website-embed-widget .widget-content {
+    padding: 0; /* Remove padding to allow iframe to fill space */
+    display: flex; /* Ensure container fills space */
+    flex-direction: column;
+}
+
+/* Corrected class name */
+.website-embed-widget .iframe-container {
+    flex-grow: 1; /* Container takes available space */
+    overflow: hidden; /* Crucial for the offset via transform to work */
+    position: relative; /* For positioning error/placeholder messages */
+    background-color: #f0f0f0; /* Background shown while loading or if iframe fails */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Corrected class name */
+.website-embed-widget .iframe-container iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    /* Transform origin defaults to center, which is fine */
+    /* Transition can be added for smoother offset changes */
+    /* transition: transform 0.3s ease; */
+}
+
+/* Corrected class name */
+.website-embed-widget .iframe-container .placeholder-message,
+.website-embed-widget .iframe-container .error-message {
+    position: absolute; /* Position over the background */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    padding: var(--spacing-unit);
+    color: var(--secondary-color);
+    max-width: 90%;
+}
+
+/* Corrected class name */
+.website-embed-widget .iframe-container .error-message {
+    color: var(--danger-color);
+    font-weight: bold;
+}
+
+/* Utility class */
+/* Corrected class name */
+.website-embed-widget .hidden {
+    display: none !important;
+}

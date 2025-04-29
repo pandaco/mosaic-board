@@ -5,10 +5,12 @@ import {
     WidgetLayout
 } from './types';
 
+// Storage Keys
 const LAYOUT_KEY = 'dashboardLayout';
 const BOOKMARK_PREFS_KEY = 'bookmarkWidgetPrefs';
 const WEATHER_PREFS_KEY = 'weatherWidgetPrefs';
 const CLOCK_PREFS_KEY = 'clockWidgetPrefs';
+const WEBSITE_EMBED_PREFS_KEY = 'websiteEmbedWidgetPrefs'; // Standardized key name
 
 /**
  * Gets the storage key based on widget type.
@@ -20,6 +22,7 @@ function getPreferencesKey(widgetType: WidgetType): string {
         case WidgetType.Bookmarks: return BOOKMARK_PREFS_KEY;
         case WidgetType.Weather: return WEATHER_PREFS_KEY;
         case WidgetType.Clock: return CLOCK_PREFS_KEY;
+        case WidgetType.WebsiteEmbed: return WEBSITE_EMBED_PREFS_KEY; // Standardized case
         default:
              const _exhaustiveCheck: never = widgetType;
              console.error(`Unknown widget type for preferences: ${_exhaustiveCheck}`);
@@ -75,7 +78,6 @@ export async function saveLayout(layout: WidgetLayout[]): Promise<void> {
         await chrome.storage.local.set({ [LAYOUT_KEY]: validLayout });
         if (chrome.runtime.lastError) {
             console.error("Error saving layout to storage:", chrome.runtime.lastError);
-            // Handle potential quota exceeded errors, etc.
         }
     } catch (error) {
         console.error("Unexpected error saving dashboard layout:", error);
@@ -118,11 +120,9 @@ export async function savePreferences<T extends BaseWidgetPreferences>(
     }
     const key = getPreferencesKey(widgetType);
     try {
-        // Use a transaction-like pattern: get, modify, set
         const result = await chrome.storage.local.get(key);
          if (chrome.runtime.lastError) {
              console.error(`Error getting existing ${widgetType} preferences before saving:`, chrome.runtime.lastError);
-             // Decide how to proceed: overwrite or abort? Aborting might be safer.
              return;
          }
         const existingPrefs = result[key] || {};
@@ -155,7 +155,7 @@ export async function deletePreferences(
         const result = await chrome.storage.local.get(key);
          if (chrome.runtime.lastError) {
              console.error(`Error getting existing ${widgetType} preferences before deleting:`, chrome.runtime.lastError);
-             return; // Abort deletion if cannot read existing data
+             return;
          }
         const existingPrefs = result[key] || {};
         if (existingPrefs && typeof existingPrefs === 'object' && existingPrefs[widgetId]) {
@@ -186,13 +186,12 @@ export async function getWidgetPreferences<T extends BaseWidgetPreferences>(
         return null;
     }
      try {
-        const allPrefs = await loadAllPreferences<T>(widgetType); // This already handles storage errors
+        const allPrefs = await loadAllPreferences<T>(widgetType);
         if (allPrefs && typeof allPrefs === 'object') {
              return allPrefs[widgetId] || null;
         }
         return null;
     } catch (error) {
-        // Catch unexpected errors during preference access, though loadAllPreferences should handle storage errors.
         console.error(`Unexpected error getting preferences for widget ${widgetId}:`, error);
         return null;
     }

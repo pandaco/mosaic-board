@@ -4,33 +4,25 @@ import { loadLayout, saveLayout } from './storage-service';
 
 let grid: GridStack | null = null;
 
-// Define Gridstack widget options extending GridStackWidget
 interface GridStackWidgetWithElement extends GridStackWidget {
     el?: GridStackElement;
-    type?: WidgetType; // Add type here for easier saving
+    type?: WidgetType;
 }
 
 
 const gridOptions: GridStackOptions = {
     column: 12,
     margin: 10,
-    // --- Modification ---
-    // Essayez une hauteur fixe ou 'initial' au lieu de 'auto'
-    // cellHeight: 'auto', // Original
-    cellHeight: 80, // Option 1: Hauteur fixe en pixels (ajustez la valeur)
-    // cellHeight: 'initial', // Option 2: Laisse les éléments déterminer leur hauteur initiale
-    // --- Fin Modification ---
-    disableResize: false, // Resizing should be enabled
+    cellHeight: 80, // Keep fixed height for now, adjust if needed
+    disableResize: false,
     disableDrag: false,
     float: true,
-    alwaysShowResizeHandle: false, // Keep this false for final look, but handles might appear due to CSS change
+    alwaysShowResizeHandle: false,
     animate: true,
 };
 
 /**
  * Initializes the Gridstack instance.
- * @param containerSelector CSS selector for the grid container element.
- * @param onChange Callback function triggered when the grid changes (drag/resize).
  */
 export function initGrid(containerSelector: string, onChange: (items: GridStackWidget[]) => void): GridStack {
     grid = GridStack.init(gridOptions, containerSelector);
@@ -46,8 +38,6 @@ export function initGrid(containerSelector: string, onChange: (items: GridStackW
 
 /**
  * Adds a new widget element to the grid.
- * @param element The HTML element representing the widget container (grid-stack-item).
- * @param options Optional Gridstack widget options (x, y, w, h, id, etc.).
  */
 export function addWidgetToGrid(element: HTMLElement, options?: GridStackWidget): void {
     if (!grid) {
@@ -63,7 +53,6 @@ export function addWidgetToGrid(element: HTMLElement, options?: GridStackWidget)
 
 /**
  * Removes a widget element from the grid.
- * @param element The HTML element representing the widget.
  */
 export function removeWidgetFromGrid(element: HTMLElement): void {
     if (!grid) {
@@ -84,17 +73,30 @@ export function saveGridState(): void {
     const savedItems = grid.save(false) as GridStackWidgetWithElement[];
 
     const layout: WidgetLayout[] = savedItems.map((item: GridStackWidgetWithElement) => {
-        let widgetType: WidgetType = WidgetType.Bookmarks; // Default fallback
-        if (item.el && item.el instanceof HTMLElement && item.el.dataset.widgetType) {
-            widgetType = item.el.dataset.widgetType as WidgetType;
+        let widgetType: WidgetType | undefined = undefined;
+        let widgetElement: HTMLElement | undefined = undefined;
+
+        // Try to get the element directly from the saved item
+        if (item.el instanceof HTMLElement) {
+            widgetElement = item.el;
         } else {
-             console.warn(`Could not determine widget type for item ID: ${item.id}. Defaulting to Bookmarks.`);
-             const node = grid?.engine.nodes.find(n => n.id === item.id);
-             if (node?.el instanceof HTMLElement && node.el.dataset.widgetType) {
-                 widgetType = node.el.dataset.widgetType as WidgetType;
-                 console.log(`Recovered type for ${item.id}: ${widgetType}`);
-             }
+            // If not available, try finding the node in the engine
+            const node = grid?.engine.nodes.find(n => n.id === item.id);
+            if (node?.el instanceof HTMLElement) {
+                widgetElement = node.el;
+            }
         }
+
+        // Get type from dataset if element was found
+        if (widgetElement && widgetElement.dataset.widgetType) {
+             widgetType = widgetElement.dataset.widgetType as WidgetType;
+        } else {
+             console.warn(`Could not determine widget type for item ID: ${item.id}. Layout saving might be incomplete.`);
+             // Cannot reliably save without type, consider skipping or using a placeholder?
+             // For now, default to Bookmarks but log prominently.
+             widgetType = WidgetType.Bookmarks; // Fallback, but potentially incorrect
+        }
+
 
         return {
             x: item.x ?? 0,
@@ -102,9 +104,9 @@ export function saveGridState(): void {
             w: item.w ?? 4,
             h: item.h ?? 3,
             id: item.id ?? `error_id_${Date.now()}`,
-            type: widgetType
+            type: widgetType // Use determined or fallback type
         };
-    });
+    }).filter(item => item.id.startsWith('widget-')); // Filter out potential error IDs
 
     saveLayout(layout);
 }
@@ -112,7 +114,6 @@ export function saveGridState(): void {
 
 /**
  * Loads the layout from storage and applies it to the grid.
- * @param createWidget Async function to create the widget element based on layout data.
  */
 export async function loadGridState(createWidget: (item: WidgetLayout) => Promise<HTMLElement | null>): Promise<void> {
     if (!grid) {
@@ -124,8 +125,9 @@ export async function loadGridState(createWidget: (item: WidgetLayout) => Promis
     const layout = await loadLayout();
     if (layout && layout.length > 0) {
         const widgetPromises = layout.map(async (item) => {
-            if (!item || typeof item.id === 'undefined' || typeof item.type === 'undefined') {
-                console.warn("Skipping invalid layout item:", item);
+            // Ensure item has a valid type from the enum
+            if (!item || typeof item.id === 'undefined' || !Object.values(WidgetType).includes(item.type)) {
+                console.warn("Skipping invalid or unknown type layout item:", item);
                 return null;
             }
 

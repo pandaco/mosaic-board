@@ -1,19 +1,27 @@
 <!DOCTYPE html>
-<html lang="en"> <head>
+<html lang="en">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>New Dashboard</title> <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <title>MosaicBoard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link href="https://cdn.jsdelivr.net/npm/gridstack@10.2.0/dist/gridstack.min.css" rel="stylesheet"/>
     </head>
 <body>
     <header class="dashboard-header">
-        <h1>Your Dashboard</h1> <div class="header-actions">
-             <button id="export-settings-button" class="button secondary-button" title="Export current settings"> <i class="fas fa-file-export" aria-hidden="true"></i> Export </button>
-             <button id="import-settings-button" class="button secondary-button" title="Import settings from a JSON file"> <i class="fas fa-file-import" aria-hidden="true"></i> Import </button>
+        <h1>MosaicBoard</h1>
+        <div class="header-actions">
+             <button id="export-settings-button" class="button secondary-button" title="Export current settings">
+                 <i class="fas fa-file-export" aria-hidden="true"></i> Export
+             </button>
+             <button id="import-settings-button" class="button secondary-button" title="Import settings from a JSON file">
+                 <i class="fas fa-file-import" aria-hidden="true"></i> Import
+             </button>
              <input type="file" id="import-file-input" accept=".json" style="display: none;">
 
             <button id="add-widget-button" class="button primary-button">
-                <i class="fas fa-plus" aria-hidden="true"></i> Add Widget </button>
+                <i class="fas fa-plus" aria-hidden="true"></i> Add Widget
+            </button>
         </div>
     </header>
 
@@ -24,42 +32,63 @@
 
     <div id="add-widget-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="add-widget-modal-title">
         <div class="modal-content">
-            <button class="modal-close-button" aria-label="Close modal">&times;</button> <h2 id="add-widget-modal-title">Choose a widget</h2> <ul id="widget-selection-list" role="listbox">
-                <li data-widget-type="bookmarks" role="option" tabindex="0"><i class="fas fa-book-bookmark" aria-hidden="true"></i> Bookmarks</li> <li data-widget-type="weather" role="option" tabindex="0"><i class="fas fa-cloud-sun" aria-hidden="true"></i> Weather</li> <li data-widget-type="clock" role="option" tabindex="0"><i class="fas fa-clock" aria-hidden="true"></i> Clock</li> </ul>
+            <button class="modal-close-button" aria-label="Close modal">&times;</button>
+            <h2 id="add-widget-modal-title">Choose a widget</h2>
+            <ul id="widget-selection-list" role="listbox">
+                <li data-widget-type="bookmarks" role="option" tabindex="0"><i class="fas fa-book-bookmark" aria-hidden="true"></i> Bookmarks</li>
+                <li data-widget-type="weather" role="option" tabindex="0"><i class="fas fa-cloud-sun" aria-hidden="true"></i> Weather</li>
+                <li data-widget-type="clock" role="option" tabindex="0"><i class="fas fa-clock" aria-hidden="true"></i> Clock</li>
+                <li data-widget-type="website-embed" role="option" tabindex="0"><i class="fas fa-window-maximize" aria-hidden="true"></i> Website Embed</li>
+            </ul>
         </div>
     </div>
 
     <div id="folder-selector-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="folder-selector-modal-title">
         <div class="modal-content">
-             <button class="modal-close-button" aria-label="Close modal">&times;</button> <h2 id="folder-selector-modal-title">Select Default Folder</h2> <div id="folder-tree-container" aria-label="Bookmark folder tree"> <p>Loading folders...</p> </div>
-             <p>Selected folder: <span id="selected-folder-name">None</span></p> <div class="modal-actions">
-                 <button id="confirm-folder-button" class="button primary-button" disabled>Confirm</button> <button id="cancel-folder-button" class="button secondary-button">Cancel</button> </div>
+             <button class="modal-close-button" aria-label="Close modal">&times;</button>
+             <h2 id="folder-selector-modal-title">Select Default Folder</h2>
+             <div id="folder-tree-container" aria-label="Bookmark folder tree">
+                 <p>Loading folders...</p>
+             </div>
+             <p>Selected folder: <span id="selected-folder-name">None</span></p>
+             <div class="modal-actions">
+                 <button id="confirm-folder-button" class="button primary-button" disabled>Confirm</button>
+                 <button id="cancel-folder-button" class="button secondary-button">Cancel</button>
+             </div>
         </div>
     </div>
 
     <template id="widget-settings-menu-template">
         <div class="widget-settings-menu" role="menu">
             <ul>
-                <li role="presentation"><button class="settings-option delete-widget-button" role="menuitem"><i class="fas fa-trash-alt" aria-hidden="true"></i> Delete widget</button></li> </ul>
+                <li role="presentation"><button class="settings-option delete-widget-button" role="menuitem"><i class="fas fa-trash-alt" aria-hidden="true"></i> Delete widget</button></li>
+            </ul>
         </div>
     </template>
 
     <template id="bookmarks-widget-template">
         <div class="grid-stack-item-content bookmark-widget">
             <div class="widget-header">
-                <button class="widget-back-button hidden" aria-label="Back to parent folder"><i class="fas fa-arrow-left" aria-hidden="true"></i></button> <h3 class="widget-title" title="Click to navigate">Bookmarks</h3> <button class="widget-settings-button" aria-label="Bookmark widget settings"><i class="fas fa-cog" aria-hidden="true"></i></button> </div>
+                <button class="widget-back-button hidden" aria-label="Back to parent folder"><i class="fas fa-arrow-left" aria-hidden="true"></i></button>
+                <h3 class="widget-title" title="Click to navigate">Bookmarks</h3>
+                <button class="widget-settings-button" aria-label="Bookmark widget settings"><i class="fas fa-cog" aria-hidden="true"></i></button>
+            </div>
             <div class="widget-content">
-                <p>Loading...</p> </div>
+                <p>Loading...</p>
+            </div>
         </div>
     </template>
 
      <template id="weather-widget-template">
         <div class="grid-stack-item-content weather-widget">
              <div class="widget-header">
-                 <h3 class="widget-title">Weather</h3> <button class="widget-settings-button" aria-label="Weather widget settings"><i class="fas fa-cog" aria-hidden="true"></i></button> </div>
+                 <h3 class="widget-title">Weather</h3>
+                 <button class="widget-settings-button" aria-label="Weather widget settings"><i class="fas fa-cog" aria-hidden="true"></i></button>
+             </div>
              <div class="widget-content" aria-live="polite">
                  <div class="loading-state">
-                     <p>Loading weather for <span class="location-name">[Location]</span>...</p> <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
+                     <p>Loading weather for <span class="location-name">[Location]</span>...</p>
+                     <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
                  </div>
                  <div class="weather-display hidden">
                      <div class="weather-main">
@@ -67,9 +96,11 @@
                          <span class="temperature">--</span><span class="unit">°C</span>
                      </div>
                      <p class="description">--</p>
-                     <p class="location">Weather at <span class="location-name">[Location]</span></p> </div>
+                     <p class="location">Weather at <span class="location-name">[Location]</span></p>
+                 </div>
                  <div class="error-state hidden">
-                     <p class="error-message">Could not load weather.</p> <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                     <p class="error-message">Could not load weather.</p>
+                     <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
                  </div>
              </div>
         </div>
@@ -78,12 +109,33 @@
      <template id="clock-widget-template">
          <div class="grid-stack-item-content clock-widget">
              <div class="widget-header">
-                 <h3 class="widget-title">Clock</h3> <button class="widget-settings-button" aria-label="Clock widget settings"><i class="fas fa-cog" aria-hidden="true"></i></button> </div>
+                 <h3 class="widget-title">Clock</h3>
+                 <button class="widget-settings-button" aria-label="Clock widget settings"><i class="fas fa-cog" aria-hidden="true"></i></button>
+             </div>
              <div class="widget-content">
                  <div class="clock-display" aria-live="polite">--:--:--</div>
                  <div class="stopwatch-controls hidden">
-                     <button class="start-stopwatch" aria-label="Start stopwatch">Start</button> <button class="stop-stopwatch" disabled aria-label="Stop stopwatch">Stop</button> <button class="reset-stopwatch" disabled aria-label="Reset stopwatch">Reset</button> </div>
-                 <p class="alerts-info">Alerts: None</p> </div>
+                     <button class="start-stopwatch" aria-label="Start stopwatch">Start</button>
+                     <button class="stop-stopwatch" disabled aria-label="Stop stopwatch">Stop</button>
+                     <button class="reset-stopwatch" disabled aria-label="Reset stopwatch">Reset</button>
+                 </div>
+                 <p class="alerts-info">Alerts: None</p>
+             </div>
+         </div>
+     </template>
+
+     <template id="website-embed-widget-template">
+         <div class="grid-stack-item-content website-embed-widget">
+             <div class="widget-header">
+                 <h3 class="widget-title">Website Embed</h3>
+                 <button class="widget-settings-button" aria-label="Website embed widget settings"><i class="fas fa-cog" aria-hidden="true"></i></button>
+             </div>
+             <div class="widget-content">
+                 <div class="iframe-container">
+                     <p class="placeholder-message">Configure URL in settings.</p>
+                     <p class="error-message hidden"></p>
+                 </div>
+             </div>
          </div>
      </template>
 
