@@ -10,10 +10,20 @@
 <body>
     <header class="dashboard-header">
         <h1>Votre tableau de bord</h1>
-        <button id="add-widget-button" class="button primary-button">
-            <i class="fas fa-plus" aria-hidden="true"></i> Ajouter un Widget
-        </button>
-    </header>
+        <div class="header-actions">
+             <button id="export-settings-button" class="button secondary-button" title="Exporter les paramètres actuels">
+                 <i class="fas fa-file-export" aria-hidden="true"></i> Exporter
+             </button>
+             <button id="import-settings-button" class="button secondary-button" title="Importer des paramètres depuis un fichier JSON">
+                 <i class="fas fa-file-import" aria-hidden="true"></i> Importer
+             </button>
+             <input type="file" id="import-file-input" accept=".json" style="display: none;">
+
+            <button id="add-widget-button" class="button primary-button">
+                <i class="fas fa-plus" aria-hidden="true"></i> Ajouter un Widget
+            </button>
+        </div>
+        </header>
 
     <main>
         <div id="grid-container" class="grid-stack">
@@ -81,7 +91,7 @@
                  </div>
                  <div class="weather-display hidden">
                      <div class="weather-main">
-                         <i class="weather-icon wi" aria-hidden="true"></i> <span class="temperature">--</span><span class="unit">°C</span>
+                         <i class="weather-icon"></i> <span class="temperature">--</span><span class="unit">°C</span>
                      </div>
                      <p class="description">--</p>
                      <p class="location">Météo à <span class="location-name">[Lieu]</span></p>

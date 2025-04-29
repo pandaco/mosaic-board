@@ -14,33 +14,34 @@ interface MockWeatherData {
 async function fetchWeatherData(location: string, unit: 'metric' | 'imperial'): Promise<MockWeatherData> {
     console.log(`Simulating weather fetch for ${location} (${unit})`);
     // Simule une latence réseau
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 800)); // Réduit la latence simulée
 
     // Simule une réponse - varie en fonction du lieu pour le test
-    // Dans une vraie application, ce serait un appel fetch() vers une API
     if (location.toLowerCase().includes('erreur') || location.trim() === '') {
         throw new Error("Lieu invalide ou erreur simulée.");
     }
 
     let temp: number, desc: string, icon: string;
     const isMetric = unit === 'metric';
+    const effectiveLocation = location.toLowerCase(); // Utilise une version en minuscule pour la comparaison
 
-    switch (location.toLowerCase()) {
-        case 'lille':
-            temp = isMetric ? 15 : 59;
-            desc = "Partiellement nuageux";
-            icon = "02d"; // Code OpenWeatherMap pour 'few clouds day'
-            break;
-        case 'paris':
-            temp = isMetric ? 18 : 64;
-            desc = "Ensoleillé";
-            icon = "01d"; // Code OpenWeatherMap pour 'clear sky day'
-            break;
-        default:
-            temp = isMetric ? 12 : 54;
-            desc = "Averses légères";
-            icon = "09d"; // Code OpenWeatherMap pour 'shower rain day'
-            break;
+    // Ajoute plus de variété et une gestion par défaut
+    if (effectiveLocation.includes('lille')) {
+        temp = isMetric ? 15 : 59;
+        desc = "Partiellement nuageux";
+        icon = "02d";
+    } else if (effectiveLocation.includes('paris')) {
+        temp = isMetric ? 18 : 64;
+        desc = "Ensoleillé";
+        icon = "01d";
+    } else if (effectiveLocation.includes('london') || effectiveLocation.includes('londres')) {
+        temp = isMetric ? 11 : 52;
+        desc = "Pluie légère";
+        icon = "10d";
+    } else { // Cas par défaut
+        temp = isMetric ? 12 : 54;
+        desc = "Peu nuageux";
+        icon = "02d"; // Utilise une icône par défaut
     }
 
     return {
@@ -65,36 +66,60 @@ function updateWeatherUI(element: HTMLElement, data: MockWeatherData): void {
     const tempSpan = element.querySelector<HTMLElement>('.temperature');
     const unitSpan = element.querySelector<HTMLElement>('.unit');
     const descP = element.querySelector<HTMLElement>('.description');
-    const locationSpans = element.querySelectorAll<HTMLElement>('.location-name'); // Select all spans with this class
-    const iconI = element.querySelector<HTMLElement>('.weather-icon');
+    const locationSpans = element.querySelectorAll<HTMLElement>('.location-name');
+    const iconElement = element.querySelector<HTMLElement>('.weather-icon'); // Peut être <i> ou <img>
 
-    if (!displayDiv || !loadingDiv || !errorDiv || !tempSpan || !unitSpan || !descP || !locationSpans.length || !iconI) {
+    if (!displayDiv || !loadingDiv || !errorDiv || !tempSpan || !unitSpan || !descP || !locationSpans.length || !iconElement) {
         console.error("Weather widget UI elements not found.");
-        if (errorDiv) { // Show error if elements are missing
+        if (errorDiv) {
              showErrorState(element, "Erreur interne de l'interface du widget.");
         }
         return;
     }
 
-    // Cache les états de chargement et d'erreur, affiche les données
     loadingDiv.classList.add('hidden');
     errorDiv.classList.add('hidden');
     displayDiv.classList.remove('hidden');
 
-    // Met à jour les éléments
-    tempSpan.textContent = data.temperature.toFixed(0); // Arrondi à l'entier
+    tempSpan.textContent = data.temperature.toFixed(0);
     unitSpan.textContent = data.unit === 'metric' ? '°C' : '°F';
     descP.textContent = data.description;
-    locationSpans.forEach(span => span.textContent = data.locationName); // Update all location name spans
+    locationSpans.forEach(span => span.textContent = data.locationName);
 
-    // Met à jour l'icône (nécessite une bibliothèque d'icônes comme Weather Icons ou mapping manuel)
-    // Ici, on ajoute juste la classe basée sur le code simulé
-    // Pour utiliser Weather Icons (https://erikflowers.github.io/weather-icons/),
-    // il faudrait inclure leur CSS et mapper les codes OpenWeatherMap
-    // Exemple de mapping simple (non exhaustif)
+    // --- Affichage de l'icône ---
+    // Option 1: Utiliser une bibliothèque d'icônes (ex: Weather Icons) via classe CSS
+    // Assurez-vous d'avoir inclus le CSS de la bibliothèque dans new-tab.html
+    // et que mapIconCodeToClassName est défini et fonctionnel.
+    /*
     const iconClassName = mapIconCodeToClassName(data.iconCode);
-    iconI.className = `weather-icon wi ${iconClassName}`; // Assurez-vous d'avoir inclus les CSS de Weather Icons
-    iconI.setAttribute('aria-label', data.description); // Label pour accessibilité
+    iconElement.className = `weather-icon wi ${iconClassName}`; // Assure que c'est un <i> ou <span>
+    iconElement.innerHTML = ''; // Vide le contenu précédent
+    iconElement.setAttribute('aria-label', data.description);
+    */
+
+    // Option 2: Utiliser les icônes PNG d'OpenWeatherMap (même si l'API n'est pas appelée)
+    // Cela nécessite que la CSP autorise openweathermap.org pour img-src
+    const iconUrl = `https://openweathermap.org/img/wn/${data.iconCode}@2x.png`;
+    iconElement.className = 'weather-icon'; // Assure que c'est un <i> ou <span>
+    iconElement.innerHTML = `<img src="${iconUrl}" alt="${data.description}" width="50" height="50">`;
+
+    // Option 3: Utiliser une icône Font Awesome basée sur la description (simpliste)
+    /*
+    let faIconClass = 'fa-question-circle'; // Icône par défaut
+    if (data.description.toLowerCase().includes('soleil') || data.description.toLowerCase().includes('clair')) {
+        faIconClass = 'fa-sun';
+    } else if (data.description.toLowerCase().includes('nuage')) {
+        faIconClass = 'fa-cloud';
+    } else if (data.description.toLowerCase().includes('pluie') || data.description.toLowerCase().includes('averse')) {
+        faIconClass = 'fa-cloud-showers-heavy';
+    } else if (data.description.toLowerCase().includes('neige')) {
+        faIconClass = 'fa-snowflake';
+    } // etc.
+    iconElement.className = `weather-icon fas ${faIconClass}`; // Assure que c'est un <i>
+    iconElement.innerHTML = '';
+    iconElement.setAttribute('aria-label', data.description);
+    */
+
 }
 
 /**
@@ -104,7 +129,7 @@ function showLoadingState(element: HTMLElement, location: string): void {
     const displayDiv = element.querySelector<HTMLElement>('.weather-display');
     const loadingDiv = element.querySelector<HTMLElement>('.loading-state');
     const errorDiv = element.querySelector<HTMLElement>('.error-state');
-    const locationSpan = loadingDiv?.querySelector<HTMLElement>('.location-name'); // Target span inside loading div
+    const locationSpan = loadingDiv?.querySelector<HTMLElement>('.location-name');
 
     if (displayDiv && loadingDiv && errorDiv) {
         displayDiv.classList.add('hidden');
@@ -130,81 +155,69 @@ function showErrorState(element: HTMLElement, message: string): void {
         loadingDiv.classList.add('hidden');
         errorDiv.classList.remove('hidden');
         errorMessageP.textContent = message || "Une erreur est survenue.";
+    } else {
+        console.error("Impossible d'afficher l'état d'erreur, éléments UI manquants.");
     }
 }
 
 
 /**
- * Fonction principale pour charger et afficher la météo.
+ * Fonction principale pour charger et afficher la météo (version simulée).
  */
 async function loadAndDisplayWeather(widgetId: string, element: HTMLElement, prefs: WeatherWidgetPreferences): Promise<void> {
-    const location = prefs.location || 'Lille'; // Utilise Lille comme défaut si non défini
+    const location = prefs.location || 'Lille'; // Utilise Lille comme défaut
     const unit = prefs.unit || 'metric';
 
     showLoadingState(element, location);
 
     try {
+        // Appel de la fonction simulée
         const weatherData = await fetchWeatherData(location, unit);
         updateWeatherUI(element, weatherData);
     } catch (error: any) {
-        console.error(`Error fetching weather for ${widgetId}:`, error);
-        showErrorState(element, error.message || "Impossible de récupérer les données météo.");
+        console.error(`Error simulating weather fetch for ${widgetId}:`, error);
+        showErrorState(element, error.message || "Impossible de charger la météo simulée.");
     }
 }
 
 
 /**
  * Initializes the weather widget instance.
- * @param widgetId The unique ID of the widget instance.
- * @param element The widget's content HTMLElement (.grid-stack-item-content).
- * @param prefs The initial preferences for this widget instance.
  */
 export function initWeatherWidget(widgetId: string, element: HTMLElement, prefs: WeatherWidgetPreferences): void {
-    console.log(`Initializing Weather Widget ${widgetId} with prefs:`, prefs);
+    console.log(`Initializing Weather Widget ${widgetId} with prefs (using MOCK data):`, prefs);
     loadAndDisplayWeather(widgetId, element, prefs);
 }
 
 /**
  * Updates the weather widget display based on new preferences.
- * @param widgetId The unique ID of the widget instance.
- * @param prefs The updated preferences.
  */
 export function updateWeatherWidgetPreferences(widgetId: string, prefs: WeatherWidgetPreferences): void {
-    console.log(`Updating Weather Widget ${widgetId} with prefs:`, prefs);
+    console.log(`Updating Weather Widget ${widgetId} with prefs (using MOCK data):`, prefs);
     const widgetContainer = document.getElementById(widgetId);
     const widgetElement = widgetContainer?.querySelector<HTMLElement>('.grid-stack-item-content');
 
     if (widgetElement) {
-        loadAndDisplayWeather(widgetId, widgetElement, prefs); // Recharge les données avec les nouvelles préférences
+        loadAndDisplayWeather(widgetId, widgetElement, prefs); // Recharge les données simulées
     } else {
          console.warn(`Could not find content element for weather widget ${widgetId} during preference update.`);
     }
 }
 
-/**
- * Mappe un code d'icône (type OpenWeatherMap) vers une classe CSS (type Weather Icons).
- * Ceci est un exemple basique, une vraie application nécessiterait un mapping plus complet.
- */
+// --- Optionnel: Mapping pour bibliothèque d'icônes ---
+/*
 function mapIconCodeToClassName(code: string): string {
     const mapping: { [key: string]: string } = {
-        '01d': 'wi-day-sunny',
-        '01n': 'wi-night-clear',
-        '02d': 'wi-day-cloudy',
-        '02n': 'wi-night-alt-cloudy',
-        '03d': 'wi-cloud',
-        '03n': 'wi-cloud',
-        '04d': 'wi-cloudy',
-        '04n': 'wi-cloudy',
-        '09d': 'wi-showers',
-        '09n': 'wi-showers',
-        '10d': 'wi-day-rain',
-        '10n': 'wi-night-alt-rain',
-        '11d': 'wi-thunderstorm',
-        '11n': 'wi-thunderstorm',
-        '13d': 'wi-snow',
-        '13n': 'wi-snow',
-        '50d': 'wi-fog',
-        '50n': 'wi-fog',
+        '01d': 'wi-day-sunny', '01n': 'wi-night-clear',
+        '02d': 'wi-day-cloudy', '02n': 'wi-night-alt-cloudy',
+        '03d': 'wi-cloud', '03n': 'wi-cloud',
+        '04d': 'wi-cloudy', '04n': 'wi-cloudy',
+        '09d': 'wi-showers', '09n': 'wi-showers',
+        '10d': 'wi-day-rain', '10n': 'wi-night-alt-rain',
+        '11d': 'wi-thunderstorm', '11n': 'wi-thunderstorm',
+        '13d': 'wi-snow', '13n': 'wi-snow',
+        '50d': 'wi-fog', '50n': 'wi-fog',
     };
-    return mapping[code] || 'wi-na'; // Retourne une classe par défaut si code inconnu
+    return mapping[code] || 'wi-na'; // Icône "non disponible"
 }
+*/

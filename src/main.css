@@ -79,12 +79,24 @@ input, select {
     margin-bottom: var(--spacing-unit);
     padding-bottom: var(--spacing-unit);
     border-bottom: 1px solid var(--border-color);
+    gap: var(--spacing-unit); /* Ajoute de l'espace entre le titre et les actions */
 }
 
 .dashboard-header h1 {
     font-size: 1.75rem;
     margin-bottom: 0;
+    white-space: nowrap; /* Empêche le titre de passer à la ligne facilement */
 }
+
+/* --- Ajout Style Header Actions --- */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--spacing-unit) * 0.5); /* Espace entre les boutons */
+    flex-shrink: 0; /* Empêche le groupe de boutons de rétrécir */
+}
+/* --- Fin Ajout --- */
+
 
 /* Boutons */
 .button {
@@ -111,14 +123,16 @@ input, select {
 }
 
 .secondary-button {
-    color: #fff;
-    background-color: var(--secondary-color);
-    border-color: var(--secondary-color);
+    /* Styles pour les boutons secondaires (Import/Export) */
+    color: var(--primary-color);
+    background-color: transparent;
+    border-color: var(--primary-color);
 }
 
 .secondary-button:hover {
-    background-color: #5a6268;
-    border-color: #545b62;
+    color: #fff;
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
 }
 
 .danger-button {
@@ -146,7 +160,7 @@ input, select {
     background-color: var(--widget-background);
     border-radius: var(--border-radius);
     box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
-    overflow: hidden; /* Garder hidden pour le contenu interne */
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     /* height: 100%; /* Supprimé */
