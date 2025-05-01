@@ -2,12 +2,12 @@
  * Represents the layout information for a single widget in Gridstack.
  */
 export interface WidgetLayout {
-    id: string; // Unique identifier for the widget instance
+    id: string;
     x: number;
     y: number;
-    w: number; // width in grid units
-    h: number; // height in grid units
-    type: WidgetType; // Type of the widget ('bookmarks', 'weather', etc.)
+    w: number;
+    h: number;
+    type: WidgetType;
 }
 
 /**
@@ -22,14 +22,13 @@ export enum WidgetType {
     Bookmarks = 'bookmarks',
     Weather = 'weather',
     Clock = 'clock',
-    WebsiteEmbed = 'website-embed' // Standardized name
+    Website = 'website' // Renamed from WebsiteEmbed
 }
 
 /**
- * Base interface for widget preferences. Each widget type will extend this.
+ * Base interface for widget preferences.
  */
 export interface BaseWidgetPreferences {
-    // Common preferences can go here if any
 }
 
 /**
@@ -38,7 +37,7 @@ export interface BaseWidgetPreferences {
 export interface BookmarkWidgetPreferences extends BaseWidgetPreferences {
     view: 'list' | 'grid';
     showCount: boolean;
-    defaultFolderId: string | null; // ID of the default folder to display
+    defaultFolderId: string | null;
 }
 
 /**
@@ -57,14 +56,14 @@ export interface ClockWidgetPreferences extends BaseWidgetPreferences {
 }
 
 /**
- * Preferences specific to the Website Embed widget.
- * Standardized name
+ * Preferences specific to the Website widget.
+ * Renamed from WebsiteEmbedWidgetPreferences
  */
-export interface WebsiteEmbedWidgetPreferences extends BaseWidgetPreferences {
-    url: string; // URL to embed
-    refreshInterval: number; // Interval in milliseconds (0 for no refresh)
-    offsetTop: number; // Offset from top in pixels
-    offsetLeft: number; // Offset from left in pixels
+export interface WebsiteWidgetPreferences extends BaseWidgetPreferences {
+    url: string;
+    refreshInterval: number;
+    offsetTop: number;
+    offsetLeft: number;
 }
 
 
@@ -75,11 +74,10 @@ export type WidgetPreferences =
     | BookmarkWidgetPreferences
     | WeatherWidgetPreferences
     | ClockWidgetPreferences
-    | WebsiteEmbedWidgetPreferences; // Standardized name
+    | WebsiteWidgetPreferences; // Renamed
 
 /**
  * Structure for storing widget preferences in chrome.storage.
- * Uses a Record where the key is the widget instance ID.
  */
 export type StoredPreferences<T extends BaseWidgetPreferences> = Record<string, T>;
 

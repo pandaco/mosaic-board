@@ -1,4 +1,4 @@
-import './weather-widget.css'; // Import specific styles
+import './weather.widget.css'; // Import specific styles
 import { WeatherWidgetPreferences } from '../../types';
 
 // --- Weather Data Simulation ---

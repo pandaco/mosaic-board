@@ -1,4 +1,4 @@
-import './clock-widget.css'; // Import specific styles
+import './clock.widget.css'; // Import specific styles
 import { ClockWidgetPreferences } from '../../types';
 
 // Use maps to store interval IDs per widget instance

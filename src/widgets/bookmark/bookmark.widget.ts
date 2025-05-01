@@ -1,4 +1,4 @@
-import './bookmark-widget.css'; // Import specific styles
+import './bookmark.widget.css'; // Import specific styles
 import { BookmarkWidgetPreferences, BookmarkTreeNode } from '../../types';
 
 interface NavigationState {

@@ -10,19 +10,17 @@ const LAYOUT_KEY = 'dashboardLayout';
 const BOOKMARK_PREFS_KEY = 'bookmarkWidgetPrefs';
 const WEATHER_PREFS_KEY = 'weatherWidgetPrefs';
 const CLOCK_PREFS_KEY = 'clockWidgetPrefs';
-const WEBSITE_EMBED_PREFS_KEY = 'websiteEmbedWidgetPrefs'; // Standardized key name
+const WEBSITE_PREFS_KEY = 'websiteWidgetPrefs'; // Renamed key
 
 /**
  * Gets the storage key based on widget type.
- * @param widgetType The type of the widget.
- * @returns The corresponding storage key.
  */
 function getPreferencesKey(widgetType: WidgetType): string {
     switch (widgetType) {
         case WidgetType.Bookmarks: return BOOKMARK_PREFS_KEY;
         case WidgetType.Weather: return WEATHER_PREFS_KEY;
         case WidgetType.Clock: return CLOCK_PREFS_KEY;
-        case WidgetType.WebsiteEmbed: return WEBSITE_EMBED_PREFS_KEY; // Standardized case
+        case WidgetType.Website: return WEBSITE_PREFS_KEY; // Renamed case
         default:
              const _exhaustiveCheck: never = widgetType;
              console.error(`Unknown widget type for preferences: ${_exhaustiveCheck}`);
@@ -32,7 +30,6 @@ function getPreferencesKey(widgetType: WidgetType): string {
 
 /**
  * Loads the dashboard layout from storage.
- * Returns an empty array if no layout is found or on error.
  */
 export async function loadLayout(): Promise<WidgetLayout[]> {
     try {
@@ -86,7 +83,6 @@ export async function saveLayout(layout: WidgetLayout[]): Promise<void> {
 
 /**
  * Loads all preferences for a specific widget type from storage.
- * Returns an empty object if no preferences are found or on error.
  */
 export async function loadAllPreferences<T extends BaseWidgetPreferences>(
     widgetType: WidgetType
@@ -107,7 +103,6 @@ export async function loadAllPreferences<T extends BaseWidgetPreferences>(
 
 /**
  * Saves the preferences for a specific widget instance.
- * It merges the new preferences with existing ones for that type.
  */
 export async function savePreferences<T extends BaseWidgetPreferences>(
     widgetId: string,
@@ -175,7 +170,6 @@ export async function deletePreferences(
 
 /**
  * Gets the preferences for a single widget instance.
- * Returns null if not found or on error.
  */
 export async function getWidgetPreferences<T extends BaseWidgetPreferences>(
     widgetId: string,

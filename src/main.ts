@@ -1,16 +1,22 @@
-import './main.css'; // Import global styles
-import 'gridstack/dist/gridstack.min.css'; // Import Gridstack styles
+// Updated CSS imports
+import './styles/base.css';
+import './styles/buttons.css';
+import './styles/grid.css';
+import './styles/widgets.css'; // Renamed from widgets-common.css
+import './styles/modals.css';
+import './styles/settings.css'; // Renamed from settings-menu.css
+// --- End Update ---
+import 'gridstack/dist/gridstack.min.css';
 import { initGrid, saveGridState } from './grid';
 import { addWidget, loadWidgets, closeFolderSelectorModal, confirmFolderSelection } from './widget-manager';
 import { WidgetType } from './types';
 
-// Storage keys used by the extension
 const STORAGE_KEYS = [
     'dashboardLayout',
     'bookmarkWidgetPrefs',
     'weatherWidgetPrefs',
     'clockWidgetPrefs',
-    'websiteEmbedWidgetPrefs' // Added key
+    'websiteEmbedWidgetPrefs'
 ];
 
 /**
@@ -76,8 +82,6 @@ function handleImportFile(event: Event): void {
                 console.warn("Imported JSON file does not seem to contain valid Mosaic Board settings.", importedSettings);
             }
 
-            // await chrome.storage.local.clear(); // Optional: Clear before import
-
             await chrome.storage.local.set(importedSettings);
             if (chrome.runtime.lastError) {
                  console.error("Error saving imported settings:", chrome.runtime.lastError);
@@ -111,7 +115,46 @@ function handleImportFile(event: Event): void {
     reader.readAsText(file);
 }
 
+// --- Modal Handling with ESC Key ---
+let activeModalElement: HTMLElement | null = null;
 
+const handleModalEscape = (event: KeyboardEvent) => {
+    if (event.key === 'Escape' && activeModalElement) {
+        closeActiveModal();
+    }
+};
+
+function openModal(modalElement: HTMLElement | null) {
+    if (!modalElement) return;
+    modalElement.classList.remove('hidden');
+    activeModalElement = modalElement;
+    document.addEventListener('keydown', handleModalEscape, { capture: true });
+}
+
+function closeActiveModal() {
+    if (!activeModalElement) return;
+
+    // Call specific close function for folder modal if needed
+    if (activeModalElement.id === 'folder-selector-modal') {
+         // Ensure the specific close function exists and call it
+         if (typeof closeFolderSelectorModal === 'function') {
+             closeFolderSelectorModal(); // This should handle setting activeModalElement to null
+         } else {
+              // Fallback if specific function not found (should not happen ideally)
+              activeModalElement.classList.add('hidden');
+              document.removeEventListener('keydown', handleModalEscape, { capture: true });
+              activeModalElement = null;
+         }
+    } else {
+        // Generic close for other modals
+        activeModalElement.classList.add('hidden');
+        document.removeEventListener('keydown', handleModalEscape, { capture: true });
+        activeModalElement = null;
+    }
+}
+
+
+// --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
     console.log("Mosaic Board Initializing...");
 
@@ -128,16 +171,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const widgetSelectionList = document.getElementById('widget-selection-list');
 
     addWidgetButton?.addEventListener('click', () => {
-        addWidgetModal?.classList.remove('hidden');
+        openModal(addWidgetModal);
     });
 
-    closeAddModalButton?.addEventListener('click', () => {
-        addWidgetModal?.classList.add('hidden');
-    });
+    closeAddModalButton?.addEventListener('click', closeActiveModal);
 
     addWidgetModal?.addEventListener('click', (event) => {
         if (event.target === addWidgetModal) {
-            addWidgetModal.classList.add('hidden');
+            closeActiveModal();
         }
     });
 
@@ -147,15 +188,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (listItem && listItem.dataset.widgetType) {
             const type = listItem.dataset.widgetType as WidgetType;
             addWidget(type);
-            addWidgetModal?.classList.add('hidden');
+            closeActiveModal();
         }
     });
 
+
+    // Folder Selector Modal Buttons (Closing handled by specific functions or background click)
     const folderSelectorModal = document.getElementById('folder-selector-modal');
     const closeFolderModalButton = folderSelectorModal?.querySelector('.modal-close-button');
     const cancelFolderButton = document.getElementById('cancel-folder-button');
     const confirmFolderButton = document.getElementById('confirm-folder-button');
 
+    // We still need specific handlers for Cancel/Confirm as they do more than just close
     closeFolderModalButton?.addEventListener('click', closeFolderSelectorModal);
     cancelFolderButton?.addEventListener('click', closeFolderSelectorModal);
     confirmFolderButton?.addEventListener('click', confirmFolderSelection);

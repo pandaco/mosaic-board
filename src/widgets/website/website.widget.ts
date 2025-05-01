@@ -1,18 +1,17 @@
-// Corrected import path
-import './website-embed-widget.css';
-import { WebsiteEmbedWidgetPreferences } from '../../types';
+// Renamed import path and type name
+import './website.widget.css';
+import { WebsiteWidgetPreferences } from '../../types';
 
-// Store interval IDs per widget instance
 const refreshIntervalMap = new Map<string, number>();
 
-/** Helper to display error messages within the widget content area */
+/** Helper to display error messages */
 function displayEmbedError(element: HTMLElement, message: string): void {
     const errorElement = element.querySelector<HTMLElement>('.error-message');
-    const iframeContainer = element.querySelector<HTMLElement>('.iframe-container iframe'); // Find existing iframe if any
+    const iframeContainer = element.querySelector<HTMLElement>('.iframe-container iframe');
     const placeholder = element.querySelector<HTMLElement>('.placeholder-message');
 
-    if (placeholder) placeholder.classList.add('hidden'); // Hide placeholder
-    if (iframeContainer) iframeContainer.style.display = 'none'; // Hide iframe
+    if (placeholder) placeholder.classList.add('hidden');
+    if (iframeContainer) iframeContainer.style.display = 'none';
 
     if (errorElement) {
         errorElement.textContent = message || 'An error occurred.';
@@ -39,11 +38,11 @@ function showIframe(element: HTMLElement): void {
 
     if (placeholder) placeholder.classList.add('hidden');
     if (errorElement) errorElement.classList.add('hidden');
-    if (iframeContainer) iframeContainer.style.display = 'block'; // Show iframe
+    if (iframeContainer) iframeContainer.style.display = 'block';
 }
 
 
-/** Cleans up the refresh interval for a specific widget */
+/** Cleans up the refresh interval */
 function cleanupRefreshInterval(widgetId: string): void {
      if (refreshIntervalMap.has(widgetId)) {
         clearInterval(refreshIntervalMap.get(widgetId));
@@ -58,7 +57,7 @@ function applyOffset(iframe: HTMLIFrameElement, top: number, left: number) {
 }
 
 /** Loads or reloads the iframe content */
-function loadIframe(widgetId: string, element: HTMLElement, prefs: WebsiteEmbedWidgetPreferences): void {
+function loadIframe(widgetId: string, element: HTMLElement, prefs: WebsiteWidgetPreferences): void {
     const iframeContainer = element.querySelector<HTMLElement>('.iframe-container');
     if (!iframeContainer) return;
 
@@ -97,16 +96,12 @@ function loadIframe(widgetId: string, element: HTMLElement, prefs: WebsiteEmbedW
      });
 
     iframeContainer.appendChild(iframe);
-    // Don't show immediately, wait for load event (or error)
-    // showIframe(element);
 
 
     if (prefs.refreshInterval > 0) {
         const intervalId = setInterval(() => {
             console.log(`Refreshing iframe for ${widgetId}: ${prefs.url}`);
-            iframe.src = iframe.src; // Simple reload by resetting src
-            // Re-apply offset might not be necessary unless the page itself resets scroll on reload
-            // applyOffset(iframe, prefs.offsetTop, prefs.offsetLeft);
+            iframe.src = iframe.src;
         }, prefs.refreshInterval);
         refreshIntervalMap.set(widgetId, intervalId);
     }
@@ -114,35 +109,35 @@ function loadIframe(widgetId: string, element: HTMLElement, prefs: WebsiteEmbedW
 
 
 /**
- * Initializes the Website Embed widget instance.
+ * Initializes the Website widget instance.
+ * Renamed function
  */
- // Corrected function name
-export function initWebsiteEmbedWidget(widgetId: string, element: HTMLElement, prefs: WebsiteEmbedWidgetPreferences): void {
-    console.log(`Initializing Website Embed Widget ${widgetId} with prefs:`, prefs);
+export function initWebsiteWidget(widgetId: string, element: HTMLElement, prefs: WebsiteWidgetPreferences): void {
+    console.log(`Initializing Website Widget ${widgetId} with prefs:`, prefs);
     loadIframe(widgetId, element, prefs);
 }
 
 /**
- * Updates the Website Embed widget display based on new preferences.
+ * Updates the Website widget display based on new preferences.
+ * Renamed function
  */
- // Corrected function name
-export function updateWebsiteEmbedWidgetPreferences(widgetId: string, prefs: WebsiteEmbedWidgetPreferences): void {
-    console.log(`Updating Website Embed Widget ${widgetId} with prefs:`, prefs);
+export function updateWebsiteWidgetPreferences(widgetId: string, prefs: WebsiteWidgetPreferences): void {
+    console.log(`Updating Website Widget ${widgetId} with prefs:`, prefs);
     const widgetContainer = document.getElementById(widgetId);
     const widgetElement = widgetContainer?.querySelector<HTMLElement>('.grid-stack-item-content');
 
     if (widgetElement) {
         loadIframe(widgetId, widgetElement, prefs);
     } else {
-         console.warn(`Could not find content element for website embed widget ${widgetId} during preference update.`);
+         console.warn(`Could not find content element for website widget ${widgetId} during preference update.`);
     }
 }
 
 /**
- * Cleans up intervals associated with a specific website embed widget instance.
+ * Cleans up intervals associated with a specific website widget instance.
+ * Renamed function
  */
- // Corrected function name
-export function cleanupWebsiteEmbedWidget(widgetId: string): void {
-    console.log(`Cleaning up Website Embed Widget ${widgetId}`);
+export function cleanupWebsiteWidget(widgetId: string): void {
+    console.log(`Cleaning up Website Widget ${widgetId}`);
     cleanupRefreshInterval(widgetId);
 }

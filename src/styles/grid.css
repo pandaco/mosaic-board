@@ -1,0 +1,32 @@
+.grid-stack {
+    background-color: transparent;
+    flex-grow: 1;
+}
+
+.grid-stack-item {
+     pointer-events: auto;
+     background-color: transparent;
+     border: none;
+}
+
+.grid-stack-item-content {
+    background-color: var(--widget-background);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    color: var(--text-color);
+    border: none;
+    pointer-events: auto;
+    transition: box-shadow 0.2s ease;
+}
+.grid-stack-item.ui-draggable-dragging .grid-stack-item-content,
+.grid-stack-item.ui-resizable-resizing .grid-stack-item-content {
+     box-shadow: var(--shadow-lg);
+}
+
+.ui-resizable-handle {
+    display: none !important;
+    visibility: hidden !important;
+}

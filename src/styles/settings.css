@@ -1,0 +1,133 @@
+.widget-settings-menu {
+    position: absolute;
+    background-color: var(--widget-background);
+    border: 1px solid #CFD8DC;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-md);
+    z-index: 1000;
+    min-width: 200px;
+    padding: calc(var(--spacing-unit) * 0.5) 0;
+    overflow: hidden;
+}
+
+.widget-settings-menu ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.widget-settings-menu .settings-option,
+.widget-settings-menu .settings-group > label,
+.widget-settings-menu .folder-setting-button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: calc(var(--spacing-unit) * 0.6) calc(var(--spacing-unit) * 1);
+    background: none;
+    border: none;
+    font-size: 0.9rem;
+    color: var(--text-color);
+    white-space: nowrap;
+}
+
+.widget-settings-menu .settings-group > label {
+    font-weight: 600;
+    color: var(--text-secondary-color);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    padding-bottom: calc(var(--spacing-unit) * 0.3);
+    margin-bottom: 0;
+}
+
+
+.widget-settings-menu .settings-option:hover,
+.widget-settings-menu .folder-setting-button:hover {
+    background-color: var(--background-color);
+}
+
+.widget-settings-menu .settings-option i {
+    margin-right: calc(var(--spacing-unit) * 0.6);
+    width: 1em;
+    text-align: center;
+    color: var(--secondary-color);
+}
+
+.widget-settings-menu .delete-widget-button {
+    color: var(--danger-color);
+    font-weight: 500;
+}
+.widget-settings-menu .delete-widget-button:hover {
+    background-color: rgba(229, 62, 62, 0.1);
+    color: var(--danger-color);
+}
+
+.widget-settings-menu hr {
+    border: none;
+    border-top: 1px solid var(--border-color);
+    margin: calc(var(--spacing-unit) * 0.5) 0;
+}
+
+.widget-settings-menu .settings-group {
+    padding: calc(var(--spacing-unit) * 0.5) calc(var(--spacing-unit) * 1);
+    font-size: 0.9rem;
+}
+.widget-settings-menu .settings-group:not(:first-child) {
+     padding-top: 0;
+}
+
+
+.widget-settings-menu .settings-group input[type="radio"],
+.widget-settings-menu .settings-group input[type="checkbox"] {
+    margin-right: calc(var(--spacing-unit) * 0.4);
+    vertical-align: middle;
+}
+
+.widget-settings-menu .settings-group input[type="text"],
+.widget-settings-menu .settings-group select,
+.widget-settings-menu .settings-group .offset-inputs input[type="number"] {
+    width: 100%;
+    margin-top: calc(var(--spacing-unit) * 0.3);
+    font-size: 0.9rem;
+}
+.widget-settings-menu .settings-group .offset-inputs input[type="number"] {
+    width: 75px;
+    display: inline-block;
+    margin-left: calc(var(--spacing-unit) * 0.3);
+}
+
+
+.widget-settings-menu .settings-group .radio-group label,
+.widget-settings-menu .settings-group .checkbox-group label,
+.widget-settings-menu .settings-group .offset-inputs label {
+    font-weight: normal;
+    display: inline-flex;
+    align-items: center;
+    margin-right: var(--spacing-unit);
+    padding: calc(var(--spacing-unit) * 0.3) 0;
+    cursor: pointer;
+}
+
+.widget-settings-menu .settings-group > label {
+    padding: calc(var(--spacing-unit) * 0.6) calc(var(--spacing-unit) * 1);
+    padding-bottom: calc(var(--spacing-unit) * 0.3);
+    cursor: default;
+}
+
+
+.widget-settings-menu .folder-setting-button .current-folder-name {
+    font-weight: normal;
+    color: var(--text-secondary-color);
+    margin-left: 5px;
+    font-style: italic;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100px;
+    display: inline-block;
+    vertical-align: bottom;
+}
+.widget-settings-menu .offset-inputs {
+     display: flex;
+     gap: var(--spacing-unit);
+     margin-top: calc(var(--spacing-unit) * 0.3);
+}

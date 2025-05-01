@@ -1,11 +1,11 @@
 import { WidgetLayout, WidgetType, BaseWidgetPreferences } from './types';
 import { addWidgetToGrid, removeWidgetFromGrid, saveGridState, loadGridState } from './grid';
 import { deletePreferences, savePreferences, getWidgetPreferences } from './storage-service';
-import { initBookmarkWidget, updateBookmarkWidgetPreferences } from './widgets/bookmark/bookmark-widget';
-import { initWeatherWidget, updateWeatherWidgetPreferences } from './widgets/weather/weather-widget';
-import { initClockWidget, updateClockWidgetPreferences, cleanupClockWidget } from './widgets/clock/clock-widget';
-// Import new widget functions
-import { initWebsiteEmbedWidget, updateWebsiteEmbedWidgetPreferences, cleanupWebsiteEmbedWidget } from './widgets/website-embed/website-embed-widget';
+import { initBookmarkWidget, updateBookmarkWidgetPreferences } from './widgets/bookmark/bookmark.widget';
+import { initWeatherWidget, updateWeatherWidgetPreferences } from './widgets/weather/weather.widget';
+import { initClockWidget, updateClockWidgetPreferences, cleanupClockWidget } from './widgets/clock/clock.widget';
+// Renamed imports
+import { initWebsiteWidget, updateWebsiteWidgetPreferences, cleanupWebsiteWidget } from './widgets/website/website.widget';
 
 
 // Map widget types to their initialization functions
@@ -13,7 +13,7 @@ const widgetInitializers: { [key in WidgetType]?: (id: string, element: HTMLElem
     [WidgetType.Bookmarks]: initBookmarkWidget,
     [WidgetType.Weather]: initWeatherWidget,
     [WidgetType.Clock]: initClockWidget,
-    [WidgetType.WebsiteEmbed]: initWebsiteEmbedWidget, // Added initializer
+    [WidgetType.Website]: initWebsiteWidget, // Renamed key
 };
 
 // Map widget types to their preference update functions
@@ -21,13 +21,13 @@ const widgetPreferenceUpdaters: { [key in WidgetType]?: (id: string, prefs: any)
      [WidgetType.Bookmarks]: updateBookmarkWidgetPreferences,
      [WidgetType.Weather]: updateWeatherWidgetPreferences,
      [WidgetType.Clock]: updateClockWidgetPreferences,
-     [WidgetType.WebsiteEmbed]: updateWebsiteEmbedWidgetPreferences, // Added updater
+     [WidgetType.Website]: updateWebsiteWidgetPreferences, // Renamed key
 };
 
 // Map widget types to their cleanup functions (optional)
 const widgetCleaners: { [key in WidgetType]?: (id: string) => void } = {
      [WidgetType.Clock]: cleanupClockWidget,
-     [WidgetType.WebsiteEmbed]: cleanupWebsiteEmbedWidget, // Added cleaner
+     [WidgetType.Website]: cleanupWebsiteWidget, // Renamed key
 };
 
 
@@ -84,8 +84,7 @@ export async function addWidget(type: WidgetType): Promise<void> {
             return;
         }
 
-        // Add with default size (adjust as needed for website embed)
-        const defaultSize = (type === WidgetType.WebsiteEmbed) ? { w: 6, h: 4 } : { w: 4, h: 3 };
+        const defaultSize = (type === WidgetType.Website) ? { w: 6, h: 4 } : { w: 4, h: 3 }; // Renamed check
         addWidgetToGrid(widgetElement, { ...defaultSize, id: id });
 
         const initializer = widgetInitializers[type];
@@ -135,12 +134,39 @@ export async function removeWidget(widgetId: string): Promise<void> {
     }
 }
 
+// --- Settings Menu Handling (including ESC) ---
+let activeSettingsMenuElement: HTMLElement | null = null;
+
+const handleSettingsMenuEscape = (event: KeyboardEvent) => {
+     if (event.key === 'Escape' && activeSettingsMenuElement) {
+         closeWidgetSettingsMenu();
+     }
+};
+
+const handleSettingsMenuOutsideClick = (event: MouseEvent): void => {
+    if (activeSettingsMenuElement && !activeSettingsMenuElement.contains(event.target as Node)) {
+        const openerButton = document.querySelector(`[data-widget-id="${activeSettingsMenuElement.dataset.widgetId}"] .widget-settings-button`);
+        if (!openerButton || !openerButton.contains(event.target as Node)) {
+             closeWidgetSettingsMenu();
+        } else {
+             setTimeout(() => {
+                 document.addEventListener('click', handleSettingsMenuOutsideClick, { capture: true, once: true });
+             }, 0);
+        }
+    } else if (activeSettingsMenuElement) {
+        setTimeout(() => {
+            document.removeEventListener('click', handleSettingsMenuOutsideClick, { capture: true });
+            document.addEventListener('click', handleSettingsMenuOutsideClick, { capture: true, once: true });
+        }, 0);
+    }
+};
+
+
 /**
  * Creates and toggles the display of the settings menu for a widget.
  */
 async function toggleWidgetSettingsMenu(widgetId: string, widgetType: WidgetType, buttonElement: HTMLElement): Promise<void> {
-    const existingMenu = document.getElementById('active-widget-settings-menu');
-    const isOpeningDifferentMenu = !existingMenu || existingMenu.dataset.widgetId !== widgetId;
+    const isOpeningDifferentMenu = !activeSettingsMenuElement || activeSettingsMenuElement.dataset.widgetId !== widgetId;
 
     closeWidgetSettingsMenu();
 
@@ -149,29 +175,20 @@ async function toggleWidgetSettingsMenu(widgetId: string, widgetType: WidgetType
     }
 
     const template = document.getElementById('widget-settings-menu-template') as HTMLTemplateElement;
-    if (!template) {
-        console.error("Widget settings menu template not found!");
-        return;
-    }
+    if (!template) return;
 
     const menuFragment = template.content.cloneNode(true) as DocumentFragment;
     const menuElement = menuFragment.querySelector('.widget-settings-menu') as HTMLElement | null;
+    if (!menuElement) return;
 
-    if (!menuElement) {
-        console.error("'.widget-settings-menu' not found in template fragment!");
-        return;
-    }
+    activeSettingsMenuElement = menuElement;
+    activeSettingsMenuElement.id = 'active-widget-settings-menu';
+    activeSettingsMenuElement.dataset.widgetId = widgetId;
 
-    menuElement.id = 'active-widget-settings-menu';
-    menuElement.dataset.widgetId = widgetId;
+    const list = activeSettingsMenuElement.querySelector('ul');
+    if (!list) return;
 
-    const list = menuElement.querySelector('ul');
-    if (!list) {
-         console.error("UL element not found in settings menu!");
-         return;
-    }
-
-    const deleteButton = menuElement.querySelector('.delete-widget-button');
+    const deleteButton = activeSettingsMenuElement.querySelector('.delete-widget-button');
      if (deleteButton) {
          deleteButton.addEventListener('click', (e) => {
              e.stopPropagation();
@@ -179,8 +196,6 @@ async function toggleWidgetSettingsMenu(widgetId: string, widgetType: WidgetType
                  removeWidget(widgetId);
              }
          });
-     } else {
-         console.warn("Delete button not found in settings menu template.");
      }
 
     try {
@@ -190,33 +205,40 @@ async function toggleWidgetSettingsMenu(widgetId: string, widgetType: WidgetType
         console.error(`Error loading preferences for widget ${widgetId} to build settings menu:`, error);
     }
 
-    document.body.appendChild(menuElement);
+    document.body.appendChild(activeSettingsMenuElement);
 
     const buttonRect = buttonElement.getBoundingClientRect();
-    const menuRect = menuElement.getBoundingClientRect();
+    const menuRect = activeSettingsMenuElement.getBoundingClientRect();
 
     let top = window.scrollY + buttonRect.bottom + 5;
     let left = window.scrollX + buttonRect.left;
 
-    if (left + menuRect.width > window.innerWidth - 10) {
-        left = window.scrollX + buttonRect.right - menuRect.width;
-    }
-    if (top + menuRect.height > window.innerHeight - 10) {
-         top = window.scrollY + buttonRect.top - menuRect.height - 5;
-    }
-    if (left < 10) {
-         left = 10;
-     }
+    if (left + menuRect.width > window.innerWidth - 10) left = window.scrollX + buttonRect.right - menuRect.width;
+    if (top + menuRect.height > window.innerHeight - 10) top = window.scrollY + buttonRect.top - menuRect.height - 5;
+    if (left < 10) left = 10;
 
-    menuElement.style.position = 'absolute';
-    menuElement.style.top = `${top}px`;
-    menuElement.style.left = `${left}px`;
+    activeSettingsMenuElement.style.position = 'absolute';
+    activeSettingsMenuElement.style.top = `${top}px`;
+    activeSettingsMenuElement.style.left = `${left}px`;
 
      setTimeout(() => {
-        document.addEventListener('click', handleOutsideClick, { capture: true, once: true });
-        document.addEventListener('keydown', handleEscapeKey, { capture: true, once: true });
+        document.addEventListener('click', handleSettingsMenuOutsideClick, { capture: true, once: true });
+        document.addEventListener('keydown', handleSettingsMenuEscape, { capture: true });
      }, 0);
 }
+
+/**
+ * Closes the currently open widget settings menu.
+ */
+function closeWidgetSettingsMenu(): void {
+    if (activeSettingsMenuElement) {
+        activeSettingsMenuElement.remove();
+        activeSettingsMenuElement = null;
+        document.removeEventListener('click', handleSettingsMenuOutsideClick, { capture: true });
+        document.removeEventListener('keydown', handleSettingsMenuEscape, { capture: true });
+    }
+}
+
 
 /**
  * Adds widget-specific settings options to the menu list.
@@ -249,12 +271,11 @@ function addSpecificSettingsOptions(list: HTMLUListElement, widgetId: string, wi
              addSeparatorIfNeeded();
             addClockSettings(list, widgetId, currentPrefs, deleteButtonLi ?? null);
             break;
-        case WidgetType.WebsiteEmbed: // Added case
+        case WidgetType.Website: // Renamed case
              addSeparatorIfNeeded();
-             addWebsiteEmbedSettings(list, widgetId, currentPrefs, deleteButtonLi ?? null);
+             addWebsiteSettings(list, widgetId, currentPrefs, deleteButtonLi ?? null); // Renamed function call
              break;
         default:
-             // This should ideally not happen if WidgetType enum is used correctly
              const _exhaustiveCheck: never = widgetType;
              console.warn(`No specific settings defined for widget type: ${_exhaustiveCheck}`);
              break;
@@ -285,7 +306,6 @@ function addBookmarkSettings(list: HTMLUListElement, widgetId: string, prefs: an
     folderButton.addEventListener('click', (e) => {
         e.stopPropagation();
         openFolderSelectorModal(widgetId);
-        closeWidgetSettingsMenu();
     });
     folderGroupLi.appendChild(folderButton);
 
@@ -316,21 +336,21 @@ function addClockSettings(list: HTMLUListElement, widgetId: string, prefs: any, 
      stopwatchGroupLi.appendChild(stopwatchCheckbox);
 }
 
-// --- Added Settings Function for Website Embed ---
-function addWebsiteEmbedSettings(list: HTMLUListElement, widgetId: string, prefs: any, insertBeforeLi: HTMLLIElement | null): void {
+// Renamed function for Website Settings
+function addWebsiteSettings(list: HTMLUListElement, widgetId: string, prefs: any, insertBeforeLi: HTMLLIElement | null): void {
     const url = prefs?.url || '';
-    const refreshInterval = prefs?.refreshInterval || 0; // Default: 0 (no refresh)
+    const refreshInterval = prefs?.refreshInterval || 0;
     const offsetTop = prefs?.offsetTop || 0;
     const offsetLeft = prefs?.offsetLeft || 0;
 
-    // URL Input
     const urlGroupLi = createSettingsGroup(list, 'Website URL', insertBeforeLi);
-    const urlInput = createTextInputOption(widgetId, WidgetType.WebsiteEmbed, 'url', 'https://example.com', url, 'url'); // Use type="url"
+    // Pass correct WidgetType
+    const urlInput = createTextInputOption(widgetId, WidgetType.Website, 'url', 'https://example.com', url, 'url');
     urlGroupLi.appendChild(urlInput);
 
-    // Refresh Interval Select
     const refreshGroupLi = createSettingsGroup(list, 'Refresh Interval', insertBeforeLi);
-    const refreshSelect = createSelectOption(widgetId, WidgetType.WebsiteEmbed, 'refreshInterval', [
+    // Pass correct WidgetType
+    const refreshSelect = createSelectOption(widgetId, WidgetType.Website, 'refreshInterval', [
         { value: '0', text: 'No Refresh' },
         { value: '5000', text: '5 seconds' },
         { value: '15000', text: '15 seconds' },
@@ -339,22 +359,23 @@ function addWebsiteEmbedSettings(list: HTMLUListElement, widgetId: string, prefs
         { value: '120000', text: '2 minutes' },
         { value: '300000', text: '5 minutes' },
         { value: '600000', text: '10 minutes' },
-    ], refreshInterval.toString()); // Value needs to be string for select
+    ], refreshInterval.toString());
     refreshGroupLi.appendChild(refreshSelect);
 
-    // Offset Inputs (Top & Left)
     const offsetGroupLi = createSettingsGroup(list, 'Scroll Offset (px)', insertBeforeLi);
     const offsetContainer = document.createElement('div');
-    offsetContainer.className = 'offset-inputs'; // For potential styling
+    offsetContainer.className = 'offset-inputs';
 
     const topLabel = document.createElement('label');
     topLabel.textContent = 'Top: ';
-    const topInput = createNumberInputOption(widgetId, WidgetType.WebsiteEmbed, 'offsetTop', offsetTop);
+    // Pass correct WidgetType
+    const topInput = createNumberInputOption(widgetId, WidgetType.Website, 'offsetTop', offsetTop);
     topLabel.appendChild(topInput);
 
     const leftLabel = document.createElement('label');
     leftLabel.textContent = ' Left: ';
-    const leftInput = createNumberInputOption(widgetId, WidgetType.WebsiteEmbed, 'offsetLeft', offsetLeft);
+    // Pass correct WidgetType
+    const leftInput = createNumberInputOption(widgetId, WidgetType.Website, 'offsetLeft', offsetLeft);
     leftLabel.appendChild(leftInput);
 
     offsetContainer.appendChild(topLabel);
@@ -402,10 +423,9 @@ function createCheckboxOption(widgetId: string, type: WidgetType, key: string, l
     return label;
 }
 
-// Modified to accept input type
 function createTextInputOption(widgetId: string, type: WidgetType, key: string, placeholder: string, currentValue: string, inputType: string = 'text'): HTMLInputElement {
     const input = document.createElement('input');
-    input.type = inputType; // Use specified type
+    input.type = inputType;
     input.placeholder = placeholder;
     input.value = currentValue;
     input.addEventListener('blur', (e) => updatePreference(widgetId, type, key, (e.target as HTMLInputElement).value));
@@ -419,18 +439,17 @@ function createTextInputOption(widgetId: string, type: WidgetType, key: string, 
     return input;
 }
 
-// Added helper for number inputs
 function createNumberInputOption(widgetId: string, type: WidgetType, key: string, currentValue: number): HTMLInputElement {
     const input = document.createElement('input');
     input.type = 'number';
     input.value = currentValue.toString();
-    input.min = '0'; // Offsets are usually non-negative
+    input.min = '0';
     input.step = '1';
-     input.style.width = '70px'; // Make number inputs smaller
+     input.style.width = '70px';
 
-    input.addEventListener('change', (e) => { // Use change instead of blur for number inputs
+    input.addEventListener('change', (e) => {
          const value = parseInt((e.target as HTMLInputElement).value, 10);
-         updatePreference(widgetId, type, key, isNaN(value) ? 0 : value); // Default to 0 if invalid
+         updatePreference(widgetId, type, key, isNaN(value) ? 0 : value);
     });
     return input;
 }
@@ -447,7 +466,6 @@ function createSelectOption(widgetId: string, type: WidgetType, key: string, opt
     });
     select.addEventListener('change', (e) => {
         const value = (e.target as HTMLSelectElement).value;
-        // Convert refresh interval back to number
         const finalValue = (key === 'refreshInterval') ? parseInt(value, 10) : value;
         updatePreference(widgetId, type, key, finalValue);
     });
@@ -473,52 +491,6 @@ async function updatePreference(widgetId: string, type: WidgetType, key: string,
     } catch (error) {
         console.error(`Failed to update preference ${key} for widget ${widgetId}:`, error);
     }
-}
-
-
-/**
- * Closes the currently open widget settings menu, if any.
- */
-function closeWidgetSettingsMenu(): void {
-    const menu = document.getElementById('active-widget-settings-menu');
-    if (menu) {
-        document.removeEventListener('click', handleOutsideClick, { capture: true });
-        document.removeEventListener('keydown', handleEscapeKey, { capture: true });
-        menu.remove();
-    }
-}
-
-/**
- * Event handler to close the menu when clicking outside of it.
- */
-function handleOutsideClick(event: MouseEvent): void {
-    const menu = document.getElementById('active-widget-settings-menu');
-    const target = event.target as Node;
-
-    if (menu && menu.contains(target)) {
-         setTimeout(() => {
-             document.removeEventListener('click', handleOutsideClick, { capture: true });
-             document.addEventListener('click', handleOutsideClick, { capture: true, once: true });
-         }, 0);
-    } else {
-        closeWidgetSettingsMenu();
-    }
-}
-/**
- * Event handler to close the menu when the Escape key is pressed.
- */
-function handleEscapeKey(event: KeyboardEvent): void {
-     if (event.key === 'Escape') {
-         closeWidgetSettingsMenu();
-     } else {
-         setTimeout(() => {
-             const menu = document.getElementById('active-widget-settings-menu');
-             if (menu) {
-                 document.removeEventListener('keydown', handleEscapeKey, { capture: true });
-                 document.addEventListener('keydown', handleEscapeKey, { capture: true, once: true });
-             }
-         }, 0);
-     }
 }
 
 
@@ -571,7 +543,7 @@ function getDefaultPreferences(type: WidgetType): BaseWidgetPreferences | null {
             return { location: 'Lille', unit: 'metric' };
         case WidgetType.Clock:
             return { showStopwatch: false };
-        case WidgetType.WebsiteEmbed: // Added defaults
+        case WidgetType.Website: // Renamed type
             return { url: '', refreshInterval: 0, offsetTop: 0, offsetLeft: 0 };
         default:
              const _exhaustiveCheck: never = type;
@@ -583,6 +555,9 @@ function getDefaultPreferences(type: WidgetType): BaseWidgetPreferences | null {
 // --- Folder Selector Modal Logic ---
 
 let currentWidgetIdForFolderSelection: string | null = null;
+declare function openModal(modalElement: HTMLElement | null): void;
+declare function closeActiveModal(): void;
+
 
 /**
  * Opens the folder selector modal and populates the tree.
@@ -604,7 +579,8 @@ async function openFolderSelectorModal(widgetId: string): Promise<void> {
     confirmButton.disabled = true;
     confirmButton.dataset.selectedFolderId = '';
 
-    modal.classList.remove('hidden');
+    openModal(modal); // Use global openModal
+    closeWidgetSettingsMenu(); // Close settings menu
 
     try {
         const bookmarkTreeRoots = await chrome.bookmarks.getTree();
@@ -728,13 +704,10 @@ function handleFolderTreeClick(event: MouseEvent): void {
 
 
 /**
- * Closes the folder selector modal.
+ * Closes the folder selector modal using the global function.
  */
 export function closeFolderSelectorModal(): void {
-    const modal = document.getElementById('folder-selector-modal');
-    if (modal) {
-        modal.classList.add('hidden');
-    }
+    closeActiveModal();
     currentWidgetIdForFolderSelection = null;
 }
 

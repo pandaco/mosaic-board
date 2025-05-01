@@ -1,0 +1,193 @@
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1050;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.modal.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.modal-content {
+    background-color: #fff;
+    padding: calc(var(--spacing-unit) * 1.5);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    max-width: 550px;
+    width: 90%;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-close-button {
+    position: absolute;
+    top: calc(var(--spacing-unit) * 0.75);
+    right: calc(var(--spacing-unit) * 0.75);
+    font-size: 1.5rem;
+    font-weight: normal;
+    line-height: 1;
+    color: var(--secondary-color);
+    text-shadow: none;
+    opacity: 0.8;
+    background: transparent;
+    border: none;
+    padding: calc(var(--spacing-unit) * 0.25);
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close-button:hover {
+    opacity: 1;
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+.modal-content h2 {
+    margin-top: 0;
+    margin-bottom: var(--spacing-unit);
+    font-size: 1.25rem;
+    font-weight: 600;
+    padding-right: calc(var(--spacing-unit) * 2);
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: calc(var(--spacing-unit) * 0.75);
+    margin-top: calc(var(--spacing-unit) * 1.5);
+    padding-top: calc(var(--spacing-unit) * 1);
+    border-top: 1px solid var(--border-color);
+}
+
+/* Add Widget Modal Specifics */
+#widget-selection-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: var(--spacing-unit);
+}
+
+#widget-selection-list li {
+    padding: calc(var(--spacing-unit) * 1);
+    cursor: pointer;
+    border-radius: var(--border-radius);
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center; /* Center content vertically */
+    gap: calc(var(--spacing-unit) * 0.5);
+    border: 1px solid var(--border-color);
+    text-align: center;
+    background-color: #fff;
+    min-height: 100px;
+}
+
+#widget-selection-list li:hover {
+    background-color: #fff;
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-md);
+}
+
+#widget-selection-list li i {
+    width: auto;
+    text-align: center;
+    color: var(--primary-color);
+    font-size: 1.75rem;
+    margin-bottom: calc(var(--spacing-unit) * 0.25);
+}
+#widget-selection-list li span {
+    font-size: 0.9rem;
+    color: var(--text-secondary-color);
+}
+
+/* Folder Selector Modal Specifics */
+#folder-tree-container {
+    border: 1px solid var(--border-color);
+    padding: calc(var(--spacing-unit) * 0.5);
+    margin-bottom: var(--spacing-unit);
+    max-height: 40vh;
+    overflow-y: auto;
+    border-radius: var(--border-radius);
+    background-color: #fff;
+}
+
+#folder-tree-container ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+#folder-tree-container li {
+    padding: 0;
+}
+
+#folder-tree-container .folder-item {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: calc(var(--spacing-unit) * 0.4) calc(var(--spacing-unit) * 0.6);
+    border-radius: calc(var(--border-radius) * 0.75);
+    transition: background-color 0.15s ease;
+}
+#folder-tree-container .folder-item:hover {
+    background-color: var(--background-color);
+}
+#folder-tree-container .folder-item.selected {
+    background-color: var(--primary-color);
+    color: white;
+}
+#folder-tree-container .folder-item.selected i,
+#folder-tree-container .folder-item.selected .folder-icon {
+    color: white;
+}
+
+
+#folder-tree-container .folder-toggle {
+    margin-right: calc(var(--spacing-unit) * 0.4);
+    width: 1em;
+    text-align: center;
+    display: inline-block;
+    transition: transform 0.15s ease;
+    color: var(--secondary-color);
+    flex-shrink: 0;
+}
+
+#folder-tree-container .folder-icon {
+    margin-right: calc(var(--spacing-unit) * 0.4);
+    color: #F59E0B;
+    flex-shrink: 0;
+}
+
+#folder-tree-container ul ul {
+    padding-left: calc(var(--spacing-unit) * 1.25);
+    border-left: 1px solid var(--border-color);
+    margin-left: calc(var(--spacing-unit) * 0.7);
+}
+#folder-tree-container ul ul.hidden {
+    display: none;
+}
+
+
+#selected-folder-name {
+    font-weight: 500;
+    color: var(--primary-color);
+}

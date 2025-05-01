@@ -1,0 +1,82 @@
+.widget-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: calc(var(--spacing-unit) * 0.8) calc(var(--spacing-unit) * 1);
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--widget-header-bg);
+    min-height: auto;
+    flex-shrink: 0;
+}
+
+.widget-header h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-grow: 1;
+    padding: 0 calc(var(--spacing-unit) * 0.5);
+    color: var(--widget-header-text);
+}
+
+.widget-title[title]:hover {
+    cursor: default;
+}
+
+.widget-content {
+    padding: calc(var(--spacing-unit) * 1);
+    flex-grow: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 0;
+    &::-webkit-scrollbar {
+        width: 5px;
+    }
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.15);
+        border-radius: 3px;
+    }
+}
+
+.widget-back-button,
+.widget-settings-button {
+    background: none;
+    border: none;
+    padding: calc(var(--spacing-unit) * 0.3);
+    font-size: 0.9rem;
+    color: var(--secondary-color);
+    line-height: 1;
+    border-radius: var(--border-radius);
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.8;
+}
+.widget-back-button:hover,
+.widget-settings-button:hover {
+    color: var(--text-color);
+    background-color: var(--background-color);
+    opacity: 1;
+}
+
+/* Common error/placeholder styles within widgets */
+.widget-content .error,
+.widget-content .empty-folder,
+.widget-content .placeholder-message {
+    color: var(--text-secondary-color);
+    text-align: center;
+    padding: var(--spacing-unit);
+    font-style: italic;
+    font-size: 0.9rem;
+}
+.widget-content .error {
+    color: var(--danger-color);
+    font-style: normal;
+}
