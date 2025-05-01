@@ -1,18 +1,42 @@
 {
-    "name": "mosaic-board",
-    "private": true,
-    "version": "1.0.0",
-    "type": "module",
-    "scripts": {
+  "name": "mosaic-board",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
       "dev": "vite",
       "build": "tsc && vite build",
-      "preview": "vite preview"
+      "preview": "vite preview",
+      "commit": "cz",
+      "prepare": "husky",
+      "version": "lerna version --conventional-commits --yes  --no-push"
     },
-    "devDependencies": {
+  "devDependencies": {
+      "@commitlint/cli": "^19.3.0",
+      "@commitlint/config-conventional": "^19.2.2",
+      "@semantic-release/changelog": "^6.0.3",
+      "@semantic-release/commit-analyzer": "^13.0.0",
+      "@semantic-release/git": "^10.0.1",
+      "@semantic-release/release-notes-generator": "^14.0.1",
       "@types/chrome": "^0.0.317",
+      "commitizen": "^4.3.1",
+      "conventional-changelog-cli": "^5.0.0",
+      "cz-conventional-changelog": "^3.3.0",
       "gridstack": "^12.1.0",
+      "husky": "^9.1.7",
+      "lerna": "^8.2.2",
+      "semantic-release": "^24.2.3",
       "typescript": "^5.8.3",
       "vite": "^6.3.3"
-    }
+  },
+  "config": {
+      "commitizen": {
+          "path": "./node_modules/cz-conventional-changelog"
+      }
+  },
+  "commitlint": {
+      "extends": [
+          "@commitlint/config-conventional"
+      ]
   }
-  
+}
