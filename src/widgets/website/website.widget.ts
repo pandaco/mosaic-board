@@ -1,143 +1,147 @@
-// Renamed import path and type name
 import './website.widget.css';
 import { WebsiteWidgetPreferences } from '../../types';
 
-const refreshIntervalMap = new Map<string, number>();
+// Store intervals globally
+const refreshIntervals = new Map<string, number>();
 
-/** Helper to display error messages */
-function displayEmbedError(element: HTMLElement, message: string): void {
-    const errorElement = element.querySelector<HTMLElement>('.error-message');
-    const iframeContainer = element.querySelector<HTMLElement>('.iframe-container iframe');
-    const placeholder = element.querySelector<HTMLElement>('.placeholder-message');
+class WebsiteWidget {
+    private widgetId: string;
+    private element: HTMLElement;
+    private prefs: WebsiteWidgetPreferences;
+    private iframeContainer: HTMLElement | null;
+    private iframe: HTMLIFrameElement | null = null;
 
-    if (placeholder) placeholder.classList.add('hidden');
-    if (iframeContainer) iframeContainer.style.display = 'none';
-
-    if (errorElement) {
-        errorElement.textContent = message || 'An error occurred.';
-        errorElement.classList.remove('hidden');
-    }
-}
-
-/** Helper to show the placeholder message */
-function showPlaceholder(element: HTMLElement): void {
-     const errorElement = element.querySelector<HTMLElement>('.error-message');
-     const iframeContainer = element.querySelector<HTMLElement>('.iframe-container iframe');
-     const placeholder = element.querySelector<HTMLElement>('.placeholder-message');
-
-     if (iframeContainer) iframeContainer.style.display = 'none';
-     if (errorElement) errorElement.classList.add('hidden');
-     if (placeholder) placeholder.classList.remove('hidden');
-}
-
-/** Helper to show the iframe */
-function showIframe(element: HTMLElement): void {
-    const errorElement = element.querySelector<HTMLElement>('.error-message');
-    const iframeContainer = element.querySelector<HTMLElement>('.iframe-container iframe');
-    const placeholder = element.querySelector<HTMLElement>('.placeholder-message');
-
-    if (placeholder) placeholder.classList.add('hidden');
-    if (errorElement) errorElement.classList.add('hidden');
-    if (iframeContainer) iframeContainer.style.display = 'block';
-}
-
-
-/** Cleans up the refresh interval */
-function cleanupRefreshInterval(widgetId: string): void {
-     if (refreshIntervalMap.has(widgetId)) {
-        clearInterval(refreshIntervalMap.get(widgetId));
-        refreshIntervalMap.delete(widgetId);
-        console.log(`Cleared refresh interval for ${widgetId}`);
-    }
-}
-
-/** Applies styles for offset */
-function applyOffset(iframe: HTMLIFrameElement, top: number, left: number) {
-    iframe.style.transform = `translate(${-left}px, ${-top}px)`;
-}
-
-/** Loads or reloads the iframe content */
-function loadIframe(widgetId: string, element: HTMLElement, prefs: WebsiteWidgetPreferences): void {
-    const iframeContainer = element.querySelector<HTMLElement>('.iframe-container');
-    if (!iframeContainer) return;
-
-    cleanupRefreshInterval(widgetId);
-
-    const existingIframe = iframeContainer.querySelector('iframe');
-    if (existingIframe) {
-        existingIframe.remove();
+    constructor(widgetId: string, element: HTMLElement, initialPrefs: WebsiteWidgetPreferences) {
+        this.widgetId = widgetId;
+        this.element = element;
+        this.prefs = initialPrefs;
+        this.iframeContainer = this.element.querySelector<HTMLElement>('.iframe-container');
+        this.init();
     }
 
-    if (!prefs.url || !prefs.url.startsWith('http')) {
-        if (!prefs.url) {
-             showPlaceholder(element);
-        } else {
-             displayEmbedError(element, 'Invalid URL format. Please start with http:// or https://');
+    private init(): void {
+        console.log(`Initializing Website Widget ${this.widgetId} with prefs:`, this.prefs);
+        this.loadIframe();
+    }
+
+    updatePreferences(newPrefs: WebsiteWidgetPreferences): void {
+        console.log(`Updating Website Widget ${this.widgetId} with prefs:`, newPrefs);
+        this.prefs = newPrefs;
+        this.loadIframe(); // Reload iframe with new settings
+    }
+
+    private displayWidgetError(message: string): void {
+        const errorElement = this.element.querySelector<HTMLElement>('.error-message');
+        const placeholder = this.element.querySelector<HTMLElement>('.placeholder-message');
+        if (placeholder) placeholder.classList.add('hidden');
+        if (this.iframe) this.iframe.style.display = 'none';
+        if (errorElement) {
+            errorElement.textContent = message || 'An error occurred.';
+            errorElement.classList.remove('hidden');
         }
-        return;
     }
 
-    const iframe = document.createElement('iframe');
-    iframe.setAttribute('src', prefs.url);
-    iframe.setAttribute('frameborder', '0');
-    iframe.setAttribute('title', `Embedded content from ${prefs.url}`);
-    iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups allow-forms');
+    private showPlaceholder(): void {
+         const errorElement = this.element.querySelector<HTMLElement>('.error-message');
+         const placeholder = this.element.querySelector<HTMLElement>('.placeholder-message');
+         if (this.iframe) this.iframe.style.display = 'none';
+         if (errorElement) errorElement.classList.add('hidden');
+         if (placeholder) placeholder.classList.remove('hidden');
+    }
 
-    applyOffset(iframe, prefs.offsetTop, prefs.offsetLeft);
+    private showIframe(): void {
+        const errorElement = this.element.querySelector<HTMLElement>('.error-message');
+        const placeholder = this.element.querySelector<HTMLElement>('.placeholder-message');
+        if (placeholder) placeholder.classList.add('hidden');
+        if (errorElement) errorElement.classList.add('hidden');
+        if (this.iframe) this.iframe.style.display = 'block';
+    }
 
-    iframe.addEventListener('load', () => {
-        console.log(`Iframe for ${widgetId} loaded: ${prefs.url}`);
-         showIframe(element);
-    });
+    private cleanupRefreshInterval(): void {
+         if (refreshIntervals.has(this.widgetId)) {
+            clearInterval(refreshIntervals.get(this.widgetId));
+            refreshIntervals.delete(this.widgetId);
+            console.log(`Cleared refresh interval for ${this.widgetId}`);
+        }
+    }
 
-     iframe.addEventListener('error', (e) => {
-         console.error(`Error loading iframe source for ${widgetId}: ${prefs.url}`, e);
-         displayEmbedError(element, `Error loading ${prefs.url}. Check the URL and network connection.`);
-     });
+    private applyOffset(iframe: HTMLIFrameElement, top: number, left: number): void {
+        iframe.style.transform = `translate(${-left}px, ${-top}px)`;
+    }
 
-    iframeContainer.appendChild(iframe);
+    private loadIframe(): void {
+        if (!this.iframeContainer) return;
 
+        this.cleanupRefreshInterval();
 
-    if (prefs.refreshInterval > 0) {
-        const intervalId = setInterval(() => {
-            console.log(`Refreshing iframe for ${widgetId}: ${prefs.url}`);
-            iframe.src = iframe.src;
-        }, prefs.refreshInterval);
-        refreshIntervalMap.set(widgetId, intervalId);
+        // Remove existing iframe if present
+        const existingIframe = this.iframeContainer.querySelector('iframe');
+        if (existingIframe) existingIframe.remove();
+        this.iframe = null; // Clear reference
+
+        if (!this.prefs.url || !this.prefs.url.startsWith('http')) {
+            if (!this.prefs.url) this.showPlaceholder();
+            else this.displayWidgetError('Invalid URL format. Please start with http:// or https://');
+            return;
+        }
+
+        this.iframe = document.createElement('iframe');
+        this.iframe.setAttribute('src', this.prefs.url);
+        this.iframe.setAttribute('frameborder', '0');
+        this.iframe.setAttribute('title', `Embedded content from ${this.prefs.url}`);
+        this.iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups allow-forms');
+
+        this.applyOffset(this.iframe, this.prefs.offsetTop, this.prefs.offsetLeft);
+
+        this.iframe.addEventListener('load', () => {
+            console.log(`Iframe for ${this.widgetId} loaded: ${this.prefs.url}`);
+            this.showIframe();
+        });
+        this.iframe.addEventListener('error', (e) => {
+             console.error(`Error loading iframe source for ${this.widgetId}: ${this.prefs.url}`, e);
+             this.displayWidgetError(`Error loading ${this.prefs.url}. Check URL/connection.`);
+        });
+
+        this.iframeContainer.appendChild(this.iframe);
+
+        if (this.prefs.refreshInterval > 0) {
+            const intervalId = setInterval(() => {
+                if (this.iframe) { // Check if iframe still exists
+                    console.log(`Refreshing iframe for ${this.widgetId}: ${this.prefs.url}`);
+                    this.iframe.src = this.iframe.src; // Reload
+                } else {
+                    this.cleanupRefreshInterval(); // Stop interval if iframe is gone
+                }
+            }, this.prefs.refreshInterval);
+            refreshIntervals.set(this.widgetId, intervalId);
+        }
+    }
+
+    cleanup(): void {
+        console.log(`Cleaning up Website Widget ${this.widgetId}`);
+        this.cleanupRefreshInterval();
     }
 }
 
-
-/**
- * Initializes the Website widget instance.
- * Renamed function
- */
-export function initWebsiteWidget(widgetId: string, element: HTMLElement, prefs: WebsiteWidgetPreferences): void {
-    console.log(`Initializing Website Widget ${widgetId} with prefs:`, prefs);
-    loadIframe(widgetId, element, prefs);
+// Exported functions for lifecycle manager
+export function initWebsiteWidget(id: string, element: HTMLElement, prefs: WebsiteWidgetPreferences): void {
+    new WebsiteWidget(id, element, prefs);
 }
 
-/**
- * Updates the Website widget display based on new preferences.
- * Renamed function
- */
-export function updateWebsiteWidgetPreferences(widgetId: string, prefs: WebsiteWidgetPreferences): void {
-    console.log(`Updating Website Widget ${widgetId} with prefs:`, prefs);
-    const widgetContainer = document.getElementById(widgetId);
-    const widgetElement = widgetContainer?.querySelector<HTMLElement>('.grid-stack-item-content');
-
-    if (widgetElement) {
-        loadIframe(widgetId, widgetElement, prefs);
-    } else {
-         console.warn(`Could not find content element for website widget ${widgetId} during preference update.`);
+export function updateWebsiteWidgetPreferences(id: string, prefs: WebsiteWidgetPreferences): void {
+    // Re-initialize for simplicity
+    const widgetContainer = document.getElementById(id);
+    const element = widgetContainer?.querySelector<HTMLElement>('.grid-stack-item-content');
+    if (element) {
+        console.warn(`Re-initializing WebsiteWidget ${id} due to preference update.`);
+        new WebsiteWidget(id, element, prefs);
     }
 }
 
-/**
- * Cleans up intervals associated with a specific website widget instance.
- * Renamed function
- */
 export function cleanupWebsiteWidget(widgetId: string): void {
-    console.log(`Cleaning up Website Widget ${widgetId}`);
-    cleanupRefreshInterval(widgetId);
+    if (refreshIntervals.has(widgetId)) {
+        clearInterval(refreshIntervals.get(widgetId));
+        refreshIntervals.delete(widgetId);
+    }
+    console.log(`Cleaned up intervals for Website Widget ${widgetId}`);
 }
