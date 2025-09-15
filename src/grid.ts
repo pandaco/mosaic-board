@@ -13,7 +13,7 @@ interface GridStackWidgetWithElement extends GridStackWidget {
 const gridOptions: GridStackOptions = {
     column: 12,
     margin: 10,
-    cellHeight: 80, // Keep fixed height for now, adjust if needed
+    cellHeight: 90, // Keep fixed height for now, adjust if needed
     disableResize: false,
     disableDrag: false,
     float: true,
