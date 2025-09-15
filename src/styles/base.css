@@ -89,6 +89,19 @@ input:focus, select:focus {
     color: var(--text-color);
 }
 
+/* Brand container: logo + title on one line */
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.brand .brand-logo {
+    display: block;
+    width: 36px;
+    height: 36px;
+}
+
 .header-actions {
     display: flex;
     align-items: center;
