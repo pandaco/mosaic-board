@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="240" height="240" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="240" height="240" rx="36" fill="#F8FAFC"/>
+  <!-- 5x5 mosaic grid where dark squares form an "M" -->
+  <g transform="translate(30,30)" fill="#2D3748">
+    <!-- grid params: size=30, gap=6 -->
+    <!-- row 0 -->
+    <rect x="0" y="0" width="30" height="30" rx="6" opacity="1"/>
+    <rect x="36" y="0" width="30" height="30" rx="6" opacity="0.06"/>
+    <rect x="72" y="0" width="30" height="30" rx="6" opacity="0.06"/>
+    <rect x="108" y="0" width="30" height="30" rx="6" opacity="0.06"/>
+    <rect x="144" y="0" width="30" height="30" rx="6" opacity="1"/>
+
+    <!-- row 1 -->
+    <rect x="0" y="36" width="30" height="30" rx="6" opacity="1"/>
+    <rect x="36" y="36" width="30" height="30" rx="6" opacity="1"/>
+    <rect x="72" y="36" width="30" height="30" rx="6" opacity="0.06"/>
+    <rect x="108" y="36" width="30" height="30" rx="6" opacity="1"/>
+    <rect x="144" y="36" width="30" height="30" rx="6" opacity="1"/>
+
+    <!-- row 2 -->
+    <rect x="0" y="72" width="30" height="30" rx="6" opacity="1"/>
+    <rect x="36" y="72" width="30" height="30" rx="6" opacity="0.06"/>
+    <rect x="72" y="72" width="30" height="30" rx="6" opacity="1"/>
+    <rect x="108" y="72" width="30" height="30" rx="6" opacity="0.06"/>
+    <rect x="144" y="72" width="30" height="30" rx="6" opacity="1"/>
+
+    <!-- row 3 -->
+    <rect x="0" y="108" width="30" height="30" rx="6" opacity="1"/>
+    <rect x="36" y="108" width="30" height="30" rx="6" opacity="0.06"/>
+    <rect x="72" y="108" width="30" height="30" rx="6" opacity="0.06"/>
+    <rect x="108" y="108" width="30" height="30" rx="6" opacity="0.06"/>
+    <rect x="144" y="108" width="30" height="30" rx="6" opacity="1"/>
+
+    <!-- row 4 -->
+    <rect x="0" y="144" width="30" height="30" rx="6" opacity="1"/>
+    <rect x="36" y="144" width="30" height="30" rx="6" opacity="0.06"/>
+    <rect x="72" y="144" width="30" height="30" rx="6" opacity="0.06"/>
+    <rect x="108" y="144" width="30" height="30" rx="6" opacity="0.06"/>
+    <rect x="144" y="144" width="30" height="30" rx="6" opacity="1"/>
+  </g>
+</svg>

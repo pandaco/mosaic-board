@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="520" height="120" viewBox="0 0 520 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- symbol square -->
+  <rect x="0" y="0" width="120" height="120" rx="18" fill="#F8FAFC"/>
+  <g transform="translate(18,18)" fill="#2D3748">
+    <!-- 5x5 mosaic: dark squares form an 'M' -->
+    <!-- row 0 -->
+    <rect x="0" y="0" width="18" height="18" rx="3" opacity="1"/>
+    <rect x="24" y="0" width="18" height="18" rx="3" opacity="0.06"/>
+    <rect x="48" y="0" width="18" height="18" rx="3" opacity="0.06"/>
+    <rect x="72" y="0" width="18" height="18" rx="3" opacity="0.06"/>
+    <rect x="96" y="0" width="18" height="18" rx="3" opacity="1"/>
+
+    <!-- row 1 -->
+    <rect x="0" y="24" width="18" height="18" rx="3" opacity="1"/>
+    <rect x="24" y="24" width="18" height="18" rx="3" opacity="1"/>
+    <rect x="48" y="24" width="18" height="18" rx="3" opacity="0.06"/>
+    <rect x="72" y="24" width="18" height="18" rx="3" opacity="1"/>
+    <rect x="96" y="24" width="18" height="18" rx="3" opacity="1"/>
+
+    <!-- row 2 -->
+    <rect x="0" y="48" width="18" height="18" rx="3" opacity="1"/>
+    <rect x="24" y="48" width="18" height="18" rx="3" opacity="0.06"/>
+    <rect x="48" y="48" width="18" height="18" rx="3" opacity="1"/>
+    <rect x="72" y="48" width="18" height="18" rx="3" opacity="0.06"/>
+    <rect x="96" y="48" width="18" height="18" rx="3" opacity="1"/>
+
+    <!-- row 3 -->
+    <rect x="0" y="72" width="18" height="18" rx="3" opacity="1"/>
+    <rect x="24" y="72" width="18" height="18" rx="3" opacity="0.06"/>
+    <rect x="48" y="72" width="18" height="18" rx="3" opacity="0.06"/>
+    <rect x="72" y="72" width="18" height="18" rx="3" opacity="0.06"/>
+    <rect x="96" y="72" width="18" height="18" rx="3" opacity="1"/>
+
+    <!-- row 4 -->
+    <rect x="0" y="96" width="18" height="18" rx="3" opacity="1"/>
+    <rect x="24" y="96" width="18" height="18" rx="3" opacity="0.06"/>
+    <rect x="48" y="96" width="18" height="18" rx="3" opacity="0.06"/>
+    <rect x="72" y="96" width="18" height="18" rx="3" opacity="0.06"/>
+    <rect x="96" y="96" width="18" height="18" rx="3" opacity="1"/>
+  </g>
+
+  <!-- logotype -->
+  <g transform="translate(150,34)">
+    <text x="0" y="0" font-family="Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial" font-size="32" fill="#2D3748" font-weight="600">MosaicBoard</text>
+  </g>
+</svg>
