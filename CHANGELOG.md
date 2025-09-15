@@ -1,0 +1,25 @@
+# Change Log
+
+All notable changes to this project will be documented in this file.
+See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
+# 1.3.0 (2025-09-15)
+
+
+### Bug Fixes
+
+* **package:** ensure proper formatting in package.json 545e04a
+
+
+### Features
+
+* Add import/export functionality for dashboard settings and enhance weather widget simulation d984cb6
+* add semantic release and commitizen configuration d148004
+* Add Website Embed widget functionality 9dc89bd
+* change ui Bookmark, Clock, Weather, and Website Embed widgets with initial functionality 49798e5
+* **core:** grid, modal, storage, types and widget manager initial changes 11eedd1
+* english e539219
+* Enhance accessibility and error handling in widgets b935252
+* **new-tab:** add new-tab page and extension manifest f395290
+* refactor widget management and modal handling; add folder selector modal fdcb0d9
+* **widgets:** add bookmark, clock, weather and website widget logic aa10e4f
