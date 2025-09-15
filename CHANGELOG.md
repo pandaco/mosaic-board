@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.4.0](/compare/mosaic-board@1.3.0...mosaic-board@1.4.0) (2025-09-15)
+
+
+### Bug Fixes
+
+* **ui:** align brand logo and title on single line using flex b3f9804
+
+
+### Features
+
+* **branding:** add mosaic logo assets, svg variants, and wire into new-tab; add icon helpers abb249f
+
+
+
+
+
 # 1.3.0 (2025-09-15)
 
 
