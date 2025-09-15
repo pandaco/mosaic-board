@@ -26,7 +26,7 @@
 }
 
 .widget-content {
-    padding: calc(var(--spacing-unit) * 1);
+    padding: calc(var(--spacing-unit) * 0.5);
     flex-grow: 1;
     overflow-y: auto;
     overflow-x: hidden;

@@ -25,8 +25,3 @@
 .grid-stack-item.ui-resizable-resizing .grid-stack-item-content {
      box-shadow: var(--shadow-lg);
 }
-
-.ui-resizable-handle {
-    display: none !important;
-    visibility: hidden !important;
-}

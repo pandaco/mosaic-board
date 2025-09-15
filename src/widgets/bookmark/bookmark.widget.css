@@ -13,7 +13,7 @@
 
 
 .bookmark-widget .bookmark-item {
-    margin-bottom: calc(var(--spacing-unit) * 0.3);
+    margin-bottom: calc(var(--spacing-unit) * 0.1);
 }
 
 .bookmark-widget .bookmark-item a {
@@ -84,7 +84,6 @@
 .bookmark-widget .view-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-    /* gap: calc(var(--spacing-unit) * 0.75); /* Supprimé */
 }
 
 .bookmark-widget .view-grid .bookmark-item a {
