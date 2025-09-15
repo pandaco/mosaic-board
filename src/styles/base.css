@@ -45,14 +45,20 @@ body {
     font-weight: 400;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
     margin-bottom: calc(var(--spacing-unit) * 0.75);
     font-weight: 500;
     line-height: 1.3;
     color: var(--text-color);
 }
 
-input, select {
+input,
+select {
     font-family: inherit;
     font-size: 0.9rem;
     padding: calc(var(--spacing-unit) * 0.5) calc(var(--spacing-unit) * 0.75);
@@ -61,7 +67,9 @@ input, select {
     background-color: #fff;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
-input:focus, select:focus {
+
+input:focus,
+select:focus {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 1px var(--primary-color);
