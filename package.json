@@ -8,8 +8,8 @@
         "build": "tsc && vite build",
         "preview": "vite preview",
         "commit": "cz",
-    "prepare": "husky",
-    "lerna:version": "lerna version --conventional-commits --yes  --no-push"
+        "prepare": "husky",
+        "lerna:version": "lerna version --conventional-commits --yes  --no-push"
     },
     "devDependencies": {
         "@commitlint/cli": "^19.3.0",
