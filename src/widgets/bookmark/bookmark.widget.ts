@@ -206,12 +206,17 @@ export class BookmarkWidget {
         icon.className = 'fas fa-folder item-icon';
         icon.setAttribute('aria-hidden', 'true');
 
+        const titleContainer = document.createElement('span');
+        titleContainer.className = 'item-title-container';
+
         const titleSpan = document.createElement('span');
         titleSpan.className = 'item-title';
         titleSpan.textContent = folderTitle;
 
+        titleContainer.appendChild(titleSpan);
+
         link.appendChild(icon);
-        link.appendChild(titleSpan);
+        link.appendChild(titleContainer);
 
         if (this.prefs.showCount) {
 
@@ -221,7 +226,7 @@ export class BookmarkWidget {
                  countSpan.className = 'item-count';
                  countSpan.textContent = ` (${count})`;
                  countSpan.setAttribute('aria-label', `${count} items`);
-                 link.appendChild(countSpan);
+                 titleContainer.appendChild(countSpan);
              } else {
 
                  chrome.bookmarks.getChildren(folderNode.id, (children) => {
@@ -233,7 +238,7 @@ export class BookmarkWidget {
                          countSpan.setAttribute('aria-label', `${count} items`);
 
                          if (li.contains(link)) {
-                            link.appendChild(countSpan);
+                            titleContainer.appendChild(countSpan);
                          }
                      }
                  });
