@@ -9,7 +9,8 @@
         "preview": "vite preview",
         "commit": "cz",
         "prepare": "husky",
-        "lerna:version": "lerna version --conventional-commits --yes  --no-push && node scripts/update-manifest-version.js"
+        "preversion": "node scripts/update-manifest-version.js",
+        "lerna:version": "lerna version --conventional-commits --yes --no-push"
     },
     "devDependencies": {
         "@commitlint/cli": "^19.3.0",

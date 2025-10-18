@@ -26,24 +26,17 @@ async function updateManifestVersion() {
   await writeFile(manifestPath, newManifestRaw, 'utf8');
   console.log(`Updated manifest.json to version ${pkg.version}`);
 
-  // Try to stage and amend the last commit if possible
+  // Stage the manifest file for the upcoming Lerna commit
   try {
-    // Use simple child_process spawnSync to run git commands
     const { spawnSync } = await import('child_process');
     const add = spawnSync('git', ['add', manifestPath], { stdio: 'inherit' });
     if (add.status !== 0) {
-      console.warn('git add failed, skipping commit amend');
-      return;
-    }
-
-    const amend = spawnSync('git', ['commit', '--no-edit', '--amend'], { stdio: 'inherit' });
-    if (amend.status !== 0) {
-      console.warn('git commit --amend failed, creating a new commit');
-      const commitNew = spawnSync('git', ['commit', '-m', `chore(release): sync manifest version to ${pkg.version}`], { stdio: 'inherit' });
-      if (commitNew.status !== 0) console.warn('git commit failed');
+      console.warn('git add failed');
+    } else {
+      console.log('manifest.json staged for commit');
     }
   } catch (err) {
-    console.error('Failed to run git commands:', err);
+    console.error('Failed to stage manifest.json:', err);
   }
 }
 
