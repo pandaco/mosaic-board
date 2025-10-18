@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.4.3](https://github.com/pandaco/mosaic-board/compare/mosaic-board@1.4.0...mosaic-board@1.4.3) (2025-10-18)
+
+
+### Bug Fixes
+
+* **release:** prevent divergent commits during version bump ([c0615d2](https://github.com/pandaco/mosaic-board/commit/c0615d2d11b5470e72c10ba986ab70c613e3bc64))
+
+
+
+
+
 ## [1.4.2](https://github.com/pandaco/mosaic-board/compare/mosaic-board@1.4.0...mosaic-board@1.4.2) (2025-10-18)
 
 **Note:** Version bump only for package mosaic-board
