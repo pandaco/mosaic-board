@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.7.0](https://github.com/pandaco/mosaic-board/compare/mosaic-board@1.6.0...mosaic-board@1.7.0) (2025-10-18)
+
+
+### Bug Fixes
+
+* **bookmark:** display folders and bookmarks in continuous grid layout ([7608d4f](https://github.com/pandaco/mosaic-board/commit/7608d4f339ca5064b1e51eb9aa48206dff7d43a2))
+
+
+### Features
+
+* **bookmark:** add privacy-friendly favicon option ([c9919bf](https://github.com/pandaco/mosaic-board/commit/c9919bf0c57218c85c298b959cf76d6cac19dc4f))
+* **bookmark:** display item count inline in grid view ([7be2b76](https://github.com/pandaco/mosaic-board/commit/7be2b76e9f477025a71a19a7a847ea264d9e329d))
+
+
+
+
+
 # [1.6.0](https://github.com/pandaco/mosaic-board/compare/mosaic-board@1.4.4...mosaic-board@1.6.0) (2025-10-18)
 
 
