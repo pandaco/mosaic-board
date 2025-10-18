@@ -5,22 +5,18 @@ import {
     WidgetLayout
 } from './types';
 
-// Storage Keys
 const LAYOUT_KEY = 'dashboardLayout';
 const BOOKMARK_PREFS_KEY = 'bookmarkWidgetPrefs';
 const WEATHER_PREFS_KEY = 'weatherWidgetPrefs';
 const CLOCK_PREFS_KEY = 'clockWidgetPrefs';
-const WEBSITE_PREFS_KEY = 'websiteWidgetPrefs'; // Renamed key
+const WEBSITE_PREFS_KEY = 'websiteWidgetPrefs';
 
-/**
- * Gets the storage key based on widget type.
- */
 function getPreferencesKey(widgetType: WidgetType): string {
     switch (widgetType) {
         case WidgetType.Bookmarks: return BOOKMARK_PREFS_KEY;
         case WidgetType.Weather: return WEATHER_PREFS_KEY;
         case WidgetType.Clock: return CLOCK_PREFS_KEY;
-        case WidgetType.Website: return WEBSITE_PREFS_KEY; // Renamed case
+        case WidgetType.Website: return WEBSITE_PREFS_KEY;
         default:
              const _exhaustiveCheck: never = widgetType;
              console.error(`Unknown widget type for preferences: ${_exhaustiveCheck}`);
@@ -28,9 +24,6 @@ function getPreferencesKey(widgetType: WidgetType): string {
     }
 }
 
-/**
- * Loads the dashboard layout from storage.
- */
 export async function loadLayout(): Promise<WidgetLayout[]> {
     try {
         const result = await chrome.storage.local.get(LAYOUT_KEY);
@@ -54,9 +47,6 @@ export async function loadLayout(): Promise<WidgetLayout[]> {
     }
 }
 
-/**
- * Saves the dashboard layout to storage.
- */
 export async function saveLayout(layout: WidgetLayout[]): Promise<void> {
     if (!Array.isArray(layout)) {
         console.error("Attempted to save invalid layout:", layout);
@@ -81,9 +71,6 @@ export async function saveLayout(layout: WidgetLayout[]): Promise<void> {
     }
 }
 
-/**
- * Loads all preferences for a specific widget type from storage.
- */
 export async function loadAllPreferences<T extends BaseWidgetPreferences>(
     widgetType: WidgetType
 ): Promise<StoredPreferences<T>> {
@@ -101,9 +88,6 @@ export async function loadAllPreferences<T extends BaseWidgetPreferences>(
     }
 }
 
-/**
- * Saves the preferences for a specific widget instance.
- */
 export async function savePreferences<T extends BaseWidgetPreferences>(
     widgetId: string,
     widgetType: WidgetType,
@@ -134,9 +118,6 @@ export async function savePreferences<T extends BaseWidgetPreferences>(
     }
 }
 
-/**
- * Deletes the preferences for a specific widget instance.
- */
 export async function deletePreferences(
     widgetId: string,
     widgetType: WidgetType
@@ -167,10 +148,6 @@ export async function deletePreferences(
     }
 }
 
-
-/**
- * Gets the preferences for a single widget instance.
- */
 export async function getWidgetPreferences<T extends BaseWidgetPreferences>(
     widgetId: string,
     widgetType: WidgetType

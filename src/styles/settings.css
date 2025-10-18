@@ -39,7 +39,6 @@
     margin-bottom: 0;
 }
 
-
 .widget-settings-menu .settings-option:hover,
 .widget-settings-menu .folder-setting-button:hover {
     background-color: var(--background-color);
@@ -75,7 +74,6 @@
      padding-top: 0;
 }
 
-
 .widget-settings-menu .settings-group input[type="radio"],
 .widget-settings-menu .settings-group input[type="checkbox"] {
     margin-right: calc(var(--spacing-unit) * 0.4);
@@ -95,7 +93,6 @@
     margin-left: calc(var(--spacing-unit) * 0.3);
 }
 
-
 .widget-settings-menu .settings-group .radio-group label,
 .widget-settings-menu .settings-group .checkbox-group label,
 .widget-settings-menu .settings-group .offset-inputs label {
@@ -112,7 +109,6 @@
     padding-bottom: calc(var(--spacing-unit) * 0.3);
     cursor: default;
 }
-
 
 .widget-settings-menu .folder-setting-button .current-folder-name {
     font-weight: normal;

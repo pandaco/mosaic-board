@@ -4,36 +4,28 @@ import { deletePreferences, savePreferences, getWidgetPreferences } from './stor
 import { initBookmarkWidget, updateBookmarkWidgetPreferences } from './widgets/bookmark/bookmark.widget';
 import { initWeatherWidget, updateWeatherWidgetPreferences } from './widgets/weather/weather.widget';
 import { initClockWidget, updateClockWidgetPreferences, cleanupClockWidget } from './widgets/clock/clock.widget';
-// Renamed imports
+
 import { initWebsiteWidget, updateWebsiteWidgetPreferences, cleanupWebsiteWidget } from './widgets/website/website.widget';
 
-
-// Map widget types to their initialization functions
 const widgetInitializers: { [key in WidgetType]?: (id: string, element: HTMLElement, prefs: any) => void } = {
     [WidgetType.Bookmarks]: initBookmarkWidget,
     [WidgetType.Weather]: initWeatherWidget,
     [WidgetType.Clock]: initClockWidget,
-    [WidgetType.Website]: initWebsiteWidget, // Renamed key
+    [WidgetType.Website]: initWebsiteWidget,
 };
 
-// Map widget types to their preference update functions
 const widgetPreferenceUpdaters: { [key in WidgetType]?: (id: string, prefs: any) => void } = {
      [WidgetType.Bookmarks]: updateBookmarkWidgetPreferences,
      [WidgetType.Weather]: updateWeatherWidgetPreferences,
      [WidgetType.Clock]: updateClockWidgetPreferences,
-     [WidgetType.Website]: updateWebsiteWidgetPreferences, // Renamed key
+     [WidgetType.Website]: updateWebsiteWidgetPreferences,
 };
 
-// Map widget types to their cleanup functions (optional)
 const widgetCleaners: { [key in WidgetType]?: (id: string) => void } = {
      [WidgetType.Clock]: cleanupClockWidget,
-     [WidgetType.Website]: cleanupWebsiteWidget, // Renamed key
+     [WidgetType.Website]: cleanupWebsiteWidget,
 };
 
-
-/**
- * Creates the main DOM element for a new widget.
- */
 function createWidgetElement(id: string, type: WidgetType): HTMLElement | null {
     const templateId = `${type}-widget-template`;
     const template = document.getElementById(templateId) as HTMLTemplateElement | null;
@@ -68,10 +60,6 @@ function createWidgetElement(id: string, type: WidgetType): HTMLElement | null {
     return widgetContainer;
 }
 
-
-/**
- * Adds a new widget of the specified type to the dashboard.
- */
 export async function addWidget(type: WidgetType): Promise<void> {
     const id = `widget-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
     const widgetElement = createWidgetElement(id, type);
@@ -84,7 +72,7 @@ export async function addWidget(type: WidgetType): Promise<void> {
             return;
         }
 
-        const defaultSize = (type === WidgetType.Website) ? { w: 6, h: 4 } : { w: 4, h: 3 }; // Renamed check
+        const defaultSize = (type === WidgetType.Website) ? { w: 6, h: 4 } : { w: 4, h: 3 };
         addWidgetToGrid(widgetElement, { ...defaultSize, id: id });
 
         const initializer = widgetInitializers[type];
@@ -106,9 +94,6 @@ export async function addWidget(type: WidgetType): Promise<void> {
     }
 }
 
-/**
- * Removes a widget from the dashboard.
- */
 export async function removeWidget(widgetId: string): Promise<void> {
     const widgetElement = document.getElementById(widgetId);
     if (widgetElement && widgetElement.dataset.widgetType) {
@@ -134,7 +119,6 @@ export async function removeWidget(widgetId: string): Promise<void> {
     }
 }
 
-// --- Settings Menu Handling (including ESC) ---
 let activeSettingsMenuElement: HTMLElement | null = null;
 
 const handleSettingsMenuEscape = (event: KeyboardEvent) => {
@@ -161,10 +145,6 @@ const handleSettingsMenuOutsideClick = (event: MouseEvent): void => {
     }
 };
 
-
-/**
- * Creates and toggles the display of the settings menu for a widget.
- */
 async function toggleWidgetSettingsMenu(widgetId: string, widgetType: WidgetType, buttonElement: HTMLElement): Promise<void> {
     const isOpeningDifferentMenu = !activeSettingsMenuElement || activeSettingsMenuElement.dataset.widgetId !== widgetId;
 
@@ -227,9 +207,6 @@ async function toggleWidgetSettingsMenu(widgetId: string, widgetType: WidgetType
      }, 0);
 }
 
-/**
- * Closes the currently open widget settings menu.
- */
 function closeWidgetSettingsMenu(): void {
     if (activeSettingsMenuElement) {
         activeSettingsMenuElement.remove();
@@ -239,10 +216,6 @@ function closeWidgetSettingsMenu(): void {
     }
 }
 
-
-/**
- * Adds widget-specific settings options to the menu list.
- */
 function addSpecificSettingsOptions(list: HTMLUListElement, widgetId: string, widgetType: WidgetType, currentPrefs: any | null): void {
 
     const deleteButtonLi = list.querySelector('.delete-widget-button')?.closest('li');
@@ -271,9 +244,9 @@ function addSpecificSettingsOptions(list: HTMLUListElement, widgetId: string, wi
              addSeparatorIfNeeded();
             addClockSettings(list, widgetId, currentPrefs, deleteButtonLi ?? null);
             break;
-        case WidgetType.Website: // Renamed case
+        case WidgetType.Website:
              addSeparatorIfNeeded();
-             addWebsiteSettings(list, widgetId, currentPrefs, deleteButtonLi ?? null); // Renamed function call
+             addWebsiteSettings(list, widgetId, currentPrefs, deleteButtonLi ?? null);
              break;
         default:
              const _exhaustiveCheck: never = widgetType;
@@ -281,8 +254,6 @@ function addSpecificSettingsOptions(list: HTMLUListElement, widgetId: string, wi
              break;
     }
 }
-
-// --- Specific Settings Functions ---
 
 function addBookmarkSettings(list: HTMLUListElement, widgetId: string, prefs: any, insertBeforeLi: HTMLLIElement | null): void {
     const currentView = prefs?.view || 'list';
@@ -336,7 +307,6 @@ function addClockSettings(list: HTMLUListElement, widgetId: string, prefs: any, 
      stopwatchGroupLi.appendChild(stopwatchCheckbox);
 }
 
-// Renamed function for Website Settings
 function addWebsiteSettings(list: HTMLUListElement, widgetId: string, prefs: any, insertBeforeLi: HTMLLIElement | null): void {
     const url = prefs?.url || '';
     const refreshInterval = prefs?.refreshInterval || 0;
@@ -344,12 +314,12 @@ function addWebsiteSettings(list: HTMLUListElement, widgetId: string, prefs: any
     const offsetLeft = prefs?.offsetLeft || 0;
 
     const urlGroupLi = createSettingsGroup(list, 'Website URL', insertBeforeLi);
-    // Pass correct WidgetType
+
     const urlInput = createTextInputOption(widgetId, WidgetType.Website, 'url', 'https://example.com', url, 'url');
     urlGroupLi.appendChild(urlInput);
 
     const refreshGroupLi = createSettingsGroup(list, 'Refresh Interval', insertBeforeLi);
-    // Pass correct WidgetType
+
     const refreshSelect = createSelectOption(widgetId, WidgetType.Website, 'refreshInterval', [
         { value: '0', text: 'No Refresh' },
         { value: '5000', text: '5 seconds' },
@@ -368,13 +338,13 @@ function addWebsiteSettings(list: HTMLUListElement, widgetId: string, prefs: any
 
     const topLabel = document.createElement('label');
     topLabel.textContent = 'Top: ';
-    // Pass correct WidgetType
+
     const topInput = createNumberInputOption(widgetId, WidgetType.Website, 'offsetTop', offsetTop);
     topLabel.appendChild(topInput);
 
     const leftLabel = document.createElement('label');
     leftLabel.textContent = ' Left: ';
-    // Pass correct WidgetType
+
     const leftInput = createNumberInputOption(widgetId, WidgetType.Website, 'offsetLeft', offsetLeft);
     leftLabel.appendChild(leftInput);
 
@@ -382,9 +352,6 @@ function addWebsiteSettings(list: HTMLUListElement, widgetId: string, prefs: any
     offsetContainer.appendChild(leftLabel);
     offsetGroupLi.appendChild(offsetContainer);
 }
-
-
-// --- Helper functions for creating settings elements ---
 
 function createSettingsGroup(list: HTMLUListElement, title: string, insertBeforeLi: HTMLLIElement | null): HTMLLIElement {
     const li = document.createElement('li');
@@ -395,7 +362,6 @@ function createSettingsGroup(list: HTMLUListElement, title: string, insertBefore
     list.insertBefore(li, insertBeforeLi);
     return li;
 }
-
 
 function createRadioOption(widgetId: string, type: WidgetType, key: string, value: string, labelText: string, isChecked: boolean): HTMLLabelElement {
     const label = document.createElement('label');
@@ -454,7 +420,6 @@ function createNumberInputOption(widgetId: string, type: WidgetType, key: string
     return input;
 }
 
-
 function createSelectOption(widgetId: string, type: WidgetType, key: string, options: { value: string; text: string }[], currentValue: string): HTMLSelectElement {
     const select = document.createElement('select');
     options.forEach(opt => {
@@ -472,9 +437,6 @@ function createSelectOption(widgetId: string, type: WidgetType, key: string, opt
     return select;
 }
 
-/**
- * Generic function to update a widget's preference.
- */
 async function updatePreference(widgetId: string, type: WidgetType, key: string, value: any): Promise<void> {
     try {
         const currentPrefs = await getWidgetPreferences<any>(widgetId, type) || getDefaultPreferences(type) || {};
@@ -493,10 +455,6 @@ async function updatePreference(widgetId: string, type: WidgetType, key: string,
     }
 }
 
-
-/**
- * Loads and creates all widgets based on the saved layout.
- */
 export async function loadWidgets(): Promise<void> {
     await loadGridState(async (item: WidgetLayout): Promise<HTMLElement | null> => {
         const widgetContainer = createWidgetElement(item.id, item.type);
@@ -531,10 +489,6 @@ export async function loadWidgets(): Promise<void> {
     });
 }
 
-
-/**
- * Returns default preferences for a given widget type.
- */
 function getDefaultPreferences(type: WidgetType): BaseWidgetPreferences | null {
     switch (type) {
         case WidgetType.Bookmarks:
@@ -543,7 +497,7 @@ function getDefaultPreferences(type: WidgetType): BaseWidgetPreferences | null {
             return { location: 'Lille', unit: 'metric' };
         case WidgetType.Clock:
             return { showStopwatch: false };
-        case WidgetType.Website: // Renamed type
+        case WidgetType.Website:
             return { url: '', refreshInterval: 0, offsetTop: 0, offsetLeft: 0 };
         default:
              const _exhaustiveCheck: never = type;
@@ -552,16 +506,10 @@ function getDefaultPreferences(type: WidgetType): BaseWidgetPreferences | null {
     }
 }
 
-// --- Folder Selector Modal Logic ---
-
 let currentWidgetIdForFolderSelection: string | null = null;
 declare function openModal(modalElement: HTMLElement | null): void;
 declare function closeActiveModal(): void;
 
-
-/**
- * Opens the folder selector modal and populates the tree.
- */
 async function openFolderSelectorModal(widgetId: string): Promise<void> {
     currentWidgetIdForFolderSelection = widgetId;
     const modal = document.getElementById('folder-selector-modal');
@@ -579,8 +527,8 @@ async function openFolderSelectorModal(widgetId: string): Promise<void> {
     confirmButton.disabled = true;
     confirmButton.dataset.selectedFolderId = '';
 
-    openModal(modal); // Use global openModal
-    closeWidgetSettingsMenu(); // Close settings menu
+    openModal(modal);
+    closeWidgetSettingsMenu();
 
     try {
         const bookmarkTreeRoots = await chrome.bookmarks.getTree();
@@ -608,9 +556,6 @@ async function openFolderSelectorModal(widgetId: string): Promise<void> {
     }
 }
 
-/**
- * Recursively builds the HTML for the folder tree.
- */
 function buildFolderTree(node: chrome.bookmarks.BookmarkTreeNode, parentUlElement: HTMLUListElement, level: number): void {
 
     const li = document.createElement('li');
@@ -657,10 +602,6 @@ function buildFolderTree(node: chrome.bookmarks.BookmarkTreeNode, parentUlElemen
     parentUlElement.appendChild(li);
 }
 
-
-/**
- * Handles clicks within the folder tree container (event delegation).
- */
 function handleFolderTreeClick(event: MouseEvent): void {
     const target = event.target as HTMLElement;
     const folderItem = target.closest<HTMLElement>('.folder-item');
@@ -702,18 +643,11 @@ function handleFolderTreeClick(event: MouseEvent): void {
     confirmButton.dataset.selectedFolderId = folderId;
 }
 
-
-/**
- * Closes the folder selector modal using the global function.
- */
 export function closeFolderSelectorModal(): void {
     closeActiveModal();
     currentWidgetIdForFolderSelection = null;
 }
 
-/**
- * Handles the confirmation of folder selection.
- */
 export async function confirmFolderSelection(): Promise<void> {
     const confirmButton = document.getElementById('confirm-folder-button') as HTMLButtonElement;
     const selectedFolderId = confirmButton?.dataset.selectedFolderId;
@@ -731,9 +665,6 @@ export async function confirmFolderSelection(): Promise<void> {
     closeFolderSelectorModal();
 }
 
-/**
- * Updates the text of the "Default Folder" button in the settings menu.
- */
 async function updateSettingsMenuFolderButton(widgetId: string, folderId: string | null): Promise<void> {
     const menu = document.getElementById('active-widget-settings-menu');
     if (!menu || menu.dataset.widgetId !== widgetId) return;
@@ -744,9 +675,6 @@ async function updateSettingsMenuFolderButton(widgetId: string, folderId: string
     }
 }
 
-/**
- * Helper to fetch folder name and update the button text. Now async.
- */
 async function updateFolderButtonText(spanElement: HTMLElement | null, folderId: string | null): Promise<void> {
      if (!spanElement) return;
 

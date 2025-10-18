@@ -97,7 +97,6 @@ select:focus {
     color: var(--text-color);
 }
 
-/* Brand container: logo + title on one line */
 .brand {
     display: flex;
     align-items: center;

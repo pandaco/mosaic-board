@@ -29,7 +29,7 @@ class WeatherWidget {
     updatePreferences(newPrefs: WeatherWidgetPreferences): void {
         console.log(`Updating Weather Widget ${this.widgetId} with prefs (using MOCK data):`, newPrefs);
         this.prefs = newPrefs;
-        this.loadAndDisplayWeather(); // Reload data with new preferences
+        this.loadAndDisplayWeather();
     }
 
     private async fetchWeatherData(location: string, unit: 'metric' | 'imperial'): Promise<MockWeatherData> {
@@ -130,13 +130,12 @@ class WeatherWidget {
     }
 }
 
-// Exported functions for lifecycle manager
 export function initWeatherWidget(id: string, element: HTMLElement, prefs: WeatherWidgetPreferences): void {
     new WeatherWidget(id, element, prefs);
 }
 
 export function updateWeatherWidgetPreferences(id: string, prefs: WeatherWidgetPreferences): void {
-    // Re-initialize for simplicity, assuming no critical internal state needs preserving between pref updates.
+
     const widgetContainer = document.getElementById(id);
     const element = widgetContainer?.querySelector<HTMLElement>('.grid-stack-item-content');
     if (element) {

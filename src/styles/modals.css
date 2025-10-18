@@ -76,7 +76,6 @@
     border-top: 1px solid var(--border-color);
 }
 
-/* Add Widget Modal Specifics */
 #widget-selection-list {
     list-style: none;
     padding: 0;
@@ -94,7 +93,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center; /* Center content vertically */
+    justify-content: center;
     gap: calc(var(--spacing-unit) * 0.5);
     border: 1px solid var(--border-color);
     text-align: center;
@@ -120,7 +119,6 @@
     color: var(--text-secondary-color);
 }
 
-/* Folder Selector Modal Specifics */
 #folder-tree-container {
     border: 1px solid var(--border-color);
     padding: calc(var(--spacing-unit) * 0.5);
@@ -160,7 +158,6 @@
     color: white;
 }
 
-
 #folder-tree-container .folder-toggle {
     margin-right: calc(var(--spacing-unit) * 0.4);
     width: 1em;
@@ -185,7 +182,6 @@
 #folder-tree-container ul ul.hidden {
     display: none;
 }
-
 
 #selected-folder-name {
     font-weight: 500;

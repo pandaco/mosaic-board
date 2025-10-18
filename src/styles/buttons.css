@@ -49,7 +49,6 @@ button:disabled {
     box-shadow: var(--shadow-sm);
 }
 
-
 .secondary-button {
     color: var(--text-secondary-color);
     background-color: #fff;

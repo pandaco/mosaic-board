@@ -9,7 +9,7 @@ import 'gridstack/dist/gridstack.min.css';
 import { initGrid, saveGridState } from './grid';
 import { WidgetType } from './types';
 import { ModalManager } from './modals/modal';
-// Importer les classes nécessaires
+
 import { SettingsMenuManager } from './widgets/settings';
 import { WidgetLifecycleManager } from './widgets/lifecycle';
 
@@ -21,9 +21,6 @@ const STORAGE_KEYS = [
     'websiteWidgetPrefs'
 ];
 
-/**
- * Exporte les paramètres actuels de l'extension dans un fichier JSON.
- */
 async function exportSettings(): Promise<void> {
     try {
         const settings = await chrome.storage.local.get(STORAGE_KEYS);
@@ -49,9 +46,6 @@ async function exportSettings(): Promise<void> {
     }
 }
 
-/**
- * Gère la sélection et l'importation d'un fichier de paramètres JSON.
- */
 function handleImportFile(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) return;
@@ -67,18 +61,15 @@ function handleImportFile(event: Event): void {
         }
         try {
             const importedSettings = JSON.parse(content);
-            // Validation basique de la structure importée
+
             if (typeof importedSettings !== 'object' || importedSettings === null) {
                 throw new Error("Invalid JSON format. Expected an object.");
             }
-            // Vérifier la présence d'au moins une clé attendue (ex: layout)
-            if (!importedSettings[STORAGE_KEYS[0]]) { // Vérifie 'dashboardLayout'
-                 console.warn("Imported settings might be incomplete or invalid (missing layout).");
-                 // On peut choisir de continuer ou d'arrêter ici
-            }
 
-            // Effacer potentiellement les anciennes clés avant d'importer ?
-            // await chrome.storage.local.clear(); // Attention: supprime TOUT
+            if (!importedSettings[STORAGE_KEYS[0]]) {
+                 console.warn("Imported settings might be incomplete or invalid (missing layout).");
+
+            }
 
             await chrome.storage.local.set(importedSettings);
             if (chrome.runtime.lastError) {
@@ -99,50 +90,37 @@ function handleImportFile(event: Event): void {
             }
             alert(message);
         } finally {
-            // Réinitialiser l'input file pour permettre la réimportation du même fichier
+
             input.value = '';
         }
     };
 
     reader.onerror = () => {
         alert(`Error reading file: ${reader.error}`);
-        input.value = ''; // Réinitialiser en cas d'erreur de lecture
+        input.value = '';
     };
 
     reader.readAsText(file);
 }
 
-
-// --- Initialisation de l'application ---
 document.addEventListener('DOMContentLoaded', () => {
     console.log("Mosaic Board Initializing...");
 
-    // --- Correction de l'ordre d'instanciation et injection de dépendance ---
-    // 1. Instancier ModalManager (pas de dépendances externes)
     const modalManager = new ModalManager();
 
-    // 2. Instancier WidgetLifecycleManager (n'a plus besoin de SettingsMenuManager dans son constructeur)
     const widgetLifecycleManager = new WidgetLifecycleManager();
 
-    // 3. Instancier SettingsMenuManager en lui passant ses dépendances (ModalManager et WidgetLifecycleManager)
     const settingsMenuManager = new SettingsMenuManager(modalManager, widgetLifecycleManager);
 
-    // 4. Injecter SettingsMenuManager dans WidgetLifecycleManager maintenant qu'il est créé
     widgetLifecycleManager.setSettingsMenuManager(settingsMenuManager);
-    // --- Fin de la correction ---
 
-    // Initialiser la grille GridStack
     initGrid('#grid-container', () => {
-        // Callback appelé à chaque changement de la grille (drag, resize, add, remove)
-        saveGridState(); // Sauvegarder la disposition
+
+        saveGridState();
     });
 
-    // Charger les widgets sauvegardés
-    widgetLifecycleManager.loadWidgets(); // Utiliser la méthode de l'instance
+    widgetLifecycleManager.loadWidgets();
 
-    // --- Ajout des écouteurs d'événements ---
-
-    // Bouton "Add Widget"
     const addWidgetButton = document.getElementById('add-widget-button');
     const addWidgetModal = document.getElementById('add-widget-modal');
     const closeAddModalButton = addWidgetModal?.querySelector('.modal-close-button');
@@ -150,42 +128,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
     addWidgetButton?.addEventListener('click', () => modalManager.openModal(addWidgetModal));
     closeAddModalButton?.addEventListener('click', () => modalManager.closeActiveModal());
-    // Fermer la modale si on clique en dehors du contenu
+
     addWidgetModal?.addEventListener('click', (event) => {
         if (event.target === addWidgetModal) {
             modalManager.closeActiveModal();
         }
     });
 
-    // Clic sur un type de widget dans la modale d'ajout
     widgetSelectionList?.addEventListener('click', (event) => {
         const target = event.target as HTMLElement;
         const listItem = target.closest<HTMLElement>('li[data-widget-type]');
         if (listItem && listItem.dataset.widgetType) {
             const type = listItem.dataset.widgetType as WidgetType;
-            widgetLifecycleManager.addWidget(type); // Utiliser la méthode de l'instance
+            widgetLifecycleManager.addWidget(type);
             modalManager.closeActiveModal();
         }
     });
 
-     // Les écouteurs pour la modale de sélection de dossier sont gérés dans SettingsMenuManager
-
-     // Boutons Import/Export
      const exportButton = document.getElementById('export-settings-button');
      const importButton = document.getElementById('import-settings-button');
      const importFileInput = document.getElementById('import-file-input');
 
      exportButton?.addEventListener('click', exportSettings);
-     // Déclenche le clic sur l'input file caché
+
      importButton?.addEventListener('click', () => importFileInput?.click());
-     // Gère le changement de fichier (sélection par l'utilisateur)
+
      importFileInput?.addEventListener('change', handleImportFile);
 
     console.log("Mosaic Board Initialized.");
 });
 
-// Optionnel: Nettoyage lors de la fermeture de l'onglet (peut être utile pour certains timers/listeners)
 window.addEventListener('unload', () => {
     console.log("Mosaic Board Unloading...");
-    // Ajouter ici d'éventuelles fonctions de nettoyage globales si nécessaire
+
 });

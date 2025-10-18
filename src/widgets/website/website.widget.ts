@@ -1,7 +1,6 @@
 import './website.widget.css';
 import { WebsiteWidgetPreferences } from '../../types';
 
-// Store intervals globally
 const refreshIntervals = new Map<string, number>();
 
 class WebsiteWidget {
@@ -27,7 +26,7 @@ class WebsiteWidget {
     updatePreferences(newPrefs: WebsiteWidgetPreferences): void {
         console.log(`Updating Website Widget ${this.widgetId} with prefs:`, newPrefs);
         this.prefs = newPrefs;
-        this.loadIframe(); // Reload iframe with new settings
+        this.loadIframe();
     }
 
     private displayWidgetError(message: string): void {
@@ -74,10 +73,9 @@ class WebsiteWidget {
 
         this.cleanupRefreshInterval();
 
-        // Remove existing iframe if present
         const existingIframe = this.iframeContainer.querySelector('iframe');
         if (existingIframe) existingIframe.remove();
-        this.iframe = null; // Clear reference
+        this.iframe = null;
 
         if (!this.prefs.url || !this.prefs.url.startsWith('http')) {
             if (!this.prefs.url) this.showPlaceholder();
@@ -106,11 +104,11 @@ class WebsiteWidget {
 
         if (this.prefs.refreshInterval > 0) {
             const intervalId = setInterval(() => {
-                if (this.iframe) { // Check if iframe still exists
+                if (this.iframe) {
                     console.log(`Refreshing iframe for ${this.widgetId}: ${this.prefs.url}`);
-                    this.iframe.src = this.iframe.src; // Reload
+                    this.iframe.src = this.iframe.src;
                 } else {
-                    this.cleanupRefreshInterval(); // Stop interval if iframe is gone
+                    this.cleanupRefreshInterval();
                 }
             }, this.prefs.refreshInterval);
             refreshIntervals.set(this.widgetId, intervalId);
@@ -123,13 +121,12 @@ class WebsiteWidget {
     }
 }
 
-// Exported functions for lifecycle manager
 export function initWebsiteWidget(id: string, element: HTMLElement, prefs: WebsiteWidgetPreferences): void {
     new WebsiteWidget(id, element, prefs);
 }
 
 export function updateWebsiteWidgetPreferences(id: string, prefs: WebsiteWidgetPreferences): void {
-    // Re-initialize for simplicity
+
     const widgetContainer = document.getElementById(id);
     const element = widgetContainer?.querySelector<HTMLElement>('.grid-stack-item-content');
     if (element) {

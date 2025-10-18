@@ -1,11 +1,5 @@
 import { WidgetType, BaseWidgetPreferences } from '../types';
 
-/**
- * Creates the main DOM element for a new widget based on its type.
- * @param id Unique ID for the widget instance.
- * @param type Type of the widget.
- * @returns The created HTMLElement (outer grid-stack-item) or null if template not found.
- */
 export function createWidgetElement(id: string, type: WidgetType): HTMLElement | null {
     const templateId = `${type}-widget-template`;
     const template = document.getElementById(templateId) as HTMLTemplateElement | null;
@@ -32,12 +26,6 @@ export function createWidgetElement(id: string, type: WidgetType): HTMLElement |
     return widgetContainer;
 }
 
-
-/**
- * Returns default preferences for a given widget type.
- * @param type The type of the widget.
- * @returns Default preferences object or null.
- */
 export function getDefaultPreferences(type: WidgetType): BaseWidgetPreferences | null {
     switch (type) {
         case WidgetType.Bookmarks:
