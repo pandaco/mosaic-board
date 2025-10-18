@@ -1,0 +1,52 @@
+name: Build & Release Chrome Extension on Tag pushed
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Prepare Chrome extension package
+        run: |
+          mkdir chrome-extension
+          cp -r dist/* chrome-extension/ 2>/dev/null || :
+
+      - name: Get version from package.json
+        id: pkg
+        run: echo "version=$(jq -r .version package.json)" >> $GITHUB_OUTPUT
+
+      - name: Create zip archive
+        run: |
+          cd chrome-extension
+          zip -r ../mosaic-board-${{ steps.pkg.outputs.version }}.zip .
+          cd ..
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: mosaic-board-${{ steps.pkg.outputs.version }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Clean up temporary files
+        if: always()
+        run: |
+          rm -rf chrome-extension
+          rm -f mosaic-board-*.zip
