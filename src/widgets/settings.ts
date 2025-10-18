@@ -201,6 +201,7 @@ export class SettingsMenuManager {
         const currentView = prefs?.view || 'list';
         const showCount = prefs?.showCount ?? false;
         const defaultFolderId = prefs?.defaultFolderId || '1';
+        const faviconSource = prefs?.faviconSource || 'default';
 
         const viewGroupLi = this.createSettingsGroup(list, 'Display', insertBeforeLi);
         viewGroupLi.appendChild(this.createRadioOption(widgetId, WidgetType.Bookmarks, 'view', 'list', 'List View', currentView === 'list'));
@@ -208,6 +209,12 @@ export class SettingsMenuManager {
 
         const countGroupLi = this.createSettingsGroup(list, 'Options', insertBeforeLi);
         countGroupLi.appendChild(this.createCheckboxOption(widgetId, WidgetType.Bookmarks, 'showCount', 'Show item count', showCount));
+
+        const faviconGroupLi = this.createSettingsGroup(list, 'Favicons', insertBeforeLi);
+        faviconGroupLi.appendChild(this.createSelectOption(widgetId, WidgetType.Bookmarks, 'faviconSource', [
+            { value: 'default', text: 'Default (Privacy-friendly)' },
+            { value: 'google', text: 'Google Service' }
+        ], faviconSource));
 
         const folderGroupLi = this.createSettingsGroup(list, 'Default Folder', insertBeforeLi);
         const folderButton = document.createElement('button');

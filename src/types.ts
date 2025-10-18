@@ -23,6 +23,7 @@ export interface BookmarkWidgetPreferences extends BaseWidgetPreferences {
     view: 'list' | 'grid';
     showCount: boolean;
     defaultFolderId: string | null;
+    faviconSource: 'default' | 'google';
 }
 
 export interface WeatherWidgetPreferences extends BaseWidgetPreferences {

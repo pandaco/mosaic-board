@@ -29,7 +29,7 @@ export function createWidgetElement(id: string, type: WidgetType): HTMLElement |
 export function getDefaultPreferences(type: WidgetType): BaseWidgetPreferences | null {
     switch (type) {
         case WidgetType.Bookmarks:
-            return { view: 'list', showCount: false, defaultFolderId: '1' };
+            return { view: 'list', showCount: false, defaultFolderId: '1', faviconSource: 'default' };
         case WidgetType.Weather:
             return { location: 'Lille', unit: 'metric' };
         case WidgetType.Clock:
