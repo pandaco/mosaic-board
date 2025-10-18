@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.5.0](https://github.com/pandaco/mosaic-board/compare/mosaic-board@1.4.4...mosaic-board@1.5.0) (2025-10-18)
+
+
+### Features
+
+* **ci:** add GitHub Actions workflow for building and releasing Chrome extension on tag push ([d8765fc](https://github.com/pandaco/mosaic-board/commit/d8765fc2ff6fc2cdfe750d13f41fc908b5195e33))
+
+
+
+
+
 ## [1.4.4](https://github.com/pandaco/mosaic-board/compare/mosaic-board@1.4.3...mosaic-board@1.4.4) (2025-10-18)
 
 
