@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Mosaic Board",
-    "version": "1.4.4",
+    "version": "1.5.0",
     "description": "Build your personal New Tab dashboard with draggable and resizable widgets. Your web, organized.",
     "permissions": [
         "bookmarks",
