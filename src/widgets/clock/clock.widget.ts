@@ -1,5 +1,11 @@
 import './clock.widget.css';
 import { ClockWidgetPreferences } from '../../types';
+import {
+    CLOCK_INTERVALS,
+    TIME_FORMAT,
+    CssClass,
+    USER_MESSAGES,
+} from '../../constants';
 
 const clockIntervals = new Map<string, number>();
 const stopwatchIntervals = new Map<string, number>();
@@ -21,11 +27,11 @@ class ClockWidget {
         this.element = element;
         this.prefs = initialPrefs;
 
-        this.clockDisplay = this.element.querySelector<HTMLElement>('.clock-display');
-        this.stopwatchControls = this.element.querySelector<HTMLElement>('.stopwatch-controls');
-        this.startButton = this.element.querySelector<HTMLButtonElement>('.start-stopwatch');
-        this.stopButton = this.element.querySelector<HTMLButtonElement>('.stop-stopwatch');
-        this.resetButton = this.element.querySelector<HTMLButtonElement>('.reset-stopwatch');
+        this.clockDisplay = this.element.querySelector<HTMLElement>(`.${CssClass.ClockDisplay}`);
+        this.stopwatchControls = this.element.querySelector<HTMLElement>(`.${CssClass.StopwatchControls}`);
+        this.startButton = this.element.querySelector<HTMLButtonElement>(`.${CssClass.StartStopwatch}`);
+        this.stopButton = this.element.querySelector<HTMLButtonElement>(`.${CssClass.StopStopwatch}`);
+        this.resetButton = this.element.querySelector<HTMLButtonElement>(`.${CssClass.ResetStopwatch}`);
 
         if (!stopwatchElapsedTimes.has(this.widgetId)) {
              stopwatchElapsedTimes.set(this.widgetId, 0);
@@ -58,16 +64,16 @@ class ClockWidget {
     private startClock(): void {
         this.cleanupClockInterval();
         this.updateClockDisplay();
-        const intervalId = setInterval(() => this.updateClockDisplay(), 1000);
+        const intervalId = setInterval(() => this.updateClockDisplay(), CLOCK_INTERVALS.UPDATE_MS);
         clockIntervals.set(this.widgetId, intervalId);
     }
 
     private updateClockDisplay(): void {
         if (!this.clockDisplay || stopwatchIntervals.has(this.widgetId)) return;
         const now = new Date();
-        const hours = now.getHours().toString().padStart(2, '0');
-        const minutes = now.getMinutes().toString().padStart(2, '0');
-        const seconds = now.getSeconds().toString().padStart(2, '0');
+        const hours = now.getHours().toString().padStart(TIME_FORMAT.PADDING_LENGTH, TIME_FORMAT.PADDING_CHAR);
+        const minutes = now.getMinutes().toString().padStart(TIME_FORMAT.PADDING_LENGTH, TIME_FORMAT.PADDING_CHAR);
+        const seconds = now.getSeconds().toString().padStart(TIME_FORMAT.PADDING_LENGTH, TIME_FORMAT.PADDING_CHAR);
         this.clockDisplay.textContent = `${hours}:${minutes}:${seconds}`;
     }
 
@@ -81,7 +87,7 @@ class ClockWidget {
     private updateStopwatchVisibility(): void {
         if (!this.stopwatchControls) return;
         const shouldBeVisible = this.prefs.showStopwatch;
-        this.stopwatchControls.classList.toggle('hidden', !shouldBeVisible);
+        this.stopwatchControls.classList.toggle(CssClass.Hidden, !shouldBeVisible);
         if (shouldBeVisible) {
             this.setupStopwatch();
         } else {
@@ -120,7 +126,7 @@ class ClockWidget {
                 const currentElapsed = Date.now() - startTime;
                 this.updateStopwatchDisplay(currentElapsed);
             }
-        }, 50);
+        }, CLOCK_INTERVALS.STOPWATCH_UPDATE_MS);
         stopwatchIntervals.set(this.widgetId, intervalId);
 
         if(this.startButton) this.startButton.disabled = true;
@@ -163,10 +169,10 @@ class ClockWidget {
 
     private updateStopwatchDisplay(milliseconds: number): void {
         if (!this.clockDisplay) return;
-        const totalSeconds = Math.floor(milliseconds / 1000);
-        const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
-        const seconds = (totalSeconds % 60).toString().padStart(2, '0');
-        const hundredths = Math.floor((milliseconds % 1000) / 10).toString().padStart(2, '0');
+        const totalSeconds = Math.floor(milliseconds / TIME_FORMAT.MILLISECONDS_PER_SECOND);
+        const minutes = Math.floor(totalSeconds / TIME_FORMAT.SECONDS_PER_MINUTE).toString().padStart(TIME_FORMAT.PADDING_LENGTH, TIME_FORMAT.PADDING_CHAR);
+        const seconds = (totalSeconds % TIME_FORMAT.SECONDS_PER_MINUTE).toString().padStart(TIME_FORMAT.PADDING_LENGTH, TIME_FORMAT.PADDING_CHAR);
+        const hundredths = Math.floor((milliseconds % TIME_FORMAT.MILLISECONDS_PER_SECOND) / TIME_FORMAT.MILLISECONDS_TO_HUNDREDTHS).toString().padStart(TIME_FORMAT.PADDING_LENGTH, TIME_FORMAT.PADDING_CHAR);
         this.clockDisplay.textContent = `${minutes}:${seconds}.${hundredths}`;
     }
 
@@ -178,10 +184,10 @@ class ClockWidget {
     }
 
     private updateAlertsInfo(): void {
-        const alertsInfo = this.element.querySelector<HTMLElement>('.alerts-info');
+        const alertsInfo = this.element.querySelector<HTMLElement>(`.${CssClass.AlertsInfo}`);
         if (alertsInfo) {
 
-            alertsInfo.textContent = "Alerts: None";
+            alertsInfo.textContent = USER_MESSAGES.ALERTS_NONE;
         }
     }
 
@@ -200,7 +206,7 @@ export function initClockWidget(id: string, element: HTMLElement, prefs: ClockWi
 export function updateClockWidgetPreferences(id: string, prefs: ClockWidgetPreferences): void {
 
     const widgetContainer = document.getElementById(id);
-    const element = widgetContainer?.querySelector<HTMLElement>('.grid-stack-item-content');
+    const element = widgetContainer?.querySelector<HTMLElement>(`.${CssClass.GridStackItemContent}`);
     if (element) {
         console.warn(`Re-initializing ClockWidget ${id} due to preference update.`);
         new ClockWidget(id, element, prefs);

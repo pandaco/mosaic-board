@@ -1,5 +1,10 @@
 import './website.widget.css';
 import { WebsiteWidgetPreferences } from '../../types';
+import {
+    WEBSITE_CONFIG,
+    CssClass,
+    USER_MESSAGES,
+} from '../../constants';
 
 const refreshIntervals = new Map<string, number>();
 
@@ -14,7 +19,7 @@ class WebsiteWidget {
         this.widgetId = widgetId;
         this.element = element;
         this.prefs = initialPrefs;
-        this.iframeContainer = this.element.querySelector<HTMLElement>('.iframe-container');
+        this.iframeContainer = this.element.querySelector<HTMLElement>(`.${CssClass.IframeContainer}`);
         this.init();
     }
 
@@ -30,29 +35,29 @@ class WebsiteWidget {
     }
 
     private displayWidgetError(message: string): void {
-        const errorElement = this.element.querySelector<HTMLElement>('.error-message');
-        const placeholder = this.element.querySelector<HTMLElement>('.placeholder-message');
-        if (placeholder) placeholder.classList.add('hidden');
+        const errorElement = this.element.querySelector<HTMLElement>(`.${CssClass.ErrorMessage}`);
+        const placeholder = this.element.querySelector<HTMLElement>(`.${CssClass.PlaceholderMessage}`);
+        if (placeholder) placeholder.classList.add(CssClass.Hidden);
         if (this.iframe) this.iframe.style.display = 'none';
         if (errorElement) {
-            errorElement.textContent = message || 'An error occurred.';
-            errorElement.classList.remove('hidden');
+            errorElement.textContent = message || USER_MESSAGES.ERROR_GENERIC;
+            errorElement.classList.remove(CssClass.Hidden);
         }
     }
 
     private showPlaceholder(): void {
-         const errorElement = this.element.querySelector<HTMLElement>('.error-message');
-         const placeholder = this.element.querySelector<HTMLElement>('.placeholder-message');
+         const errorElement = this.element.querySelector<HTMLElement>(`.${CssClass.ErrorMessage}`);
+         const placeholder = this.element.querySelector<HTMLElement>(`.${CssClass.PlaceholderMessage}`);
          if (this.iframe) this.iframe.style.display = 'none';
-         if (errorElement) errorElement.classList.add('hidden');
-         if (placeholder) placeholder.classList.remove('hidden');
+         if (errorElement) errorElement.classList.add(CssClass.Hidden);
+         if (placeholder) placeholder.classList.remove(CssClass.Hidden);
     }
 
     private showIframe(): void {
-        const errorElement = this.element.querySelector<HTMLElement>('.error-message');
-        const placeholder = this.element.querySelector<HTMLElement>('.placeholder-message');
-        if (placeholder) placeholder.classList.add('hidden');
-        if (errorElement) errorElement.classList.add('hidden');
+        const errorElement = this.element.querySelector<HTMLElement>(`.${CssClass.ErrorMessage}`);
+        const placeholder = this.element.querySelector<HTMLElement>(`.${CssClass.PlaceholderMessage}`);
+        if (placeholder) placeholder.classList.add(CssClass.Hidden);
+        if (errorElement) errorElement.classList.add(CssClass.Hidden);
         if (this.iframe) this.iframe.style.display = 'block';
     }
 
@@ -77,17 +82,21 @@ class WebsiteWidget {
         if (existingIframe) existingIframe.remove();
         this.iframe = null;
 
-        if (!this.prefs.url || !this.prefs.url.startsWith('http')) {
+        const hasValidProtocol = WEBSITE_CONFIG.REQUIRED_URL_PROTOCOLS.some(protocol =>
+            this.prefs.url.startsWith(protocol)
+        );
+
+        if (!this.prefs.url || !hasValidProtocol) {
             if (!this.prefs.url) this.showPlaceholder();
-            else this.displayWidgetError('Invalid URL format. Please start with http:// or https://');
+            else this.displayWidgetError(USER_MESSAGES.ERROR_INVALID_URL);
             return;
         }
 
         this.iframe = document.createElement('iframe');
         this.iframe.setAttribute('src', this.prefs.url);
-        this.iframe.setAttribute('frameborder', '0');
+        this.iframe.setAttribute('frameborder', WEBSITE_CONFIG.IFRAME_BORDER);
         this.iframe.setAttribute('title', `Embedded content from ${this.prefs.url}`);
-        this.iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups allow-forms');
+        this.iframe.setAttribute('sandbox', WEBSITE_CONFIG.SANDBOX_PERMISSIONS);
 
         this.applyOffset(this.iframe, this.prefs.offsetTop, this.prefs.offsetLeft);
 
@@ -97,7 +106,8 @@ class WebsiteWidget {
         });
         this.iframe.addEventListener('error', (e) => {
              console.error(`Error loading iframe source for ${this.widgetId}: ${this.prefs.url}`, e);
-             this.displayWidgetError(`Error loading ${this.prefs.url}. Check URL/connection.`);
+             const errorMessage = USER_MESSAGES.ERROR_LOADING_URL.replace('{url}', this.prefs.url);
+             this.displayWidgetError(errorMessage);
         });
 
         this.iframeContainer.appendChild(this.iframe);
@@ -128,7 +138,7 @@ export function initWebsiteWidget(id: string, element: HTMLElement, prefs: Websi
 export function updateWebsiteWidgetPreferences(id: string, prefs: WebsiteWidgetPreferences): void {
 
     const widgetContainer = document.getElementById(id);
-    const element = widgetContainer?.querySelector<HTMLElement>('.grid-stack-item-content');
+    const element = widgetContainer?.querySelector<HTMLElement>(`.${CssClass.GridStackItemContent}`);
     if (element) {
         console.warn(`Re-initializing WebsiteWidget ${id} due to preference update.`);
         new WebsiteWidget(id, element, prefs);

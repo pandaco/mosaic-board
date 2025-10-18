@@ -9,40 +9,49 @@ import 'gridstack/dist/gridstack.min.css';
 import { initGrid, saveGridState } from './grid';
 import { WidgetType } from './types';
 import { ModalManager } from './modals/modal';
+import {
+    StorageKey,
+    FILE_CONFIG,
+    DATE_FORMAT,
+    DomSelector,
+    USER_MESSAGES,
+    LOG_MESSAGES,
+    CssClass,
+} from './constants';
 
 import { SettingsMenuManager } from './widgets/settings';
 import { WidgetLifecycleManager } from './widgets/lifecycle';
 
-const STORAGE_KEYS = [
-    'dashboardLayout',
-    'bookmarkWidgetPrefs',
-    'weatherWidgetPrefs',
-    'clockWidgetPrefs',
-    'websiteWidgetPrefs'
+const EXPORTABLE_STORAGE_KEYS = [
+    StorageKey.DashboardLayout,
+    StorageKey.BookmarkWidgetPrefs,
+    StorageKey.WeatherWidgetPrefs,
+    StorageKey.ClockWidgetPrefs,
+    StorageKey.WebsiteWidgetPrefs,
 ];
 
 async function exportSettings(): Promise<void> {
     try {
-        const settings = await chrome.storage.local.get(STORAGE_KEYS);
+        const settings = await chrome.storage.local.get(EXPORTABLE_STORAGE_KEYS);
         if (chrome.runtime.lastError) {
             throw new Error(`Export Error: ${chrome.runtime.lastError.message}`);
         }
-        const settingsJson = JSON.stringify(settings, null, 4);
-        const blob = new Blob([settingsJson], { type: 'application/json' });
+        const settingsJson = JSON.stringify(settings, null, FILE_CONFIG.JSON_INDENT_SPACES);
+        const blob = new Blob([settingsJson], { type: FILE_CONFIG.MIME_TYPE });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
         const date = new Date();
-        const timestamp = `${date.getFullYear()}${(date.getMonth() + 1).toString().padStart(2, '0')}${date.getDate().toString().padStart(2, '0')}`;
-        a.download = `mosaic_board_settings_${timestamp}.json`;
+        const timestamp = `${date.getFullYear()}${(date.getMonth() + DATE_FORMAT.MONTH_OFFSET).toString().padStart(DATE_FORMAT.PADDING_LENGTH, DATE_FORMAT.PADDING_CHAR)}${date.getDate().toString().padStart(DATE_FORMAT.PADDING_LENGTH, DATE_FORMAT.PADDING_CHAR)}`;
+        a.download = `${FILE_CONFIG.EXPORT_FILENAME_PREFIX}${timestamp}${FILE_CONFIG.FILE_EXTENSION}`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        console.log("Settings exported successfully.");
+        console.log(USER_MESSAGES.EXPORT_SUCCESS_CONSOLE);
     } catch (error) {
         console.error("Error exporting settings:", error);
-        alert("Error exporting settings. Check console for details.");
+        alert(USER_MESSAGES.ERROR_EXPORTING);
     }
 }
 
@@ -56,17 +65,17 @@ function handleImportFile(event: Event): void {
     reader.onload = async (e) => {
         const content = e.target?.result;
         if (typeof content !== 'string') {
-            alert("Error reading file content.");
+            alert(USER_MESSAGES.ERROR_READING_FILE);
             return;
         }
         try {
             const importedSettings = JSON.parse(content);
 
             if (typeof importedSettings !== 'object' || importedSettings === null) {
-                throw new Error("Invalid JSON format. Expected an object.");
+                throw new Error(USER_MESSAGES.ERROR_INVALID_JSON);
             }
 
-            if (!importedSettings[STORAGE_KEYS[0]]) {
+            if (!importedSettings[StorageKey.DashboardLayout]) {
                  console.warn("Imported settings might be incomplete or invalid (missing layout).");
 
             }
@@ -76,17 +85,17 @@ function handleImportFile(event: Event): void {
                 throw new Error(`Error saving imported settings: ${chrome.runtime.lastError.message}`);
             }
             console.log("Settings imported successfully.");
-            alert("Settings imported successfully! Please reload the page (Ctrl+R or Cmd+R) for changes to take effect.");
+            alert(USER_MESSAGES.IMPORT_SUCCESS);
 
         } catch (error) {
             console.error("Error importing settings:", error);
-            let message = "Import Error: ";
+            let message = USER_MESSAGES.ERROR_IMPORTING_PREFIX;
             if (error instanceof SyntaxError) {
-                message += "Invalid JSON format.";
+                message += USER_MESSAGES.ERROR_INVALID_JSON;
             } else if (error instanceof Error) {
                 message += error.message;
             } else {
-                message += "Unknown error occurred.";
+                message += USER_MESSAGES.ERROR_UNKNOWN;
             }
             alert(message);
         } finally {
@@ -104,7 +113,7 @@ function handleImportFile(event: Event): void {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("Mosaic Board Initializing...");
+    console.log(LOG_MESSAGES.MOSAIC_BOARD_INITIALIZING);
 
     const modalManager = new ModalManager();
 
@@ -114,17 +123,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     widgetLifecycleManager.setSettingsMenuManager(settingsMenuManager);
 
-    initGrid('#grid-container', () => {
+    initGrid(DomSelector.GridContainer, () => {
 
         saveGridState();
     });
 
     widgetLifecycleManager.loadWidgets();
 
-    const addWidgetButton = document.getElementById('add-widget-button');
-    const addWidgetModal = document.getElementById('add-widget-modal');
-    const closeAddModalButton = addWidgetModal?.querySelector('.modal-close-button');
-    const widgetSelectionList = document.getElementById('widget-selection-list');
+    const addWidgetButton = document.getElementById(DomSelector.AddWidgetButton);
+    const addWidgetModal = document.getElementById(DomSelector.AddWidgetModal);
+    const closeAddModalButton = addWidgetModal?.querySelector(`.${CssClass.ModalCloseButton}`);
+    const widgetSelectionList = document.getElementById(DomSelector.WidgetSelectionList);
 
     addWidgetButton?.addEventListener('click', () => modalManager.openModal(addWidgetModal));
     closeAddModalButton?.addEventListener('click', () => modalManager.closeActiveModal());
@@ -145,9 +154,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-     const exportButton = document.getElementById('export-settings-button');
-     const importButton = document.getElementById('import-settings-button');
-     const importFileInput = document.getElementById('import-file-input');
+     const exportButton = document.getElementById(DomSelector.ExportSettingsButton);
+     const importButton = document.getElementById(DomSelector.ImportSettingsButton);
+     const importFileInput = document.getElementById(DomSelector.ImportFileInput);
 
      exportButton?.addEventListener('click', exportSettings);
 
@@ -155,10 +164,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
      importFileInput?.addEventListener('change', handleImportFile);
 
-    console.log("Mosaic Board Initialized.");
+    console.log(LOG_MESSAGES.MOSAIC_BOARD_INITIALIZED);
 });
 
 window.addEventListener('unload', () => {
-    console.log("Mosaic Board Unloading...");
+    console.log(LOG_MESSAGES.MOSAIC_BOARD_UNLOADING);
 
 });

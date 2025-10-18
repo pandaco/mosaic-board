@@ -4,19 +4,14 @@ import {
     WidgetType,
     WidgetLayout
 } from './types';
-
-const LAYOUT_KEY = 'dashboardLayout';
-const BOOKMARK_PREFS_KEY = 'bookmarkWidgetPrefs';
-const WEATHER_PREFS_KEY = 'weatherWidgetPrefs';
-const CLOCK_PREFS_KEY = 'clockWidgetPrefs';
-const WEBSITE_PREFS_KEY = 'websiteWidgetPrefs';
+import { StorageKey } from './constants';
 
 function getPreferencesKey(widgetType: WidgetType): string {
     switch (widgetType) {
-        case WidgetType.Bookmarks: return BOOKMARK_PREFS_KEY;
-        case WidgetType.Weather: return WEATHER_PREFS_KEY;
-        case WidgetType.Clock: return CLOCK_PREFS_KEY;
-        case WidgetType.Website: return WEBSITE_PREFS_KEY;
+        case WidgetType.Bookmarks: return StorageKey.BookmarkWidgetPrefs;
+        case WidgetType.Weather: return StorageKey.WeatherWidgetPrefs;
+        case WidgetType.Clock: return StorageKey.ClockWidgetPrefs;
+        case WidgetType.Website: return StorageKey.WebsiteWidgetPrefs;
         default:
              const _exhaustiveCheck: never = widgetType;
              console.error(`Unknown widget type for preferences: ${_exhaustiveCheck}`);
@@ -26,16 +21,16 @@ function getPreferencesKey(widgetType: WidgetType): string {
 
 export async function loadLayout(): Promise<WidgetLayout[]> {
     try {
-        const result = await chrome.storage.local.get(LAYOUT_KEY);
+        const result = await chrome.storage.local.get(StorageKey.DashboardLayout);
         if (chrome.runtime.lastError) {
             console.error("Error loading layout from storage:", chrome.runtime.lastError);
             return [];
         }
-        if (result[LAYOUT_KEY] && Array.isArray(result[LAYOUT_KEY])) {
-             const validLayout = result[LAYOUT_KEY].filter(item =>
+        if (result[StorageKey.DashboardLayout] && Array.isArray(result[StorageKey.DashboardLayout])) {
+             const validLayout = result[StorageKey.DashboardLayout].filter((item: WidgetLayout) =>
                  item && typeof item.id !== 'undefined' && typeof item.type !== 'undefined'
              );
-             if (validLayout.length !== result[LAYOUT_KEY].length) {
+             if (validLayout.length !== result[StorageKey.DashboardLayout].length) {
                  console.warn("Some invalid layout items were filtered out during load.");
              }
              return validLayout as WidgetLayout[];
@@ -52,7 +47,7 @@ export async function saveLayout(layout: WidgetLayout[]): Promise<void> {
         console.error("Attempted to save invalid layout:", layout);
         return;
     }
-    const validLayout = layout.filter(item =>
+    const validLayout = layout.filter((item: WidgetLayout) =>
          item && typeof item.id === 'string' && typeof item.type === 'string' &&
          typeof item.x === 'number' && typeof item.y === 'number' &&
          typeof item.w === 'number' && typeof item.h === 'number'
@@ -62,7 +57,7 @@ export async function saveLayout(layout: WidgetLayout[]): Promise<void> {
      }
 
     try {
-        await chrome.storage.local.set({ [LAYOUT_KEY]: validLayout });
+        await chrome.storage.local.set({ [StorageKey.DashboardLayout]: validLayout });
         if (chrome.runtime.lastError) {
             console.error("Error saving layout to storage:", chrome.runtime.lastError);
         }

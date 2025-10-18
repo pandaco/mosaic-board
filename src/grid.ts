@@ -1,6 +1,7 @@
 import { GridStack, GridStackOptions, GridStackWidget, GridStackElement } from 'gridstack';
 import { WidgetLayout, WidgetType } from './types';
 import { loadLayout, saveLayout } from './storage-service';
+import { GRID_CONFIG, DEFAULT_WIDGET_SIZE, WIDGET_ID_PREFIX } from './constants';
 
 let grid: GridStack | null = null;
 
@@ -10,9 +11,9 @@ interface GridStackWidgetWithElement extends GridStackWidget {
 }
 
 const gridOptions: GridStackOptions = {
-    column: 12,
-    margin: 10,
-    cellHeight: 90,
+    column: GRID_CONFIG.COLUMNS,
+    margin: GRID_CONFIG.MARGIN,
+    cellHeight: GRID_CONFIG.CELL_HEIGHT,
     disableResize: false,
     disableDrag: false,
     float: true,
@@ -84,12 +85,12 @@ export function saveGridState(): void {
         return {
             x: item.x ?? 0,
             y: item.y ?? 0,
-            w: item.w ?? 4,
-            h: item.h ?? 3,
+            w: item.w ?? DEFAULT_WIDGET_SIZE.WIDTH,
+            h: item.h ?? DEFAULT_WIDGET_SIZE.HEIGHT,
             id: item.id ?? `error_id_${Date.now()}`,
             type: widgetType
         };
-    }).filter(item => item.id.startsWith('widget-'));
+    }).filter(item => item.id.startsWith(WIDGET_ID_PREFIX));
 
     saveLayout(layout);
 }

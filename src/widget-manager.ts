@@ -6,6 +6,19 @@ import { initWeatherWidget, updateWeatherWidgetPreferences } from './widgets/wea
 import { initClockWidget, updateClockWidgetPreferences, cleanupClockWidget } from './widgets/clock/clock.widget';
 
 import { initWebsiteWidget, updateWebsiteWidgetPreferences, cleanupWebsiteWidget } from './widgets/website/website.widget';
+import {
+    WIDGET_ID_PREFIX,
+    WIDGET_TEMPLATE_SUFFIX,
+    CssClass,
+    DEFAULT_WIDGET_SIZE,
+    WEBSITE_WIDGET_SIZE,
+    DEFAULT_VALUES,
+    USER_MESSAGES,
+    KeyboardKey,
+    UI_SPACING,
+    INPUT_CONFIG,
+    DomSelector,
+} from './constants';
 
 const widgetInitializers: { [key in WidgetType]?: (id: string, element: HTMLElement, prefs: any) => void } = {
     [WidgetType.Bookmarks]: initBookmarkWidget,
@@ -27,7 +40,7 @@ const widgetCleaners: { [key in WidgetType]?: (id: string) => void } = {
 };
 
 function createWidgetElement(id: string, type: WidgetType): HTMLElement | null {
-    const templateId = `${type}-widget-template`;
+    const templateId = `${type}${WIDGET_TEMPLATE_SUFFIX}`;
     const template = document.getElementById(templateId) as HTMLTemplateElement | null;
 
     if (!template) {
@@ -40,16 +53,16 @@ function createWidgetElement(id: string, type: WidgetType): HTMLElement | null {
     widgetContainer.dataset.widgetType = type;
 
     const contentFragment = template.content.cloneNode(true) as DocumentFragment;
-    const widgetContentElement = contentFragment.querySelector('.grid-stack-item-content');
+    const widgetContentElement = contentFragment.querySelector(`.${CssClass.GridStackItemContent}`);
 
     if (!widgetContentElement) {
-         console.error(`Template for ${type} is missing the .grid-stack-item-content element.`);
+         console.error(`Template for ${type} is missing the .${CssClass.GridStackItemContent} element.`);
          return null;
     }
 
     widgetContainer.appendChild(contentFragment);
 
-    const settingsButton = widgetContainer.querySelector('.widget-settings-button');
+    const settingsButton = widgetContainer.querySelector(`.${CssClass.WidgetSettingsButton}`);
     if (settingsButton) {
         settingsButton.addEventListener('click', (event) => {
             event.stopPropagation();
@@ -61,18 +74,20 @@ function createWidgetElement(id: string, type: WidgetType): HTMLElement | null {
 }
 
 export async function addWidget(type: WidgetType): Promise<void> {
-    const id = `widget-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+    const id = `${WIDGET_ID_PREFIX}${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
     const widgetElement = createWidgetElement(id, type);
 
     if (widgetElement) {
-        const contentElement = widgetElement.querySelector('.grid-stack-item-content') as HTMLElement | null;
+        const contentElement = widgetElement.querySelector(`.${CssClass.GridStackItemContent}`) as HTMLElement | null;
 
         if (!contentElement) {
-            console.error(`Could not find .grid-stack-item-content within the created element for ${type}`);
+            console.error(`Could not find .${CssClass.GridStackItemContent} within the created element for ${type}`);
             return;
         }
 
-        const defaultSize = (type === WidgetType.Website) ? { w: 6, h: 4 } : { w: 4, h: 3 };
+        const defaultSize = (type === WidgetType.Website)
+            ? { w: WEBSITE_WIDGET_SIZE.WIDTH, h: WEBSITE_WIDGET_SIZE.HEIGHT }
+            : { w: DEFAULT_WIDGET_SIZE.WIDTH, h: DEFAULT_WIDGET_SIZE.HEIGHT };
         addWidgetToGrid(widgetElement, { ...defaultSize, id: id });
 
         const initializer = widgetInitializers[type];
@@ -122,14 +137,14 @@ export async function removeWidget(widgetId: string): Promise<void> {
 let activeSettingsMenuElement: HTMLElement | null = null;
 
 const handleSettingsMenuEscape = (event: KeyboardEvent) => {
-     if (event.key === 'Escape' && activeSettingsMenuElement) {
+     if (event.key === KeyboardKey.Escape && activeSettingsMenuElement) {
          closeWidgetSettingsMenu();
      }
 };
 
 const handleSettingsMenuOutsideClick = (event: MouseEvent): void => {
     if (activeSettingsMenuElement && !activeSettingsMenuElement.contains(event.target as Node)) {
-        const openerButton = document.querySelector(`[data-widget-id="${activeSettingsMenuElement.dataset.widgetId}"] .widget-settings-button`);
+        const openerButton = document.querySelector(`[data-widget-id="${activeSettingsMenuElement.dataset.widgetId}"] .${CssClass.WidgetSettingsButton}`);
         if (!openerButton || !openerButton.contains(event.target as Node)) {
              closeWidgetSettingsMenu();
         } else {
@@ -154,25 +169,25 @@ async function toggleWidgetSettingsMenu(widgetId: string, widgetType: WidgetType
         return;
     }
 
-    const template = document.getElementById('widget-settings-menu-template') as HTMLTemplateElement;
+    const template = document.getElementById(DomSelector.WidgetSettingsMenuTemplate) as HTMLTemplateElement;
     if (!template) return;
 
     const menuFragment = template.content.cloneNode(true) as DocumentFragment;
-    const menuElement = menuFragment.querySelector('.widget-settings-menu') as HTMLElement | null;
+    const menuElement = menuFragment.querySelector(`.${CssClass.WidgetSettingsMenu}`) as HTMLElement | null;
     if (!menuElement) return;
 
     activeSettingsMenuElement = menuElement;
-    activeSettingsMenuElement.id = 'active-widget-settings-menu';
+    activeSettingsMenuElement.id = DomSelector.ActiveWidgetSettingsMenu;
     activeSettingsMenuElement.dataset.widgetId = widgetId;
 
     const list = activeSettingsMenuElement.querySelector('ul');
     if (!list) return;
 
-    const deleteButton = activeSettingsMenuElement.querySelector('.delete-widget-button');
+    const deleteButton = activeSettingsMenuElement.querySelector(`.${CssClass.DeleteWidgetButton}`);
      if (deleteButton) {
          deleteButton.addEventListener('click', (e) => {
              e.stopPropagation();
-             if (confirm('Are you sure you want to delete this widget?')) {
+             if (confirm(USER_MESSAGES.CONFIRM_DELETE_WIDGET)) {
                  removeWidget(widgetId);
              }
          });
@@ -190,12 +205,18 @@ async function toggleWidgetSettingsMenu(widgetId: string, widgetType: WidgetType
     const buttonRect = buttonElement.getBoundingClientRect();
     const menuRect = activeSettingsMenuElement.getBoundingClientRect();
 
-    let top = window.scrollY + buttonRect.bottom + 5;
+    let top = window.scrollY + buttonRect.bottom + UI_SPACING.MENU_OFFSET_FROM_BUTTON;
     let left = window.scrollX + buttonRect.left;
 
-    if (left + menuRect.width > window.innerWidth - 10) left = window.scrollX + buttonRect.right - menuRect.width;
-    if (top + menuRect.height > window.innerHeight - 10) top = window.scrollY + buttonRect.top - menuRect.height - 5;
-    if (left < 10) left = 10;
+    if (left + menuRect.width > window.innerWidth - UI_SPACING.MENU_EDGE_MARGIN) {
+        left = window.scrollX + buttonRect.right - menuRect.width;
+    }
+    if (top + menuRect.height > window.innerHeight - UI_SPACING.MENU_EDGE_MARGIN) {
+        top = window.scrollY + buttonRect.top - menuRect.height - UI_SPACING.MENU_OFFSET_FROM_BUTTON;
+    }
+    if (left < UI_SPACING.MENU_EDGE_MARGIN) {
+        left = UI_SPACING.MENU_EDGE_MARGIN;
+    }
 
     activeSettingsMenuElement.style.position = 'absolute';
     activeSettingsMenuElement.style.top = `${top}px`;
@@ -218,7 +239,7 @@ function closeWidgetSettingsMenu(): void {
 
 function addSpecificSettingsOptions(list: HTMLUListElement, widgetId: string, widgetType: WidgetType, currentPrefs: any | null): void {
 
-    const deleteButtonLi = list.querySelector('.delete-widget-button')?.closest('li');
+    const deleteButtonLi = list.querySelector(`.${CssClass.DeleteWidgetButton}`)?.closest('li');
 
     let separatorAdded = false;
     const addSeparatorIfNeeded = () => {
@@ -256,9 +277,9 @@ function addSpecificSettingsOptions(list: HTMLUListElement, widgetId: string, wi
 }
 
 function addBookmarkSettings(list: HTMLUListElement, widgetId: string, prefs: any, insertBeforeLi: HTMLLIElement | null): void {
-    const currentView = prefs?.view || 'list';
-    const showCount = prefs?.showCount ?? false;
-    const defaultFolderId = prefs?.defaultFolderId || null;
+    const currentView = prefs?.view || DEFAULT_VALUES.BOOKMARK_VIEW;
+    const showCount = prefs?.showCount ?? DEFAULT_VALUES.BOOKMARK_SHOW_COUNT;
+    const defaultFolderId = prefs?.defaultFolderId || DEFAULT_VALUES.BOOKMARK_DEFAULT_FOLDER_ID;
 
     const viewGroupLi = createSettingsGroup(list, 'Display', insertBeforeLi);
     const listRadio = createRadioOption(widgetId, WidgetType.Bookmarks, 'view', 'list', 'List View', currentView === 'list');
@@ -272,20 +293,20 @@ function addBookmarkSettings(list: HTMLUListElement, widgetId: string, prefs: an
 
     const folderGroupLi = createSettingsGroup(list, 'Default Folder', insertBeforeLi);
     const folderButton = document.createElement('button');
-    folderButton.className = 'folder-setting-button settings-option';
-    folderButton.innerHTML = `Select... <span class="current-folder-name">(Root)</span>`;
+    folderButton.className = `${CssClass.FolderSettingButton} ${CssClass.SettingsOption}`;
+    folderButton.innerHTML = `Select... <span class="${CssClass.CurrentFolderName}">(Root)</span>`;
     folderButton.addEventListener('click', (e) => {
         e.stopPropagation();
         openFolderSelectorModal(widgetId);
     });
     folderGroupLi.appendChild(folderButton);
 
-    updateFolderButtonText(folderButton.querySelector('.current-folder-name') as HTMLElement, defaultFolderId);
+    updateFolderButtonText(folderButton.querySelector(`.${CssClass.CurrentFolderName}`) as HTMLElement, defaultFolderId);
 }
 
 function addWeatherSettings(list: HTMLUListElement, widgetId: string, prefs: any, insertBeforeLi: HTMLLIElement | null): void {
-    const location = prefs?.location || '';
-    const unit = prefs?.unit || 'metric';
+    const location = prefs?.location || DEFAULT_VALUES.WEATHER_LOCATION;
+    const unit = prefs?.unit || DEFAULT_VALUES.WEATHER_UNIT;
 
     const locationGroupLi = createSettingsGroup(list, 'Location', insertBeforeLi);
     const locationInput = createTextInputOption(widgetId, WidgetType.Weather, 'location', 'Enter a city', location);
@@ -300,7 +321,7 @@ function addWeatherSettings(list: HTMLUListElement, widgetId: string, prefs: any
 }
 
 function addClockSettings(list: HTMLUListElement, widgetId: string, prefs: any, insertBeforeLi: HTMLLIElement | null): void {
-     const showStopwatch = prefs?.showStopwatch ?? false;
+     const showStopwatch = prefs?.showStopwatch ?? DEFAULT_VALUES.CLOCK_SHOW_STOPWATCH;
 
      const stopwatchGroupLi = createSettingsGroup(list, 'Features', insertBeforeLi);
      const stopwatchCheckbox = createCheckboxOption(widgetId, WidgetType.Clock, 'showStopwatch', 'Show stopwatch', showStopwatch);
@@ -308,10 +329,10 @@ function addClockSettings(list: HTMLUListElement, widgetId: string, prefs: any, 
 }
 
 function addWebsiteSettings(list: HTMLUListElement, widgetId: string, prefs: any, insertBeforeLi: HTMLLIElement | null): void {
-    const url = prefs?.url || '';
-    const refreshInterval = prefs?.refreshInterval || 0;
-    const offsetTop = prefs?.offsetTop || 0;
-    const offsetLeft = prefs?.offsetLeft || 0;
+    const url = prefs?.url || DEFAULT_VALUES.WEBSITE_URL;
+    const refreshInterval = prefs?.refreshInterval || DEFAULT_VALUES.WEBSITE_REFRESH_INTERVAL;
+    const offsetTop = prefs?.offsetTop || DEFAULT_VALUES.WEBSITE_OFFSET_TOP;
+    const offsetLeft = prefs?.offsetLeft || DEFAULT_VALUES.WEBSITE_OFFSET_LEFT;
 
     const urlGroupLi = createSettingsGroup(list, 'Website URL', insertBeforeLi);
 
@@ -355,7 +376,7 @@ function addWebsiteSettings(list: HTMLUListElement, widgetId: string, prefs: any
 
 function createSettingsGroup(list: HTMLUListElement, title: string, insertBeforeLi: HTMLLIElement | null): HTMLLIElement {
     const li = document.createElement('li');
-    li.className = 'settings-group';
+    li.className = CssClass.SettingsGroup;
     const label = document.createElement('label');
     label.textContent = title;
     li.appendChild(label);
@@ -365,7 +386,7 @@ function createSettingsGroup(list: HTMLUListElement, title: string, insertBefore
 
 function createRadioOption(widgetId: string, type: WidgetType, key: string, value: string, labelText: string, isChecked: boolean): HTMLLabelElement {
     const label = document.createElement('label');
-    label.className = 'radio-group';
+    label.className = CssClass.RadioGroup;
     const radio = document.createElement('input');
     radio.type = 'radio';
     radio.name = `${widgetId}-${key}`;
@@ -379,7 +400,7 @@ function createRadioOption(widgetId: string, type: WidgetType, key: string, valu
 
 function createCheckboxOption(widgetId: string, type: WidgetType, key: string, labelText: string, isChecked: boolean): HTMLLabelElement {
     const label = document.createElement('label');
-     label.className = 'checkbox-group';
+     label.className = CssClass.CheckboxGroup;
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
     checkbox.checked = isChecked;
@@ -396,7 +417,7 @@ function createTextInputOption(widgetId: string, type: WidgetType, key: string, 
     input.value = currentValue;
     input.addEventListener('blur', (e) => updatePreference(widgetId, type, key, (e.target as HTMLInputElement).value));
      input.addEventListener('keydown', (e) => {
-         if (e.key === 'Enter') {
+         if (e.key === KeyboardKey.Enter) {
              const targetInput = e.target as HTMLInputElement;
              updatePreference(widgetId, type, key, targetInput.value);
              targetInput.blur();
@@ -409,9 +430,9 @@ function createNumberInputOption(widgetId: string, type: WidgetType, key: string
     const input = document.createElement('input');
     input.type = 'number';
     input.value = currentValue.toString();
-    input.min = '0';
-    input.step = '1';
-     input.style.width = '70px';
+    input.min = INPUT_CONFIG.NUMBER_INPUT_MIN;
+    input.step = INPUT_CONFIG.NUMBER_INPUT_STEP;
+    input.style.width = INPUT_CONFIG.NUMBER_INPUT_WIDTH;
 
     input.addEventListener('change', (e) => {
          const value = parseInt((e.target as HTMLInputElement).value, 10);
@@ -459,7 +480,7 @@ export async function loadWidgets(): Promise<void> {
     await loadGridState(async (item: WidgetLayout): Promise<HTMLElement | null> => {
         const widgetContainer = createWidgetElement(item.id, item.type);
         if (widgetContainer) {
-            const contentElement = widgetContainer.querySelector('.grid-stack-item-content') as HTMLElement | null;
+            const contentElement = widgetContainer.querySelector(`.${CssClass.GridStackItemContent}`) as HTMLElement | null;
             if (contentElement) {
                 const initializer = widgetInitializers[item.type];
                 if (initializer) {
@@ -474,14 +495,14 @@ export async function loadWidgets(): Promise<void> {
 
                     } catch (error) {
                         console.error(`Error initializing widget ${item.id} of type ${item.type}:`, error);
-                        contentElement.innerHTML = `<p class="error">Initialization error</p>`;
+                        contentElement.innerHTML = `<p class="${CssClass.Error}">Initialization error</p>`;
                     }
                 } else {
                     console.warn(`No initializer found for widget type: ${item.type}`);
-                     contentElement.innerHTML = `<p class="error">Unknown widget type</p>`;
+                     contentElement.innerHTML = `<p class="${CssClass.Error}">Unknown widget type</p>`;
                 }
             } else {
-                 console.error(`Could not find .grid-stack-item-content for loaded widget ${item.id}`);
+                 console.error(`Could not find .${CssClass.GridStackItemContent} for loaded widget ${item.id}`);
                  return null;
             }
         }
@@ -492,13 +513,27 @@ export async function loadWidgets(): Promise<void> {
 function getDefaultPreferences(type: WidgetType): BaseWidgetPreferences | null {
     switch (type) {
         case WidgetType.Bookmarks:
-            return { view: 'list', showCount: false, defaultFolderId: '1' };
+            return {
+                view: DEFAULT_VALUES.BOOKMARK_VIEW,
+                showCount: DEFAULT_VALUES.BOOKMARK_SHOW_COUNT,
+                defaultFolderId: DEFAULT_VALUES.BOOKMARK_DEFAULT_FOLDER_ID
+            };
         case WidgetType.Weather:
-            return { location: 'Lille', unit: 'metric' };
+            return {
+                location: DEFAULT_VALUES.WEATHER_LOCATION,
+                unit: DEFAULT_VALUES.WEATHER_UNIT
+            };
         case WidgetType.Clock:
-            return { showStopwatch: false };
+            return {
+                showStopwatch: DEFAULT_VALUES.CLOCK_SHOW_STOPWATCH
+            };
         case WidgetType.Website:
-            return { url: '', refreshInterval: 0, offsetTop: 0, offsetLeft: 0 };
+            return {
+                url: DEFAULT_VALUES.WEBSITE_URL,
+                refreshInterval: DEFAULT_VALUES.WEBSITE_REFRESH_INTERVAL,
+                offsetTop: DEFAULT_VALUES.WEBSITE_OFFSET_TOP,
+                offsetLeft: DEFAULT_VALUES.WEBSITE_OFFSET_LEFT
+            };
         default:
              const _exhaustiveCheck: never = type;
              console.warn(`No default preferences defined for widget type: ${_exhaustiveCheck}`);
@@ -512,17 +547,17 @@ declare function closeActiveModal(): void;
 
 async function openFolderSelectorModal(widgetId: string): Promise<void> {
     currentWidgetIdForFolderSelection = widgetId;
-    const modal = document.getElementById('folder-selector-modal');
-    const treeContainer = document.getElementById('folder-tree-container');
-    const confirmButton = document.getElementById('confirm-folder-button') as HTMLButtonElement;
-    const selectedFolderNameSpan = document.getElementById('selected-folder-name');
+    const modal = document.getElementById(DomSelector.FolderSelectorModal);
+    const treeContainer = document.getElementById(DomSelector.FolderTreeContainer);
+    const confirmButton = document.getElementById(DomSelector.ConfirmFolderButton) as HTMLButtonElement;
+    const selectedFolderNameSpan = document.getElementById(DomSelector.SelectedFolderName);
 
     if (!modal || !treeContainer || !confirmButton || !selectedFolderNameSpan) {
         console.error("Folder selector modal elements not found.");
         return;
     }
 
-    treeContainer.innerHTML = '<p>Loading folders...</p>';
+    treeContainer.innerHTML = `<p>${USER_MESSAGES.LOADING}</p>`;
     selectedFolderNameSpan.textContent = 'None';
     confirmButton.disabled = true;
     confirmButton.dataset.selectedFolderId = '';
@@ -544,7 +579,7 @@ async function openFolderSelectorModal(widgetId: string): Promise<void> {
                  }
              });
         } else {
-             treeContainer.innerHTML = '<p>No bookmark folders found.</p>';
+             treeContainer.innerHTML = `<p>${USER_MESSAGES.NO_FOLDERS_FOUND}</p>`;
         }
 
         treeContainer.removeEventListener('click', handleFolderTreeClick);
@@ -552,7 +587,7 @@ async function openFolderSelectorModal(widgetId: string): Promise<void> {
 
     } catch (error) {
         console.error("Error loading bookmark tree:", error);
-        treeContainer.innerHTML = '<p>Error loading folders.</p>';
+        treeContainer.innerHTML = `<p>${USER_MESSAGES.ERROR_LOADING_FOLDERS}</p>`;
     }
 }
 
@@ -560,20 +595,20 @@ function buildFolderTree(node: chrome.bookmarks.BookmarkTreeNode, parentUlElemen
 
     const li = document.createElement('li');
     const folderItem = document.createElement('div');
-    folderItem.className = 'folder-item';
+    folderItem.className = CssClass.FolderItem;
     folderItem.dataset.folderId = node.id;
     folderItem.dataset.folderName = node.title || `Folder ${node.id}`;
 
     const toggle = document.createElement('span');
-    toggle.className = 'folder-toggle';
+    toggle.className = CssClass.FolderToggle;
     toggle.setAttribute('aria-hidden', 'true');
 
     const icon = document.createElement('span');
-    icon.className = 'folder-icon';
+    icon.className = CssClass.FolderIcon;
     icon.innerHTML = '<i class="fas fa-folder" aria-hidden="true"></i>';
 
     const title = document.createElement('span');
-    title.className = 'folder-title';
+    title.className = CssClass.FolderTitle;
     title.textContent = node.title || `Folder ${node.id}`;
 
     folderItem.appendChild(toggle);
@@ -604,24 +639,24 @@ function buildFolderTree(node: chrome.bookmarks.BookmarkTreeNode, parentUlElemen
 
 function handleFolderTreeClick(event: MouseEvent): void {
     const target = event.target as HTMLElement;
-    const folderItem = target.closest<HTMLElement>('.folder-item');
-    const toggleIcon = target.closest<HTMLElement>('.folder-toggle i');
+    const folderItem = target.closest<HTMLElement>(`.${CssClass.FolderItem}`);
+    const toggleIcon = target.closest<HTMLElement>(`.${CssClass.FolderToggle} i`);
 
     if (!folderItem) return;
 
-    const treeContainer = document.getElementById('folder-tree-container');
-    const confirmButton = document.getElementById('confirm-folder-button') as HTMLButtonElement;
-    const selectedFolderNameSpan = document.getElementById('selected-folder-name');
+    const treeContainer = document.getElementById(DomSelector.FolderTreeContainer);
+    const confirmButton = document.getElementById(DomSelector.ConfirmFolderButton) as HTMLButtonElement;
+    const selectedFolderNameSpan = document.getElementById(DomSelector.SelectedFolderName);
 
     if (!treeContainer || !confirmButton || !selectedFolderNameSpan) return;
 
-    const toggleSpan = folderItem.querySelector<HTMLElement>('.folder-toggle');
+    const toggleSpan = folderItem.querySelector<HTMLElement>(`.${CssClass.FolderToggle}`);
     if (toggleIcon && toggleSpan && toggleSpan.dataset.state !== 'leaf') {
         event.stopPropagation();
         const subUl = folderItem.nextElementSibling as HTMLUListElement | null;
         if (subUl) {
              const isExpanded = toggleSpan.dataset.state === 'expanded';
-             subUl.classList.toggle('hidden', isExpanded);
+             subUl.classList.toggle(CssClass.Hidden, isExpanded);
              toggleSpan.dataset.state = isExpanded ? 'collapsed' : 'expanded';
              folderItem.setAttribute('aria-expanded', isExpanded ? 'false' : 'true');
              const icon = toggleSpan.querySelector('i');
@@ -633,8 +668,8 @@ function handleFolderTreeClick(event: MouseEvent): void {
         return;
     }
 
-    treeContainer.querySelectorAll('.folder-item.selected').forEach(el => el.classList.remove('selected'));
-    folderItem.classList.add('selected');
+    treeContainer.querySelectorAll(`.${CssClass.FolderItem}.${CssClass.Selected}`).forEach(el => el.classList.remove(CssClass.Selected));
+    folderItem.classList.add(CssClass.Selected);
 
     const folderId = folderItem.dataset.folderId;
     const folderName = folderItem.dataset.folderName || 'Selected folder';
@@ -649,7 +684,7 @@ export function closeFolderSelectorModal(): void {
 }
 
 export async function confirmFolderSelection(): Promise<void> {
-    const confirmButton = document.getElementById('confirm-folder-button') as HTMLButtonElement;
+    const confirmButton = document.getElementById(DomSelector.ConfirmFolderButton) as HTMLButtonElement;
     const selectedFolderId = confirmButton?.dataset.selectedFolderId;
 
     if (selectedFolderId && currentWidgetIdForFolderSelection) {
@@ -666,10 +701,10 @@ export async function confirmFolderSelection(): Promise<void> {
 }
 
 async function updateSettingsMenuFolderButton(widgetId: string, folderId: string | null): Promise<void> {
-    const menu = document.getElementById('active-widget-settings-menu');
+    const menu = document.getElementById(DomSelector.ActiveWidgetSettingsMenu);
     if (!menu || menu.dataset.widgetId !== widgetId) return;
 
-    const folderButtonSpan = menu.querySelector<HTMLElement>('.folder-setting-button .current-folder-name');
+    const folderButtonSpan = menu.querySelector<HTMLElement>(`.${CssClass.FolderSettingButton} .${CssClass.CurrentFolderName}`);
     if (folderButtonSpan) {
         updateFolderButtonText(folderButtonSpan, folderId);
     }

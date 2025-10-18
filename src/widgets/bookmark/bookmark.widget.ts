@@ -1,5 +1,16 @@
 import './bookmark.widget.css';
 import { BookmarkWidgetPreferences, BookmarkTreeNode } from '../../types';
+import {
+    BookmarkFolderId,
+    BOOKMARK_ICON_SIZE,
+    BookmarkFaviconSource,
+    CssClass,
+    USER_MESSAGES,
+    KeyboardKey,
+    AriaRole,
+    ARIA_HIDDEN,
+    WEATHER_CONFIG,
+} from '../../constants';
 
 interface NavigationState {
     folderId: string;
@@ -24,7 +35,7 @@ export class BookmarkWidget {
 
     private init(): void {
         this.navigationHistory = [];
-        const defaultFolderId = this.prefs.defaultFolderId || '1';
+        const defaultFolderId = this.prefs.defaultFolderId || BookmarkFolderId.Default;
 
         try {
 
@@ -32,7 +43,7 @@ export class BookmarkWidget {
                 if (chrome.runtime.lastError || !nodes || nodes.length === 0) {
                     console.warn(`Default folder (${defaultFolderId}) not found or error: ${chrome.runtime.lastError?.message}. Falling back to root.`);
 
-                    this.navigateToFolder('0', 'Bookmarks Bar', null, true);
+                    this.navigateToFolder(BookmarkFolderId.Root, 'Bookmarks Bar', null, true);
                     return;
                 }
 
@@ -71,20 +82,20 @@ export class BookmarkWidget {
     }
 
     private navigateToFolder(folderId: string, folderName: string, parentId: string | null, isInitialLoadOrRefresh: boolean = false): void {
-        const titleElement = this.element.querySelector<HTMLElement>('.widget-title');
-        const backButton = this.element.querySelector<HTMLButtonElement>('.widget-back-button');
-        const effectiveDefaultFolderId = this.prefs.defaultFolderId || '1';
+        const titleElement = this.element.querySelector<HTMLElement>(`.${CssClass.WidgetTitle}`);
+        const backButton = this.element.querySelector<HTMLButtonElement>(`.${CssClass.WidgetBackButton}`);
+        const effectiveDefaultFolderId = this.prefs.defaultFolderId || BookmarkFolderId.Default;
 
         console.log(`Navigating to folder: ${folderName} (ID: ${folderId}), ParentID: ${parentId}, Initial/Refresh: ${isInitialLoadOrRefresh}`);
 
         if (titleElement) {
-            const displayTitle = folderName || (folderId === '0' ? 'Bookmarks Bar' : 'Bookmarks');
+            const displayTitle = folderName || (folderId === BookmarkFolderId.Root ? 'Bookmarks Bar' : 'Bookmarks');
             titleElement.textContent = displayTitle;
             titleElement.title = displayTitle;
             titleElement.onclick = null;
             titleElement.style.cursor = 'default';
 
-            if (folderId !== '0' && folderId !== effectiveDefaultFolderId && parentId && parentId !== '0') {
+            if (folderId !== BookmarkFolderId.Root && folderId !== effectiveDefaultFolderId && parentId && parentId !== BookmarkFolderId.Root) {
 
                  try {
                     chrome.bookmarks.get(parentId, (parentNodes) => {
@@ -115,9 +126,9 @@ export class BookmarkWidget {
         }
          console.log('Navigation History:', [...this.navigationHistory]);
 
-        const showBackButton = folderId !== '0' && this.navigationHistory.length > 1;
+        const showBackButton = folderId !== BookmarkFolderId.Root && this.navigationHistory.length > 1;
         if (backButton) {
-            backButton.classList.toggle('hidden', !showBackButton);
+            backButton.classList.toggle(CssClass.Hidden, !showBackButton);
             backButton.onclick = showBackButton ? () => this.handleGoBack() : null;
             console.log(`Back button visibility: ${showBackButton}`);
         }
@@ -126,13 +137,13 @@ export class BookmarkWidget {
     }
 
     private async renderFolderContents(folderId: string): Promise<void> {
-        const contentElement = this.element.querySelector<HTMLElement>('.widget-content');
+        const contentElement = this.element.querySelector<HTMLElement>(`.${CssClass.WidgetContent}`);
         if (!contentElement) {
             console.error('Widget content element not found.');
             return;
         }
 
-        contentElement.innerHTML = '<p class="loading-message">Loading...</p>';
+        contentElement.innerHTML = `<p class="${CssClass.LoadingMessage}">${USER_MESSAGES.LOADING}</p>`;
 
         try {
             chrome.bookmarks.getChildren(folderId, (children) => {
@@ -152,8 +163,8 @@ export class BookmarkWidget {
 
                 if (hasContent) {
                     const combinedList = document.createElement('ul');
-                    combinedList.className = `bookmark-list view-${this.prefs.view || 'list'}`;
-                    combinedList.setAttribute('role', 'list');
+                    combinedList.className = `${CssClass.BookmarkList} view-${this.prefs.view || 'list'}`;
+                    combinedList.setAttribute('role', AriaRole.List);
                     
                     folders.forEach(folder => {
                         const li = this.createFolderElement(folder, folderId);
@@ -168,7 +179,7 @@ export class BookmarkWidget {
                     fragment.appendChild(combinedList);
                     contentElement.appendChild(fragment);
                 } else {
-                    contentElement.innerHTML = '<p class="empty-folder">This folder is empty.</p>';
+                    contentElement.innerHTML = `<p class="${CssClass.EmptyFolder}">${USER_MESSAGES.EMPTY_FOLDER}</p>`;
                 }
             });
         } catch (error: any) {
@@ -179,15 +190,15 @@ export class BookmarkWidget {
 
     private createFolderElement(folderNode: BookmarkTreeNode, parentId: string | null): HTMLLIElement {
         const li = document.createElement('li');
-        li.className = 'bookmark-item folder-item';
-        li.setAttribute('role', 'listitem');
+        li.className = `${CssClass.BookmarkItem} ${CssClass.FolderItem}`;
+        li.setAttribute('role', AriaRole.Listitem);
 
         const link = document.createElement('a');
         link.href = '#';
         const folderTitle = folderNode.title || 'Unnamed folder';
         link.title = folderTitle;
         link.dataset.folderId = folderNode.id;
-        link.setAttribute('role', 'button');
+        link.setAttribute('role', AriaRole.Button);
         link.setAttribute('aria-label', `Folder: ${folderTitle}`);
 
         link.addEventListener('click', (e) => {
@@ -196,21 +207,21 @@ export class BookmarkWidget {
         });
 
         link.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
+            if (e.key === KeyboardKey.Enter || e.key === KeyboardKey.Space) {
                 e.preventDefault();
                 this.navigateToFolder(folderNode.id, folderNode.title, parentId);
             }
         });
 
         const icon = document.createElement('i');
-        icon.className = 'fas fa-folder item-icon';
-        icon.setAttribute('aria-hidden', 'true');
+        icon.className = `fas fa-folder ${CssClass.ItemIcon}`;
+        icon.setAttribute('aria-hidden', ARIA_HIDDEN);
 
         const titleContainer = document.createElement('span');
-        titleContainer.className = 'item-title-container';
+        titleContainer.className = CssClass.ItemTitleContainer;
 
         const titleSpan = document.createElement('span');
-        titleSpan.className = 'item-title';
+        titleSpan.className = CssClass.ItemTitle;
         titleSpan.textContent = folderTitle;
 
         titleContainer.appendChild(titleSpan);
@@ -223,7 +234,7 @@ export class BookmarkWidget {
              if (folderNode.children) {
                  const count = folderNode.children.length;
                  const countSpan = document.createElement('span');
-                 countSpan.className = 'item-count';
+                 countSpan.className = CssClass.ItemCount;
                  countSpan.textContent = ` (${count})`;
                  countSpan.setAttribute('aria-label', `${count} items`);
                  titleContainer.appendChild(countSpan);
@@ -233,7 +244,7 @@ export class BookmarkWidget {
                      if (!chrome.runtime.lastError) {
                          const count = children.length;
                          const countSpan = document.createElement('span');
-                         countSpan.className = 'item-count';
+                         countSpan.className = CssClass.ItemCount;
                          countSpan.textContent = ` (${count})`;
                          countSpan.setAttribute('aria-label', `${count} items`);
 
@@ -251,8 +262,8 @@ export class BookmarkWidget {
 
     private createBookmarkElement(bookmarkNode: BookmarkTreeNode): HTMLLIElement {
         const li = document.createElement('li');
-        li.className = 'bookmark-item bookmark-link';
-        li.setAttribute('role', 'listitem');
+        li.className = `${CssClass.BookmarkItem} ${CssClass.BookmarkLink}`;
+        li.setAttribute('role', AriaRole.Listitem);
 
         const link = document.createElement('a');
         const url = bookmarkNode.url || '#';
@@ -266,9 +277,9 @@ export class BookmarkWidget {
         link.title = `${title}\n${url}`;
 
         const favicon = document.createElement('img');
-        favicon.className = 'item-icon favicon';
-        favicon.width = 16;
-        favicon.height = 16;
+        favicon.className = `${CssClass.ItemIcon} ${CssClass.Favicon}`;
+        favicon.width = BOOKMARK_ICON_SIZE.WIDTH;
+        favicon.height = BOOKMARK_ICON_SIZE.HEIGHT;
         favicon.alt = '';
 
         let domain = '';
@@ -283,10 +294,10 @@ export class BookmarkWidget {
         const fallbackSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"><defs><linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#667eea;stop-opacity:1"/><stop offset="100%" style="stop-color:#764ba2;stop-opacity:1"/></linearGradient></defs><rect x="3" y="2" width="18" height="20" rx="2" fill="url(#grad1)" opacity="0.1"/><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" fill="url(#grad1)"/></svg>`;
         const fallbackSvgDataUri = `data:image/svg+xml,${encodeURIComponent(fallbackSvg)}`;
 
-        const faviconSource = this.prefs.faviconSource || 'default';
+        const faviconSource = this.prefs.faviconSource || BookmarkFaviconSource.Default;
 
-        if (faviconSource === 'google' && domain) {
-            favicon.src = `https://www.google.com/s2/favicons?sz=32&domain_url=${encodeURIComponent(domain)}`;
+        if (faviconSource === BookmarkFaviconSource.Google && domain) {
+            favicon.src = `${WEATHER_CONFIG.GOOGLE_FAVICON_BASE_URL}?sz=${WEATHER_CONFIG.GOOGLE_FAVICON_SIZE}&domain_url=${encodeURIComponent(domain)}`;
             favicon.onerror = () => {
                 favicon.src = fallbackSvgDataUri;
                 favicon.onerror = null;
@@ -296,7 +307,7 @@ export class BookmarkWidget {
         }
 
         const titleSpan = document.createElement('span');
-        titleSpan.className = 'item-title';
+        titleSpan.className = CssClass.ItemTitle;
         titleSpan.textContent = title;
 
         link.appendChild(favicon);
@@ -316,8 +327,8 @@ export class BookmarkWidget {
         } else {
 
             console.log('Cannot go back further.');
-            const backButton = this.element.querySelector<HTMLButtonElement>('.widget-back-button');
-            backButton?.classList.add('hidden');
+            const backButton = this.element.querySelector<HTMLButtonElement>(`.${CssClass.WidgetBackButton}`);
+            backButton?.classList.add(CssClass.Hidden);
         }
     }
 
@@ -343,9 +354,9 @@ export class BookmarkWidget {
     }
 
      private displayWidgetError(message: string): void {
-        const contentElement = this.element.querySelector<HTMLElement>('.widget-content');
+        const contentElement = this.element.querySelector<HTMLElement>(`.${CssClass.WidgetContent}`);
         if (contentElement) {
-            contentElement.innerHTML = `<p class="error">${message || 'An error occurred.'}</p>`;
+            contentElement.innerHTML = `<p class="${CssClass.Error}">${message || USER_MESSAGES.ERROR_GENERIC}</p>`;
         }
     }
 }
@@ -356,7 +367,7 @@ export function initBookmarkWidget(id: string, element: HTMLElement, prefs: Book
 
 export function updateBookmarkWidgetPreferences(id: string, prefs: BookmarkWidgetPreferences): void {
     const widgetContainer = document.getElementById(id);
-    const element = widgetContainer?.querySelector<HTMLElement>('.grid-stack-item-content');
+    const element = widgetContainer?.querySelector<HTMLElement>(`.${CssClass.GridStackItemContent}`);
     if (element) {
 
         console.warn(`Re-initializing BookmarkWidget ${id} due to preference update.`);
