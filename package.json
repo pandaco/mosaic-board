@@ -9,7 +9,7 @@
         "preview": "vite preview",
         "commit": "cz",
         "prepare": "husky",
-        "preversion": "node scripts/update-manifest-version.js",
+        "version": "node scripts/update-manifest-version.js",
         "lerna:version": "lerna version --conventional-commits --yes --no-push"
     },
     "devDependencies": {
