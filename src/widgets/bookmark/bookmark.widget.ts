@@ -148,37 +148,27 @@ export class BookmarkWidget {
                 const folders = children.filter(node => !node.url).sort(this.compareNodes);
                 const bookmarks = children.filter(node => node.url).sort(this.compareNodes);
 
-                let hasContent = false;
+                const hasContent = folders.length > 0 || bookmarks.length > 0;
 
-                if (folders.length > 0) {
-                    const folderList = document.createElement('ul');
-                    folderList.className = `folder-list view-${this.prefs.view || 'list'}`;
-                    folderList.setAttribute('role', 'list');
+                if (hasContent) {
+                    const combinedList = document.createElement('ul');
+                    combinedList.className = `bookmark-list view-${this.prefs.view || 'list'}`;
+                    combinedList.setAttribute('role', 'list');
+                    
                     folders.forEach(folder => {
-
                         const li = this.createFolderElement(folder, folderId);
-                        folderList.appendChild(li);
+                        combinedList.appendChild(li);
                     });
-                    fragment.appendChild(folderList);
-                    hasContent = true;
-                }
-
-                if (bookmarks.length > 0) {
-                     const bookmarkList = document.createElement('ul');
-                     bookmarkList.className = `bookmark-list view-${this.prefs.view || 'list'}`;
-                     bookmarkList.setAttribute('role', 'list');
-                     bookmarks.forEach(bookmark => {
-                         const li = this.createBookmarkElement(bookmark);
-                         bookmarkList.appendChild(li);
-                     });
-                     fragment.appendChild(bookmarkList);
-                     hasContent = true;
-                }
-
-                if (!hasContent) {
-                    contentElement.innerHTML = '<p class="empty-folder">This folder is empty.</p>';
-                } else {
+                    
+                    bookmarks.forEach(bookmark => {
+                        const li = this.createBookmarkElement(bookmark);
+                        combinedList.appendChild(li);
+                    });
+                    
+                    fragment.appendChild(combinedList);
                     contentElement.appendChild(fragment);
+                } else {
+                    contentElement.innerHTML = '<p class="empty-folder">This folder is empty.</p>';
                 }
             });
         } catch (error: any) {
