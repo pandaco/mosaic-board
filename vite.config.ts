@@ -17,7 +17,7 @@ export default defineConfig({
     },
     publicDir: 'public',
     server: {
-        port: 3000, // Optionnel: port pour le serveur de développement
+        port: 3000,
         strictPort: true
     }
 });
