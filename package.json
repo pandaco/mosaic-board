@@ -10,7 +10,7 @@
         "commit": "cz",
         "prepare": "husky",
         "version": "node scripts/update-manifest-version.js",
-        "lerna:version": "lerna version --conventional-commits --yes --no-push"
+        "release": "lerna version --conventional-commits --yes --no-push"
     },
     "devDependencies": {
         "@commitlint/cli": "^19.3.0",
