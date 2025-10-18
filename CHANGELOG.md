@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.4.4](https://github.com/pandaco/mosaic-board/compare/mosaic-board@1.4.3...mosaic-board@1.4.4) (2025-10-18)
+
+
+### Bug Fixes
+
+* **release:** use version hook instead of preversion for manifest sync ([8b8c04a](https://github.com/pandaco/mosaic-board/commit/8b8c04a82137f8d824442e52a65640e1920800ce))
+
+
+
+
+
 ## [1.4.3](https://github.com/pandaco/mosaic-board/compare/mosaic-board@1.4.0...mosaic-board@1.4.3) (2025-10-18)
 
 
