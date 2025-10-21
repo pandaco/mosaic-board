@@ -1,6 +1,6 @@
 import { WidgetLayout, WidgetType } from '../types';
 import { addWidgetToGrid, removeWidgetFromGrid, saveGridState, loadGridState } from '../grid';
-import { deletePreferences, savePreferences, getWidgetPreferences } from '../storage-service';
+import { deletePreferences, savePreferences, getWidgetPreferences } from '../storage.service';
 import { createWidgetElement, getDefaultPreferences } from './factory';
 
 import { SettingsMenuManager } from './settings';

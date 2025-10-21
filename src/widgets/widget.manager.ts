@@ -1,11 +1,11 @@
-import { WidgetLayout, WidgetType, BaseWidgetPreferences } from './types';
-import { addWidgetToGrid, removeWidgetFromGrid, saveGridState, loadGridState } from './grid';
-import { deletePreferences, savePreferences, getWidgetPreferences } from './storage-service';
-import { initBookmarkWidget, updateBookmarkWidgetPreferences } from './widgets/bookmark/bookmark.widget';
-import { initWeatherWidget, updateWeatherWidgetPreferences } from './widgets/weather/weather.widget';
-import { initClockWidget, updateClockWidgetPreferences, cleanupClockWidget } from './widgets/clock/clock.widget';
+import { WidgetLayout, WidgetType, BaseWidgetPreferences } from '../types';
+import { addWidgetToGrid, removeWidgetFromGrid, saveGridState, loadGridState } from '../grid';
+import { deletePreferences, savePreferences, getWidgetPreferences } from '../storage.service';
+import { initBookmarkWidget, updateBookmarkWidgetPreferences } from './bookmark/bookmark.widget';
+import { initWeatherWidget, updateWeatherWidgetPreferences } from './weather/weather.widget';
+import { initClockWidget, updateClockWidgetPreferences, cleanupClockWidget } from './clock/clock.widget';
 
-import { initWebsiteWidget, updateWebsiteWidgetPreferences, cleanupWebsiteWidget } from './widgets/website/website.widget';
+import { initWebsiteWidget, updateWebsiteWidgetPreferences, cleanupWebsiteWidget } from './website/website.widget';
 import {
     WIDGET_ID_PREFIX,
     WIDGET_TEMPLATE_SUFFIX,
@@ -18,7 +18,7 @@ import {
     UI_SPACING,
     INPUT_CONFIG,
     DomSelector,
-} from './constants';
+} from '../constants';
 
 const widgetInitializers: { [key in WidgetType]?: (id: string, element: HTMLElement, prefs: any) => void } = {
     [WidgetType.Bookmarks]: initBookmarkWidget,
@@ -39,99 +39,133 @@ const widgetCleaners: { [key in WidgetType]?: (id: string) => void } = {
      [WidgetType.Website]: cleanupWebsiteWidget,
 };
 
-function createWidgetElement(id: string, type: WidgetType): HTMLElement | null {
-    const templateId = `${type}${WIDGET_TEMPLATE_SUFFIX}`;
+function attachSettingsButtonListener(
+    widgetContainer: HTMLElement,
+    widgetId: string,
+    widgetType: WidgetType
+): void {
+    const settingsButton = widgetContainer.querySelector(`.${CssClass.WidgetSettingsButton}`);
+    if (settingsButton) {
+        settingsButton.addEventListener('click', (event) => {
+            event.stopPropagation();
+            toggleWidgetSettingsMenu(widgetId, widgetType, settingsButton as HTMLElement);
+        });
+    }
+}
+
+function cloneTemplateContent(templateId: string, widgetType: WidgetType): DocumentFragment | null {
     const template = document.getElementById(templateId) as HTMLTemplateElement | null;
 
     if (!template) {
-        console.error(`Template not found for widget type: ${type} (expected ID: ${templateId})`);
+        console.error(`Template not found for widget type: ${widgetType} (expected ID: ${templateId})`);
+        return null;
+    }
+
+    const contentFragment = template.content.cloneNode(true) as DocumentFragment;
+    const widgetContentElement = contentFragment.querySelector(`.${CssClass.GridStackItemContent}`);
+
+    if (!widgetContentElement) {
+        console.error(`Template for ${widgetType} is missing the .${CssClass.GridStackItemContent} element.`);
+        return null;
+    }
+
+    return contentFragment;
+}
+
+function createWidgetElement(id: string, type: WidgetType): HTMLElement | null {
+    const templateId = `${type}${WIDGET_TEMPLATE_SUFFIX}`;
+    const contentFragment = cloneTemplateContent(templateId, type);
+
+    if (!contentFragment) {
         return null;
     }
 
     const widgetContainer = document.createElement('div');
     widgetContainer.id = id;
     widgetContainer.dataset.widgetType = type;
-
-    const contentFragment = template.content.cloneNode(true) as DocumentFragment;
-    const widgetContentElement = contentFragment.querySelector(`.${CssClass.GridStackItemContent}`);
-
-    if (!widgetContentElement) {
-         console.error(`Template for ${type} is missing the .${CssClass.GridStackItemContent} element.`);
-         return null;
-    }
-
     widgetContainer.appendChild(contentFragment);
 
-    const settingsButton = widgetContainer.querySelector(`.${CssClass.WidgetSettingsButton}`);
-    if (settingsButton) {
-        settingsButton.addEventListener('click', (event) => {
-            event.stopPropagation();
-            toggleWidgetSettingsMenu(id, type, settingsButton as HTMLElement);
-        });
-    }
+    attachSettingsButtonListener(widgetContainer, id, type);
 
     return widgetContainer;
+}
+
+function getWidgetSize(widgetType: WidgetType): { w: number; h: number } {
+    return widgetType === WidgetType.Website
+        ? { w: WEBSITE_WIDGET_SIZE.WIDTH, h: WEBSITE_WIDGET_SIZE.HEIGHT }
+        : { w: DEFAULT_WIDGET_SIZE.WIDTH, h: DEFAULT_WIDGET_SIZE.HEIGHT };
+}
+
+async function initializeWidget(
+    widgetId: string,
+    widgetType: WidgetType,
+    contentElement: HTMLElement
+): Promise<void> {
+    const initializer = widgetInitializers[widgetType];
+    if (!initializer) {
+        console.warn(`No initializer found for widget type: ${widgetType}`);
+        return;
+    }
+
+    const defaultPrefs = getDefaultPreferences(widgetType);
+    if (defaultPrefs) {
+        initializer(widgetId, contentElement, defaultPrefs);
+        await savePreferences(widgetId, widgetType, defaultPrefs);
+    } else {
+        console.warn(`No default preferences found for ${widgetType}, cannot initialize or save.`);
+        initializer(widgetId, contentElement, {});
+    }
 }
 
 export async function addWidget(type: WidgetType): Promise<void> {
     const id = `${WIDGET_ID_PREFIX}${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
     const widgetElement = createWidgetElement(id, type);
 
-    if (widgetElement) {
-        const contentElement = widgetElement.querySelector(`.${CssClass.GridStackItemContent}`) as HTMLElement | null;
+    if (!widgetElement) {
+        return;
+    }
 
-        if (!contentElement) {
-            console.error(`Could not find .${CssClass.GridStackItemContent} within the created element for ${type}`);
-            return;
+    const contentElement = widgetElement.querySelector(`.${CssClass.GridStackItemContent}`) as HTMLElement | null;
+
+    if (!contentElement) {
+        console.error(`Could not find .${CssClass.GridStackItemContent} within the created element for ${type}`);
+        return;
+    }
+
+    const defaultSize = getWidgetSize(type);
+    addWidgetToGrid(widgetElement, { ...defaultSize, id: id });
+
+    await initializeWidget(id, type, contentElement);
+    saveGridState();
+}
+
+function cleanupWidget(widgetId: string, widgetType: WidgetType): void {
+    const cleaner = widgetCleaners[widgetType];
+    if (cleaner) {
+        try {
+            cleaner(widgetId);
+        } catch (error) {
+            console.error(`Error cleaning up widget ${widgetId} of type ${widgetType}:`, error);
         }
-
-        const defaultSize = (type === WidgetType.Website)
-            ? { w: WEBSITE_WIDGET_SIZE.WIDTH, h: WEBSITE_WIDGET_SIZE.HEIGHT }
-            : { w: DEFAULT_WIDGET_SIZE.WIDTH, h: DEFAULT_WIDGET_SIZE.HEIGHT };
-        addWidgetToGrid(widgetElement, { ...defaultSize, id: id });
-
-        const initializer = widgetInitializers[type];
-        if (initializer) {
-            const defaultPrefs = getDefaultPreferences(type);
-            if (defaultPrefs) {
-                 initializer(id, contentElement, defaultPrefs);
-                 await savePreferences(id, type, defaultPrefs);
-            } else {
-                 console.warn(`No default preferences found for ${type}, cannot initialize or save.`);
-                 initializer(id, contentElement, {});
-            }
-
-        } else {
-            console.warn(`No initializer found for widget type: ${type}`);
-        }
-
-        saveGridState();
     }
 }
 
 export async function removeWidget(widgetId: string): Promise<void> {
     const widgetElement = document.getElementById(widgetId);
-    if (widgetElement && widgetElement.dataset.widgetType) {
-        const widgetType = widgetElement.dataset.widgetType as WidgetType;
-
-        closeWidgetSettingsMenu();
-
-        const cleaner = widgetCleaners[widgetType];
-        if (cleaner) {
-            try {
-                cleaner(widgetId);
-            } catch (error) {
-                console.error(`Error cleaning up widget ${widgetId} of type ${widgetType}:`, error);
-            }
-        }
-
-        removeWidgetFromGrid(widgetElement);
-        await deletePreferences(widgetId, widgetType);
-        saveGridState();
-
-    } else {
+    
+    if (!widgetElement || !widgetElement.dataset.widgetType) {
         console.error(`Widget element not found or type missing for ID: ${widgetId}`);
+        return;
     }
+
+    const widgetType = widgetElement.dataset.widgetType as WidgetType;
+
+    closeWidgetSettingsMenu();
+    cleanupWidget(widgetId, widgetType);
+    removeWidgetFromGrid(widgetElement);
+    
+    await deletePreferences(widgetId, widgetType);
+    saveGridState();
 }
 
 let activeSettingsMenuElement: HTMLElement | null = null;
@@ -142,68 +176,92 @@ const handleSettingsMenuEscape = (event: KeyboardEvent) => {
      }
 };
 
+function isClickOnOpenerButton(settingsMenu: HTMLElement, clickTarget: Node): boolean {
+    const widgetId = settingsMenu.dataset.widgetId;
+    const openerButton = document.querySelector(
+        `[data-widget-id="${widgetId}"] .${CssClass.WidgetSettingsButton}`
+    );
+    return !!(openerButton && openerButton.contains(clickTarget));
+}
+
+function scheduleNextOutsideClickListener(): void {
+    setTimeout(() => {
+        document.addEventListener('click', handleSettingsMenuOutsideClick, { capture: true, once: true });
+    }, 0);
+}
+
+function rescheduleOutsideClickListener(): void {
+    setTimeout(() => {
+        document.removeEventListener('click', handleSettingsMenuOutsideClick, { capture: true });
+        document.addEventListener('click', handleSettingsMenuOutsideClick, { capture: true, once: true });
+    }, 0);
+}
+
 const handleSettingsMenuOutsideClick = (event: MouseEvent): void => {
-    if (activeSettingsMenuElement && !activeSettingsMenuElement.contains(event.target as Node)) {
-        const openerButton = document.querySelector(`[data-widget-id="${activeSettingsMenuElement.dataset.widgetId}"] .${CssClass.WidgetSettingsButton}`);
-        if (!openerButton || !openerButton.contains(event.target as Node)) {
-             closeWidgetSettingsMenu();
-        } else {
-             setTimeout(() => {
-                 document.addEventListener('click', handleSettingsMenuOutsideClick, { capture: true, once: true });
-             }, 0);
-        }
-    } else if (activeSettingsMenuElement) {
-        setTimeout(() => {
-            document.removeEventListener('click', handleSettingsMenuOutsideClick, { capture: true });
-            document.addEventListener('click', handleSettingsMenuOutsideClick, { capture: true, once: true });
-        }, 0);
-    }
-};
-
-async function toggleWidgetSettingsMenu(widgetId: string, widgetType: WidgetType, buttonElement: HTMLElement): Promise<void> {
-    const isOpeningDifferentMenu = !activeSettingsMenuElement || activeSettingsMenuElement.dataset.widgetId !== widgetId;
-
-    closeWidgetSettingsMenu();
-
-    if (!isOpeningDifferentMenu) {
+    if (!activeSettingsMenuElement) {
         return;
     }
 
+    const clickTarget = event.target as Node;
+    const clickedInsideMenu = activeSettingsMenuElement.contains(clickTarget);
+
+    if (!clickedInsideMenu) {
+        if (isClickOnOpenerButton(activeSettingsMenuElement, clickTarget)) {
+            scheduleNextOutsideClickListener();
+        } else {
+            closeWidgetSettingsMenu();
+        }
+    } else {
+        rescheduleOutsideClickListener();
+    }
+};
+
+function createSettingsMenu(): HTMLElement | null {
     const template = document.getElementById(DomSelector.WidgetSettingsMenuTemplate) as HTMLTemplateElement;
-    if (!template) return;
+    if (!template) return null;
 
     const menuFragment = template.content.cloneNode(true) as DocumentFragment;
     const menuElement = menuFragment.querySelector(`.${CssClass.WidgetSettingsMenu}`) as HTMLElement | null;
-    if (!menuElement) return;
+    
+    return menuElement;
+}
 
-    activeSettingsMenuElement = menuElement;
-    activeSettingsMenuElement.id = DomSelector.ActiveWidgetSettingsMenu;
-    activeSettingsMenuElement.dataset.widgetId = widgetId;
+function attachDeleteButtonListener(menuElement: HTMLElement, widgetId: string): void {
+    const deleteButton = menuElement.querySelector(`.${CssClass.DeleteWidgetButton}`);
+    if (deleteButton) {
+        deleteButton.addEventListener('click', (event) => {
+            event.stopPropagation();
+            if (confirm(USER_MESSAGES.CONFIRM_DELETE_WIDGET)) {
+                removeWidget(widgetId);
+            }
+        });
+    }
+}
 
-    const list = activeSettingsMenuElement.querySelector('ul');
-    if (!list) return;
+async function populateSettingsMenu(
+    menuElement: HTMLElement,
+    widgetId: string,
+    widgetType: WidgetType
+): Promise<void> {
+    const listElement = menuElement.querySelector('ul');
+    if (!listElement) return;
 
-    const deleteButton = activeSettingsMenuElement.querySelector(`.${CssClass.DeleteWidgetButton}`);
-     if (deleteButton) {
-         deleteButton.addEventListener('click', (e) => {
-             e.stopPropagation();
-             if (confirm(USER_MESSAGES.CONFIRM_DELETE_WIDGET)) {
-                 removeWidget(widgetId);
-             }
-         });
-     }
+    attachDeleteButtonListener(menuElement, widgetId);
 
     try {
-        const prefs = await getWidgetPreferences<any>(widgetId, widgetType);
-        addSpecificSettingsOptions(list, widgetId, widgetType, prefs);
+        const preferences = await getWidgetPreferences<any>(widgetId, widgetType);
+        addSpecificSettingsOptions(listElement, widgetId, widgetType, preferences);
     } catch (error) {
         console.error(`Error loading preferences for widget ${widgetId} to build settings menu:`, error);
     }
+}
 
-    document.body.appendChild(activeSettingsMenuElement);
-
+function calculateMenuPosition(
+    buttonElement: HTMLElement,
+    menuElement: HTMLElement
+): { top: number; left: number } {
     const buttonRect = buttonElement.getBoundingClientRect();
-    const menuRect = activeSettingsMenuElement.getBoundingClientRect();
+    const menuRect = menuElement.getBoundingClientRect();
 
     let top = window.scrollY + buttonRect.bottom + UI_SPACING.MENU_OFFSET_FROM_BUTTON;
     let left = window.scrollX + buttonRect.left;
@@ -218,14 +276,49 @@ async function toggleWidgetSettingsMenu(widgetId: string, widgetType: WidgetType
         left = UI_SPACING.MENU_EDGE_MARGIN;
     }
 
-    activeSettingsMenuElement.style.position = 'absolute';
-    activeSettingsMenuElement.style.top = `${top}px`;
-    activeSettingsMenuElement.style.left = `${left}px`;
+    return { top, left };
+}
 
-     setTimeout(() => {
+function positionSettingsMenu(menuElement: HTMLElement, buttonElement: HTMLElement): void {
+    const { top, left } = calculateMenuPosition(buttonElement, menuElement);
+    
+    menuElement.style.position = 'absolute';
+    menuElement.style.top = `${top}px`;
+    menuElement.style.left = `${left}px`;
+}
+
+function attachMenuEventListeners(): void {
+    setTimeout(() => {
         document.addEventListener('click', handleSettingsMenuOutsideClick, { capture: true, once: true });
         document.addEventListener('keydown', handleSettingsMenuEscape, { capture: true });
-     }, 0);
+    }, 0);
+}
+
+async function toggleWidgetSettingsMenu(
+    widgetId: string,
+    widgetType: WidgetType,
+    buttonElement: HTMLElement
+): Promise<void> {
+    const isOpeningDifferentMenu = !activeSettingsMenuElement || activeSettingsMenuElement.dataset.widgetId !== widgetId;
+
+    closeWidgetSettingsMenu();
+
+    if (!isOpeningDifferentMenu) {
+        return;
+    }
+
+    const menuElement = createSettingsMenu();
+    if (!menuElement) return;
+
+    activeSettingsMenuElement = menuElement;
+    activeSettingsMenuElement.id = DomSelector.ActiveWidgetSettingsMenu;
+    activeSettingsMenuElement.dataset.widgetId = widgetId;
+
+    await populateSettingsMenu(activeSettingsMenuElement, widgetId, widgetType);
+
+    document.body.appendChild(activeSettingsMenuElement);
+    positionSettingsMenu(activeSettingsMenuElement, buttonElement);
+    attachMenuEventListeners();
 }
 
 function closeWidgetSettingsMenu(): void {
@@ -328,19 +421,46 @@ function addClockSettings(list: HTMLUListElement, widgetId: string, prefs: any, 
      stopwatchGroupLi.appendChild(stopwatchCheckbox);
 }
 
-function addWebsiteSettings(list: HTMLUListElement, widgetId: string, prefs: any, insertBeforeLi: HTMLLIElement | null): void {
+function createOffsetInputsContainer(
+    widgetId: string,
+    offsetTop: number,
+    offsetLeft: number
+): HTMLDivElement {
+    const offsetContainer = document.createElement('div');
+    offsetContainer.className = 'offset-inputs';
+
+    const topLabel = document.createElement('label');
+    topLabel.textContent = 'Top: ';
+    const topInput = createNumberInputOption(widgetId, WidgetType.Website, 'offsetTop', offsetTop);
+    topLabel.appendChild(topInput);
+
+    const leftLabel = document.createElement('label');
+    leftLabel.textContent = ' Left: ';
+    const leftInput = createNumberInputOption(widgetId, WidgetType.Website, 'offsetLeft', offsetLeft);
+    leftLabel.appendChild(leftInput);
+
+    offsetContainer.appendChild(topLabel);
+    offsetContainer.appendChild(leftLabel);
+
+    return offsetContainer;
+}
+
+function addWebsiteSettings(
+    list: HTMLUListElement,
+    widgetId: string,
+    prefs: any,
+    insertBeforeLi: HTMLLIElement | null
+): void {
     const url = prefs?.url || DEFAULT_VALUES.WEBSITE_URL;
     const refreshInterval = prefs?.refreshInterval || DEFAULT_VALUES.WEBSITE_REFRESH_INTERVAL;
     const offsetTop = prefs?.offsetTop || DEFAULT_VALUES.WEBSITE_OFFSET_TOP;
     const offsetLeft = prefs?.offsetLeft || DEFAULT_VALUES.WEBSITE_OFFSET_LEFT;
 
     const urlGroupLi = createSettingsGroup(list, 'Website URL', insertBeforeLi);
-
     const urlInput = createTextInputOption(widgetId, WidgetType.Website, 'url', 'https://example.com', url, 'url');
     urlGroupLi.appendChild(urlInput);
 
     const refreshGroupLi = createSettingsGroup(list, 'Refresh Interval', insertBeforeLi);
-
     const refreshSelect = createSelectOption(widgetId, WidgetType.Website, 'refreshInterval', [
         { value: '0', text: 'No Refresh' },
         { value: '5000', text: '5 seconds' },
@@ -354,23 +474,7 @@ function addWebsiteSettings(list: HTMLUListElement, widgetId: string, prefs: any
     refreshGroupLi.appendChild(refreshSelect);
 
     const offsetGroupLi = createSettingsGroup(list, 'Scroll Offset (px)', insertBeforeLi);
-    const offsetContainer = document.createElement('div');
-    offsetContainer.className = 'offset-inputs';
-
-    const topLabel = document.createElement('label');
-    topLabel.textContent = 'Top: ';
-
-    const topInput = createNumberInputOption(widgetId, WidgetType.Website, 'offsetTop', offsetTop);
-    topLabel.appendChild(topInput);
-
-    const leftLabel = document.createElement('label');
-    leftLabel.textContent = ' Left: ';
-
-    const leftInput = createNumberInputOption(widgetId, WidgetType.Website, 'offsetLeft', offsetLeft);
-    leftLabel.appendChild(leftInput);
-
-    offsetContainer.appendChild(topLabel);
-    offsetContainer.appendChild(leftLabel);
+    const offsetContainer = createOffsetInputsContainer(widgetId, offsetTop, offsetLeft);
     offsetGroupLi.appendChild(offsetContainer);
 }
 

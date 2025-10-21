@@ -1,7 +1,7 @@
 import { WidgetType } from '../types';
-import { getWidgetPreferences } from '../storage-service';
+import { getWidgetPreferences } from '../storage.service';
 import { getDefaultPreferences } from './factory';
-import { ModalManager } from '../modals/modal';
+import { ModalManager } from '../modals/modal.manager';
 import { WidgetLifecycleManager } from './lifecycle';
 
 export class SettingsMenuManager {
