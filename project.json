@@ -39,9 +39,12 @@
     },
     "build-angular": {
       "executor": "@angular/build:application",
-      "outputs": ["{options.outputPath}"],
+      "outputs": ["{options.outputPath.base}"],
       "options": {
-        "outputPath": "dist/mosaic-board",
+        "outputPath": {
+          "base": "dist/mosaic-board",
+          "browser": ""
+        },
         "browser": "./src/main.ts",
         "tsConfig": "tsconfig.app.json",
         "inlineStyleLanguage": "scss",
@@ -106,7 +109,7 @@
       "options": {
         "buildTarget": "mosaic-board:build-angular",
         "port": 4200,
-        "staticFilePath": "dist/mosaic-board/browser",
+        "staticFilePath": "dist/mosaic-board",
         "spa": true
       }
     }
