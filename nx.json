@@ -61,7 +61,12 @@
     "projects": ["mosaic-board"],
     "version": {
       "conventionalCommits": true,
-      "fallbackCurrentVersionResolver": "disk"
+      "fallbackCurrentVersionResolver": "disk",
+      "preVersionCommand": "node scripts/sync-extension-version.mjs && git add src/manifest.json",
+      "git": {
+        "commit": true,
+        "tag": true
+      }
     }
   },
   "defaultProject": "mosaic-board"
