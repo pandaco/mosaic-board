@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "Mosaic Board",
+  "version": "0.0.1",
+  "description": "Build your personal dashboard with draggable and resizable widgets. Your web, organized.",
+  "icons": {
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "chrome_url_overrides": {
+    "newtab": "index.html"
+  },
+  "permissions": [
+    "storage"
+  ]
+}

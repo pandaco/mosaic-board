@@ -2,7 +2,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 const workspaceRoot = process.cwd();
-const manifestJsonPath = resolve(workspaceRoot, 'src', 'manifest.json');
+const manifestJsonPath = resolve(workspaceRoot, 'public', 'manifest.json');
 const distRoot = resolve(workspaceRoot, 'dist', 'mosaic-board');
 
 const manifestJsonRaw = await readFile(manifestJsonPath, 'utf8');
