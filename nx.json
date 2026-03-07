@@ -57,5 +57,12 @@
       "unitTestRunner": "vitest-angular"
     }
   },
+  "release": {
+    "projects": ["mosaic-board"],
+    "version": {
+      "conventionalCommits": true,
+      "fallbackCurrentVersionResolver": "disk"
+    }
+  },
   "defaultProject": "mosaic-board"
 }

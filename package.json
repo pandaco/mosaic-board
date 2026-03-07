@@ -5,7 +5,10 @@
   "scripts": {
     "start": "nx serve",
     "build": "nx build",
-    "test": "nx test"
+    "test": "nx test",
+    "release:version": "nx release version --projects mosaic-board",
+    "postrelease:version": "node scripts/sync-extension-version.mjs",
+    "release:version:dry-run": "nx release version --projects mosaic-board --dry-run"
   },
   "private": true,
   "dependencies": {

@@ -25,6 +25,26 @@ To create a production bundle:
 npx nx build mosaic-board
 ```
 
+This build synchronizes `manifest.json` with the workspace `package.json` version and writes `manifest.json` to `dist/mosaic-board`.
+
+## Chrome extension manifest and versioning
+
+- Source manifest file: `src/manifest.json`
+- Dist file generated after `nx build mosaic-board`:
+	- `dist/mosaic-board/manifest.json`
+
+To bump versions with semantic versioning via Nx Release (auto-detected from conventional commits) and keep `manifest.json` in sync:
+
+```sh
+npm run release:version
+```
+
+To preview without changing files:
+
+```sh
+npm run release:version:dry-run
+```
+
 To see all available targets to run for a project, run:
 
 ```sh
