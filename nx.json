@@ -62,11 +62,17 @@
     "version": {
       "conventionalCommits": true,
       "fallbackCurrentVersionResolver": "disk",
-      "preVersionCommand": "node scripts/sync-extension-version.mjs && git add src/manifest.json",
-      "git": {
-        "commit": true,
-        "tag": true
+      "preVersionCommand": "node scripts/sync-extension-version.mjs && git add public/manifest.json"
+    },
+    "changelog": {
+      "workspaceChangelog": {
+        "createRelease": false,
+        "file": "CHANGELOG.md"
       }
+    },
+    "git": {
+      "commit": true,
+      "tag": true
     }
   },
   "defaultProject": "mosaic-board"
