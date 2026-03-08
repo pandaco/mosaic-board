@@ -1,4 +1,4 @@
-import { Component, ElementRef, input, viewChild, afterNextRender, OnDestroy, output, inject } from '@angular/core';
+import { Component, ElementRef, input, viewChild, afterNextRender, OnDestroy, output, inject, effect, untracked, ChangeDetectionStrategy } from '@angular/core';
 import { MosaicTile, MosaicGridOptions } from '../../domain/mosaic.models';
 import { GRID_ENGINE } from '../../ports/grid-engine.port';
 import { GridstackEngineAdapter } from '../../adapters/gridstack/gridstack-engine.adapter';
@@ -8,6 +8,7 @@ import { GridstackEngineAdapter } from '../../adapters/gridstack/gridstack-engin
   standalone: true,
   templateUrl: './grid.component.html',
   styleUrl: './grid.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     { provide: GRID_ENGINE, useClass: GridstackEngineAdapter }
   ]
@@ -25,10 +26,22 @@ export class GridComponent implements OnDestroy {
 
   private gridEngine = inject(GRID_ENGINE);
   private gridContainer = viewChild<ElementRef<HTMLElement>>('gridContainer');
+  private isUpdatingFromEngine = false;
 
   constructor() {
     afterNextRender(() => {
       this.initGrid();
+    });
+
+    // Handle external updates to tiles (e.g. from storage)
+    effect(() => {
+      const tiles = this.tiles();
+      untracked(() => {
+        if (!this.isUpdatingFromEngine) {
+          // If needed, we could implement a full refresh here, 
+          // but for now the initial load from storage happens before/during init.
+        }
+      });
     });
   }
 
@@ -48,26 +61,42 @@ export class GridComponent implements OnDestroy {
     };
 
     this.gridEngine.init(el, options, (updatedTiles) => {
+      this.isUpdatingFromEngine = true;
       this.syncChanges(updatedTiles);
+      this.isUpdatingFromEngine = false;
     });
   }
 
   private syncChanges(engineTiles: Partial<MosaicTile>[]) {
-    const updatedTiles = this.tiles().map(tile => {
+    const currentTiles = this.tiles();
+    let hasChanged = false;
+
+    const updatedTiles = currentTiles.map(tile => {
       const match = engineTiles.find(t => t.id === tile.id);
       if (match) {
-        return {
-          ...tile,
-          x: match.x ?? tile.x,
-          y: match.y ?? tile.y,
-          w: match.w ?? tile.w,
-          h: match.h ?? tile.h
-        };
+        const changed = 
+          tile.x !== match.x || 
+          tile.y !== match.y || 
+          tile.w !== match.w || 
+          tile.h !== match.h;
+        
+        if (changed) {
+          hasChanged = true;
+          return {
+            ...tile,
+            x: match.x ?? tile.x,
+            y: match.y ?? tile.y,
+            w: match.w ?? tile.w,
+            h: match.h ?? tile.h
+          };
+        }
       }
       return tile;
     });
 
-    this.tilesChange.emit(updatedTiles);
+    if (hasChanged) {
+      this.tilesChange.emit(updatedTiles);
+    }
   }
 
   ngOnDestroy() {
