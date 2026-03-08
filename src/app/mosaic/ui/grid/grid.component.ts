@@ -40,7 +40,11 @@ export class GridComponent implements OnDestroy {
       columns: 12,
       cellHeight: '100px',
       margin: 10,
-      animate: true
+      animate: true,
+      placeholder: {
+        enabled: true,
+        className: 'grid-stack-placeholder'
+      }
     };
 
     this.gridEngine.init(el, options, (updatedTiles) => {

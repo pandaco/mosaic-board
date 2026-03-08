@@ -14,6 +14,10 @@ export interface MosaicGridOptions {
   cellHeight: string;
   margin: number;
   animate: boolean;
+  placeholder?: {
+    enabled: boolean;
+    className?: string;
+  };
 }
 
 export interface MosaicLayout {
