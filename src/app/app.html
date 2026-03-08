@@ -24,8 +24,18 @@
 </main>
 
 @if (isAddModalOpen()) {
-  <div class="modal-overlay" (click)="closeAddModal()">
-    <div class="modal-container add-widget-modal" (click)="$event.stopPropagation()">
+  <div class="modal-overlay" 
+       (click)="closeAddModal()" 
+       (keydown.enter)="closeAddModal()"
+       (keydown.space)="closeAddModal()"
+       role="button" 
+       tabindex="0"
+       aria-label="Close modal">
+    <div class="modal-container add-widget-modal" 
+         (click)="$event.stopPropagation()"
+         (keydown)="$event.stopPropagation()"
+         role="dialog"
+         aria-modal="true">
       <div class="modal-header">
         <h3 class="modal-title">Add Widget</h3>
         <button class="modal-close" (click)="closeAddModal()" aria-label="Close">✕</button>

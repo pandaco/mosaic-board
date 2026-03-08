@@ -49,7 +49,7 @@ export class GridstackEngineAdapter implements GridEnginePort {
       });
     });
 
-    this.gridEngine.on('change', (event, items) => {
+    this.gridEngine.on('change', () => {
       // items contains only what changed. We sync the whole layout for our domain.
       const updatedTiles = this.syncLayout();
       if (updatedTiles.length > 0) {
