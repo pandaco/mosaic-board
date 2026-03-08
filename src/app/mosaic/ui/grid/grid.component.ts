@@ -1,7 +1,7 @@
 import { Component, ElementRef, input, viewChild, afterNextRender, OnDestroy, output, inject, effect, untracked, ChangeDetectionStrategy } from '@angular/core';
 import { MosaicTile, MosaicGridOptions } from '../../domain/mosaic.models';
 import { GRID_ENGINE } from '../../ports/grid-engine.port';
-import { GridstackEngineAdapter } from '../../adapters/gridstack/gridstack-engine.adapter';
+import { GridstackEngineAdapter } from '../../adapters/grid/gridstack.grid';
 
 @Component({
   selector: 'app-grid',
@@ -14,14 +14,7 @@ import { GridstackEngineAdapter } from '../../adapters/gridstack/gridstack-engin
   ]
 })
 export class GridComponent implements OnDestroy {
-  /**
-   * Input property for the tiles to display.
-   */
   tiles = input.required<MosaicTile[]>();
-
-  /**
-   * Event emitted when the layout changes.
-   */
   tilesChange = output<MosaicTile[]>();
 
   private gridEngine = inject(GRID_ENGINE);
@@ -33,13 +26,11 @@ export class GridComponent implements OnDestroy {
       this.initGrid();
     });
 
-    // Handle external updates to tiles (e.g. from storage)
     effect(() => {
-      const tiles = this.tiles();
+      this.tiles();
       untracked(() => {
         if (!this.isUpdatingFromEngine) {
-          // If needed, we could implement a full refresh here, 
-          // but for now the initial load from storage happens before/during init.
+          // Future sync for external updates could go here
         }
       });
     });

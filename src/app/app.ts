@@ -22,25 +22,22 @@ export class App {
   protected title = 'Mosaic Board';
   private storage = inject(STORAGE_SERVICE);
 
-  /**
-   * Resource to load the initial layout from storage asynchronously.
-   */
-  private layoutResource = resource({
+  protected layoutResource = resource({
     loader: () => this.storage.load<MosaicTile[]>(STORAGE_KEY),
   });
 
-  /**
-   * linkedSignal: The state of our tiles.
-   * It automatically resets when layoutResource.value() changes, 
-   * but can be updated manually via onTilesChange.
-   */
   protected tiles = linkedSignal<MosaicTile[] | null, MosaicTile[]>({
     source: () => this.layoutResource.value(),
     computation: (newLayout) => newLayout ?? DEFAULT_TILES,
   });
 
   onTilesChange(updatedTiles: MosaicTile[]) {
+    if (this.layoutResource.isLoading() || updatedTiles.length === 0) {
+      return;
+    }
+
     this.tiles.set(updatedTiles);
-    this.storage.save(STORAGE_KEY, updatedTiles);
+    this.storage.save(STORAGE_KEY, updatedTiles)
+      .catch(error => console.error('Failed to save layout:', error));
   }
 }

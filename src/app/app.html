@@ -12,8 +12,12 @@
 
 <main class="dashboard">
   <div class="mosaic-container">
-    <app-grid 
-      [tiles]="tiles()" 
-      (tilesChange)="onTilesChange($event)" />
+    @if (layoutResource.isLoading()) {
+      <div class="loading">Chargement du layout...</div>
+    } @else {
+      <app-grid 
+        [tiles]="tiles()" 
+        (tilesChange)="onTilesChange($event)" />
+    }
   </div>
 </main>

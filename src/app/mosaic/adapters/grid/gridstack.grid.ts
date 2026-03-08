@@ -18,7 +18,7 @@ export class GridstackEngineAdapter implements GridEnginePort {
       margin: options.margin,
       animate: options.animate,
       float: true,
-      itemClass: 'mosaic-tile-item',
+      itemClass: 'grid-stack-item', // Keep standard for CSS
       draggable: { 
         handle: '.tile-header',
         scroll: true,
@@ -33,8 +33,10 @@ export class GridstackEngineAdapter implements GridEnginePort {
 
     this.gridEngine = GridStack.init(gridStackOptions, container);
 
-    // Manual initialization of widgets to map data-mosaic-* attributes to Gridstack internal state
+    // Manual initialization of widgets to map data-mosaic-* attributes
+    // Use setTimeout 0 to ensure DOM is perfectly ready if needed, but in afterNextRender it's fine
     const items = container.querySelectorAll('.mosaic-tile-item');
+    
     items.forEach(el => {
       const htmlEl = el as HTMLElement;
       this.gridEngine?.makeWidget(htmlEl, {
@@ -42,13 +44,17 @@ export class GridstackEngineAdapter implements GridEnginePort {
         x: parseInt(htmlEl.getAttribute('data-mosaic-x') ?? '0', 10),
         y: parseInt(htmlEl.getAttribute('data-mosaic-y') ?? '0', 10),
         w: parseInt(htmlEl.getAttribute('data-mosaic-w') ?? '1', 10),
-        h: parseInt(htmlEl.getAttribute('data-mosaic-h') ?? '1', 10)
+        h: parseInt(htmlEl.getAttribute('data-mosaic-h') ?? '1', 10),
+        autoPosition: false, // Force use of our coordinates
       });
     });
 
-    this.gridEngine.on('change', () => {
+    this.gridEngine.on('change', (event, items) => {
+      // items contains only what changed. We sync the whole layout for our domain.
       const updatedTiles = this.syncLayout();
-      onLayoutChange(updatedTiles);
+      if (updatedTiles.length > 0) {
+        onLayoutChange(updatedTiles);
+      }
     });
 
     this.gridEngine.on('dragstart', () => {
@@ -72,9 +78,11 @@ export class GridstackEngineAdapter implements GridEnginePort {
     if (!this.gridEngine) return [];
 
     const items = this.gridEngine.getGridItems();
-    return items.map(item => {
+    const result = items.map(item => {
+      const el = item as HTMLElement;
       const node = item.gridstackNode as GridStackNode;
-      const id = node?.id;
+      // Critical: read ID from DOM attribute if Gridstack hasn't mapped it to the node yet
+      const id = node?.id || el.getAttribute('data-mosaic-id');
 
       return {
         id: (id as string) ?? '',
@@ -83,7 +91,9 @@ export class GridstackEngineAdapter implements GridEnginePort {
         w: node?.w ?? 1,
         h: node?.h ?? 1,
       };
-    });
+    }).filter(tile => !!tile.id);
+    
+    return result;
   }
 
   destroy(): void {

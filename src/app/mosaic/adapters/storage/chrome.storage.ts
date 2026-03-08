@@ -11,6 +11,7 @@ export class ChromeStorageAdapter implements StoragePort {
     return new Promise((resolve, reject) => {
       chrome.storage.local.set({ [key]: data }, () => {
         if (chrome.runtime.lastError) {
+          console.error('Error saving to chrome storage:', chrome.runtime.lastError);
           reject(chrome.runtime.lastError);
         } else {
           resolve();
@@ -23,6 +24,7 @@ export class ChromeStorageAdapter implements StoragePort {
     return new Promise((resolve, reject) => {
       chrome.storage.local.get([key], (result) => {
         if (chrome.runtime.lastError) {
+          console.error('Error loading from chrome storage:', chrome.runtime.lastError);
           reject(chrome.runtime.lastError);
         } else {
           const value = result[key] as T | undefined;
