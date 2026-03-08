@@ -39,6 +39,7 @@
     "@swc-node/register": "~1.11.1",
     "@swc/core": "~1.15.5",
     "@swc/helpers": "~0.5.18",
+    "@types/chrome": "^0.1.37",
     "@types/gridstack": "^0.5.0",
     "@types/node": "20.19.9",
     "@typescript-eslint/utils": "^8.40.0",

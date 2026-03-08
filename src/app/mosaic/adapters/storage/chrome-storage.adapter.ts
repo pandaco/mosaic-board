@@ -25,7 +25,8 @@ export class ChromeStorageAdapter implements StoragePort {
         if (chrome.runtime.lastError) {
           reject(chrome.runtime.lastError);
         } else {
-          resolve(result[key] ?? null);
+          const value = result[key] as T | undefined;
+          resolve(value ?? null);
         }
       });
     });
