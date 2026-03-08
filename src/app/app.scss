@@ -66,10 +66,11 @@
 
 .dashboard {
   flex: 1;
-  padding: 2rem;
+  padding: 1rem 1.5rem;
 
   .mosaic-container {
     width: 100%;
+    margin: 0 -10px; // Offsetting the 10px grid margin
 
     .placeholder-tiles {
       display: grid;

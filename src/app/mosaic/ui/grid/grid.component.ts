@@ -41,8 +41,8 @@ export class GridComponent implements OnDestroy {
     if (!el) return;
 
     const options: MosaicGridOptions = {
-      columns: 12,
-      cellHeight: '100px',
+      columns: 6,
+      cellHeight: '200px',
       margin: 10,
       animate: true,
       placeholder: {

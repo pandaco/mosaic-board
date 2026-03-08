@@ -6,9 +6,9 @@ import { STORAGE_SERVICE } from './mosaic/ports/storage.port';
 const STORAGE_KEY = 'mosaic_layout';
 
 const DEFAULT_TILES: MosaicTile[] = [
-  { id: '1', x: 0, y: 0, w: 4, h: 2, title: 'Ma première tuile', type: 'widget', content: 'Contenu 1' },
-  { id: '2', x: 4, y: 0, w: 2, h: 2, title: 'Liens rapides', type: 'link', content: 'Contenu 2' },
-  { id: '3', x: 0, y: 2, w: 2, h: 2, title: 'Image', type: 'image', content: 'Contenu 3' },
+  { id: '1', x: 0, y: 0, w: 2, h: 1, title: 'Ma première tuile', type: 'widget', content: 'Contenu 1' },
+  { id: '2', x: 2, y: 0, w: 2, h: 1, title: 'Liens rapides', type: 'link', content: 'Contenu 2' },
+  { id: '3', x: 0, y: 1, w: 2, h: 1, title: 'Image', type: 'image', content: 'Contenu 3' },
 ];
 
 @Component({
