@@ -15,6 +15,11 @@ export interface GridEnginePort {
    * Cleans up the grid engine and removes event listeners.
    */
   destroy(): void;
+
+  /**
+   * Removes a widget from the grid by its ID.
+   */
+  removeWidget(id: string): void;
 }
 
 /**

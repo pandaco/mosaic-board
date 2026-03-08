@@ -100,4 +100,23 @@ export class GridstackEngineAdapter implements GridEnginePort {
     this.gridEngine?.destroy();
     this.gridEngine = undefined;
   }
+
+  removeWidget(id: string): void {
+    if (!this.gridEngine) return;
+    
+    // Find the widget element by our domain ID
+    const items = this.gridEngine.getGridItems();
+    const itemToRemove = items.find(item => {
+      const el = item as HTMLElement;
+      const node = item.gridstackNode as GridStackNode;
+      return node?.id === id || el.getAttribute('data-mosaic-id') === id;
+    });
+
+    if (itemToRemove) {
+      // removeDOM = false because Angular manages the DOM via signals
+      this.gridEngine.removeWidget(itemToRemove, false);
+    } else {
+      console.error(`[Gridstack] Could not find widget to remove with ID: ${id}`);
+    }
+  }
 }

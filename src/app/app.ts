@@ -40,4 +40,11 @@ export class App {
     this.storage.save(STORAGE_KEY, updatedTiles)
       .catch(error => console.error('Failed to save layout:', error));
   }
+
+  onDeleteTile(id: string) {
+    const updatedTiles = this.tiles().filter(t => t.id !== id);
+    this.tiles.set(updatedTiles);
+    this.storage.save(STORAGE_KEY, updatedTiles)
+      .catch(error => console.error('Failed to save layout after deletion:', error));
+  }
 }

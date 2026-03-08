@@ -1,4 +1,4 @@
-import { Component, ElementRef, input, viewChild, afterNextRender, OnDestroy, output, inject, effect, untracked, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ElementRef, input, viewChild, afterNextRender, OnDestroy, output, inject, effect, untracked, ChangeDetectionStrategy, signal } from '@angular/core';
 import { MosaicTile, MosaicGridOptions } from '../../domain/mosaic.models';
 import { GRID_ENGINE } from '../../ports/grid-engine.port';
 import { GridstackEngineAdapter } from '../../adapters/grid/gridstack.grid';
@@ -16,6 +16,9 @@ import { GridstackEngineAdapter } from '../../adapters/grid/gridstack.grid';
 export class GridComponent implements OnDestroy {
   tiles = input.required<MosaicTile[]>();
   tilesChange = output<MosaicTile[]>();
+  deleteTile = output<string>();
+
+  protected selectedTile = signal<MosaicTile | null>(null);
 
   private gridEngine = inject(GRID_ENGINE);
   private gridContainer = viewChild<ElementRef<HTMLElement>>('gridContainer');
@@ -87,6 +90,23 @@ export class GridComponent implements OnDestroy {
 
     if (hasChanged) {
       this.tilesChange.emit(updatedTiles);
+    }
+  }
+
+  protected openSettings(tile: MosaicTile) {
+    this.selectedTile.set(tile);
+  }
+
+  protected closeSettings() {
+    this.selectedTile.set(null);
+  }
+
+  protected removeWidget() {
+    const tile = this.selectedTile();
+    if (tile) {
+      this.gridEngine.removeWidget(tile.id);
+      this.deleteTile.emit(tile.id);
+      this.closeSettings();
     }
   }
 

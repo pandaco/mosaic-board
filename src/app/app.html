@@ -5,7 +5,7 @@
   </div>
   <nav class="header-actions">
     <button class="add-btn">
-      <span class="plus">+</span> Ajouter
+      <span class="plus">+</span> Add Widget
     </button>
   </nav>
 </header>
@@ -17,7 +17,8 @@
     } @else {
       <app-grid 
         [tiles]="tiles()" 
-        (tilesChange)="onTilesChange($event)" />
+        (tilesChange)="onTilesChange($event)"
+        (deleteTile)="onDeleteTile($event)" />
     }
   </div>
 </main>

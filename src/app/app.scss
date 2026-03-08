@@ -12,7 +12,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.75rem 1.5rem;
+  padding: 1rem 2rem;
   background-color: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
@@ -23,17 +23,18 @@
   .header-logo {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 1.25rem;
 
     .logo {
-      height: 32px;
+      height: 52px;
       width: auto;
     }
 
     .app-name {
-      font-size: 1.125rem;
-      font-weight: 600;
-      letter-spacing: -0.01em;
+      font-size: 1.75rem;
+      font-weight: 200;
+      letter-spacing: 0.05em;
+      color: #1d1d1f;
     }
   }
 
@@ -42,14 +43,14 @@
       background: #0071e3;
       color: white;
       border: none;
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 0.85rem;
+      padding: 10px 22px;
+      border-radius: 8px;
+      font-size: 0.95rem;
       font-weight: 500;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       transition: background 0.2s;
 
       &:hover {
