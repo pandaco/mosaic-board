@@ -17,10 +17,15 @@ const DEFAULT_TILES: MosaicTile[] = [
   templateUrl: './app.html',
   styleUrl: './app.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '(window:keydown.escape)': 'closeAddModal()'
+  }
 })
 export class App {
   protected title = 'Mosaic Board';
   private storage = inject(STORAGE_SERVICE);
+
+  protected isAddModalOpen = signal(false);
 
   protected layoutResource = resource({
     loader: () => this.storage.load<MosaicTile[]>(STORAGE_KEY),
@@ -46,5 +51,33 @@ export class App {
     this.tiles.set(updatedTiles);
     this.storage.save(STORAGE_KEY, updatedTiles)
       .catch(error => console.error('Failed to save layout after deletion:', error));
+  }
+
+  protected openAddModal() {
+    this.isAddModalOpen.set(true);
+  }
+
+  protected closeAddModal() {
+    this.isAddModalOpen.set(false);
+  }
+
+  protected addWidget(type: 'widget' | 'link' | 'image') {
+    const newWidget: MosaicTile = {
+      id: crypto.randomUUID(),
+      x: 0,
+      y: 0,
+      w: 2,
+      h: 1,
+      title: type === 'link' ? 'Bookmark' : 'New Widget',
+      type: type,
+      content: type === 'link' ? 'https://google.com' : 'New Content'
+    };
+
+    const updatedTiles = [newWidget, ...this.tiles()];
+    this.tiles.set(updatedTiles);
+    this.storage.save(STORAGE_KEY, updatedTiles)
+      .catch(error => console.error('Failed to save layout after addition:', error));
+    
+    this.closeAddModal();
   }
 }

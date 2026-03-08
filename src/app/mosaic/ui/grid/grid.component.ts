@@ -33,7 +33,8 @@ export class GridComponent implements OnDestroy {
       this.tiles();
       untracked(() => {
         if (!this.isUpdatingFromEngine) {
-          // Future sync for external updates could go here
+          // New tiles might have been added to the DOM by Angular, tell Gridstack to adopt them
+          setTimeout(() => this.gridEngine.refresh(), 0);
         }
       });
     });

@@ -119,4 +119,24 @@ export class GridstackEngineAdapter implements GridEnginePort {
       console.error(`[Gridstack] Could not find widget to remove with ID: ${id}`);
     }
   }
+
+  refresh(): void {
+    if (!this.gridEngine) return;
+
+    const container = this.gridEngine.el;
+    // Find elements that are not yet initialized by Gridstack
+    const items = container.querySelectorAll('.mosaic-tile-item:not(.grid-stack-item)');
+    
+    items.forEach(el => {
+      const htmlEl = el as HTMLElement;
+      this.gridEngine?.makeWidget(htmlEl, {
+        id: htmlEl.getAttribute('data-mosaic-id') ?? undefined,
+        x: parseInt(htmlEl.getAttribute('data-mosaic-x') ?? '0', 10),
+        y: parseInt(htmlEl.getAttribute('data-mosaic-y') ?? '0', 10),
+        w: parseInt(htmlEl.getAttribute('data-mosaic-w') ?? '1', 10),
+        h: parseInt(htmlEl.getAttribute('data-mosaic-h') ?? '1', 10),
+        autoPosition: true, // Improved for new widgets: let Gridstack find the best spot if 0,0 is taken
+      });
+    });
+  }
 }

@@ -4,7 +4,7 @@
     <span class="app-name">Mosaic Board</span>
   </div>
   <nav class="header-actions">
-    <button class="add-btn">
+    <button class="add-btn" (click)="openAddModal()">
       <span class="plus">+</span> Add Widget
     </button>
   </nav>
@@ -22,3 +22,26 @@
     }
   </div>
 </main>
+
+@if (isAddModalOpen()) {
+  <div class="modal-overlay" (click)="closeAddModal()">
+    <div class="modal-container add-widget-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">Add Widget</h3>
+        <button class="modal-close" (click)="closeAddModal()" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="widget-selection-grid">
+          <button class="widget-type-card" (click)="addWidget('link')">
+            <div class="card-icon">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M3.9,12c0-1.71,1.39-3.1,3.1-3.1h4V7H7c-2.76,0-5,2.24-5,5s2.24,5,5,5h4v-1.9H7C5.29,15.1,3.9,13.71,3.9,12z M8,13h8v-2H8V13z M17,7h-4v1.9h4c1.71,0,3.1,1.39,3.1,3.1s-1.39,3.1-3.1,3.1h-4V17h4c2.76,0,5-2.24,5-5S19.76,7,17,7z"/>
+              </svg>
+            </div>
+            <span class="card-label">Bookmark</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

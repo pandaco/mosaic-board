@@ -20,6 +20,11 @@ export interface GridEnginePort {
    * Removes a widget from the grid by its ID.
    */
   removeWidget(id: string): void;
+
+  /**
+   * Refreshes the grid engine to detect and initialize new elements.
+   */
+  refresh(): void;
 }
 
 /**
