@@ -1,0 +1,53 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.mosaic-grid-wrapper {
+  background: transparent;
+  min-height: 500px;
+}
+
+.mosaic-tile-content {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 100%;
+}
+
+.tile-header {
+  padding: 8px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: grab;
+
+  .tile-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #555;
+  }
+
+  .drag-handle {
+    background: none;
+    border: none;
+    cursor: grab;
+    color: #ccc;
+    font-size: 1.2rem;
+  }
+}
+
+.tile-body {
+  flex: 1;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+}

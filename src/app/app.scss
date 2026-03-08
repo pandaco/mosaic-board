@@ -1,0 +1,94 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f5f5f7;
+  color: #1d1d1f;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.5rem;
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
+  .header-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    .logo {
+      height: 32px;
+      width: auto;
+    }
+
+    .app-name {
+      font-size: 1.125rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+  }
+
+  .header-actions {
+    .add-btn {
+      background: #0071e3;
+      color: white;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.2s;
+
+      &:hover {
+        background: #0077ed;
+      }
+
+      .plus {
+        font-size: 1.1rem;
+        line-height: 1;
+      }
+    }
+  }
+}
+
+.dashboard {
+  flex: 1;
+  padding: 2rem;
+
+  .mosaic-container {
+    max-width: 1200px;
+    margin: 0 auto;
+
+    .placeholder-tiles {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1.5rem;
+
+      .tile-preview {
+        aspect-ratio: 1;
+        background-color: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 500;
+        color: #86868b;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+      }
+    }
+  }
+}

@@ -1,2 +1,19 @@
-<app-nx-welcome></app-nx-welcome>
-<router-outlet></router-outlet>
+<header class="header">
+  <div class="header-logo">
+    <img src="logo.svg" alt="Mosaic Board Logo" class="logo" />
+    <span class="app-name">Mosaic Board</span>
+  </div>
+  <nav class="header-actions">
+    <button class="add-btn" (click)="null">
+      <span class="plus">+</span> Ajouter
+    </button>
+  </nav>
+</header>
+
+<main class="dashboard">
+  <div class="mosaic-container">
+    <app-grid 
+      [tiles]="tiles()" 
+      (tilesChange)="onTilesChange($event)" />
+  </div>
+</main>
