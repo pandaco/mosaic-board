@@ -3,7 +3,7 @@ import {
   provideBrowserGlobalErrorListeners,
   provideZonelessChangeDetection,
 } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withHashLocation } from '@angular/router';
 import { appRoutes } from './app.routes';
 import { STORAGE_SERVICE } from './mosaic/ports/storage.port';
 import { ChromeStorageAdapter } from './mosaic/adapters/storage/chrome.storage';
@@ -20,7 +20,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideZonelessChangeDetection(),
     provideBrowserGlobalErrorListeners(),
-    provideRouter(appRoutes),
+    provideRouter(appRoutes, withHashLocation()),
     {
       provide: STORAGE_SERVICE,
       useClass: isChromeExtension() ? ChromeStorageAdapter : LocalStorageAdapter,
