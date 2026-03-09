@@ -54,7 +54,7 @@
           @if (widget.type === 'bookmark') {
             <app-bookmark-widget [widget]="widget" />
           } @else {
-            {{ widget.content }}
+            <span class="widget-text-content">{{ widget.content }}</span>
           }
         </div>
       </div>

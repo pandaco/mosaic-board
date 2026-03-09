@@ -2,12 +2,30 @@ import { Component, input, inject, resource, signal, computed } from '@angular/c
 import { BookmarkWidget, BookmarkItem } from '../../../domain/mosaic.models';
 import { BOOKMARKS_SERVICE } from '../../../ports/bookmarks.port';
 
+interface FolderEntry {
+  id: string;
+  title: string;
+}
+
 @Component({
   selector: 'app-bookmark-widget',
   standalone: true,
   imports: [],
   template: `
     <div class="bookmark-widget-container" [class.list-mode]="config().displayMode === 'list'">
+      @if (folderStack().length > 0) {
+        <div class="folder-nav">
+          <button class="back-row" type="button" (click)="goBack()">
+            <div class="item-icon-wrapper">
+              <svg viewBox="0 0 24 24" fill="currentColor" class="back-icon">
+                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+              </svg>
+            </div>
+            <span class="item-title">{{ folderStack().at(-1)?.title }}</span>
+          </button>
+        </div>
+      }
+
       @if (bookmarkResource.isLoading()) {
         <div class="loading-state">Loading bookmarks...</div>
       } @else if (bookmarkResource.error()) {
@@ -36,8 +54,38 @@ import { BOOKMARKS_SERVICE } from '../../../ports/bookmarks.port';
     </div>
   `,
   styles: [`
-    :host { display: block; height: 100%; width: 100%; overflow: auto; }
+    :host { display: block; height: 100%; width: 100%; overflow: auto; align-self: stretch; }
     .bookmark-widget-container { padding: 8px; }
+
+    .folder-nav {
+      border-bottom: 1px solid #f0f0f0;
+      padding-bottom: 4px;
+      margin-bottom: 8px;
+    }
+
+    .back-row {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      width: 100%;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      font: inherit;
+      color: #86868b;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      text-align: left;
+
+      &:hover { background: rgba(0, 0, 0, 0.05); color: #1d1d1f; }
+
+      .item-title { color: #86868b; font-weight: 600; }
+      &:hover .item-title { color: #1d1d1f; }
+    }
+
+    .back-icon { width: 18px; height: 18px; flex-shrink: 0; }
 
     .bookmark-grid {
       display: grid;
@@ -118,21 +166,27 @@ export class BookmarkWidgetComponent {
   config = computed(() => this.widget().configuration);
 
   private bookmarksService = inject(BOOKMARKS_SERVICE);
-  private currentFolderId = signal<string | undefined>(undefined);
+  protected folderStack = signal<FolderEntry[]>([]);
+
+  private currentFolderId = computed(() =>
+    this.folderStack().at(-1)?.id ?? this.config().rootFolderId ?? '1'
+  );
 
   protected bookmarkResource = resource({
-    loader: () => {
-      const folderId = this.currentFolderId() ?? this.config().rootFolderId ?? '1';
-      return this.bookmarksService.getFolderContents(folderId);
-    }
+    params: () => this.currentFolderId(),
+    loader: ({ params: folderId }) => this.bookmarksService.getFolderContents(folderId)
   });
 
   protected onItemClick(item: BookmarkItem) {
     if (item.type === 'folder') {
-      this.currentFolderId.set(item.id);
+      this.folderStack.update(stack => [...stack, { id: item.id, title: item.title }]);
     } else if (item.url) {
       window.open(item.url, '_blank');
     }
+  }
+
+  protected goBack() {
+    this.folderStack.update(stack => stack.slice(0, -1));
   }
 
   protected handleIconError(event: Event) {

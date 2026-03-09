@@ -43,7 +43,7 @@
 }
 
 .widget-header {
-  padding: 10px 14px;
+  padding: 6px 14px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -92,11 +92,16 @@
 
 .widget-body {
   flex: 1;
-  padding: 12px;
+  min-height: 0;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #888;
+}
+
+.widget-text-content {
+  padding: 12px;
 }
 
 .settings-dropdown {
