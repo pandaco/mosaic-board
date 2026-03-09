@@ -1,44 +1,44 @@
 <div #gridContainer class="mosaic-grid-wrapper">
-  @for (tile of tiles(); track tile.id) {
-    <div class="mosaic-tile-item"
-         [class.has-open-settings]="selectedTile()?.id === tile.id"
-         [attr.data-mosaic-id]="tile.id"
-         [attr.data-mosaic-x]="tile.x"
-         [attr.data-mosaic-y]="tile.y"
-         [attr.data-mosaic-w]="tile.w"
-         [attr.data-mosaic-h]="tile.h">
-      <div class="mosaic-tile-content grid-stack-item-content">
-        <div class="tile-header">
-          <span class="tile-title">{{ tile.title }}</span>
+  @for (widget of widgets(); track widget.id) {
+    <div class="mosaic-widget-item"
+         [class.has-open-settings]="selectedWidget()?.id === widget.id"
+         [attr.data-mosaic-id]="widget.id"
+         [attr.data-mosaic-x]="widget.x"
+         [attr.data-mosaic-y]="widget.y"
+         [attr.data-mosaic-w]="widget.w"
+         [attr.data-mosaic-h]="widget.h">
+      <div class="mosaic-widget-content grid-stack-item-content">
+        <div class="widget-header">
+          <span class="widget-title">{{ widget.title }}</span>
           <div class="settings-container">
-            <button 
-              class="settings-btn" 
-              aria-label="Widget settings" 
+            <button
+              class="settings-btn"
+              aria-label="Widget settings"
               title="Widget settings"
               (mousedown)="$event.stopPropagation()"
-              (click)="openSettings(tile); $event.stopPropagation()">
+              (click)="openSettings(widget); $event.stopPropagation()">
               <svg viewBox="0 0 24 24" fill="currentColor" class="settings-icon">
                 <path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.13,5.91,7.62,6.29L5.23,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.72,8.87 c-0.11,0.21-0.06,0.47,0.12,0.61l2.03,1.58C4.82,11.36,4.8,11.68,4.8,12c0,0.32,0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.11-0.21,0.06-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/>
               </svg>
             </button>
 
-            @if (selectedTile()?.id === tile.id) {
-              <div class="settings-dropdown" 
+            @if (selectedWidget()?.id === widget.id) {
+              <div class="settings-dropdown"
                    (mousedown)="$event.stopPropagation()"
                    (click)="$event.stopPropagation()"
                    (keydown)="$event.stopPropagation()"
                    role="menu"
                    tabindex="-1">
-                @if (tile.type === 'bookmark') {
+                @if (widget.type === 'bookmark') {
                   <button class="dropdown-item" (click)="toggleBookmarkMode()" role="menuitem">
                     <svg viewBox="0 0 24 24" fill="currentColor" class="item-icon">
                       <path d="M4,11h5V5H4V11z M4,18h5v-5H4V18z M10,18h5v-5h-5V18z M16,18h5v-5h-5V18z M10,11h5V5h-5V11z M16,5v6h5V5H16z"/>
                     </svg>
-                    Switch to {{ tile.configuration?.displayMode === 'grid' ? 'List' : 'Grid' }} Mode
+                    Switch to {{ widget.configuration.displayMode === 'grid' ? 'List' : 'Grid' }} Mode
                   </button>
                   <div class="dropdown-divider"></div>
                 }
-                <button class="dropdown-item delete-btn" 
+                <button class="dropdown-item delete-btn"
                         (click)="removeWidget()"
                         role="menuitem">
                   <svg viewBox="0 0 24 24" fill="currentColor" class="item-icon">
@@ -50,11 +50,11 @@
             }
           </div>
         </div>
-        <div class="tile-body">
-          @if (tile.type === 'bookmark') {
-            <app-bookmark-widget [tile]="tile" />
+        <div class="widget-body">
+          @if (widget.type === 'bookmark') {
+            <app-bookmark-widget [widget]="widget" />
           } @else {
-            {{ tile.content }}
+            {{ widget.content }}
           }
         </div>
       </div>
@@ -62,9 +62,9 @@
   }
 </div>
 
-@if (selectedTile()) {
-  <div class="dropdown-overlay" 
-       (click)="closeSettings()" 
+@if (selectedWidget()) {
+  <div class="dropdown-overlay"
+       (click)="closeSettings()"
        (keydown.enter)="closeSettings()"
        (keydown.space)="closeSettings()"
        role="presentation"></div>

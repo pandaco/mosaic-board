@@ -34,7 +34,7 @@ describe('GridComponent', () => {
     component = fixture.componentInstance;
     
     // Initialiser les inputs requis
-    fixture.componentRef.setInput('tiles', []);
+    fixture.componentRef.setInput('widgets', []);
     
     fixture.detectChanges();
   });

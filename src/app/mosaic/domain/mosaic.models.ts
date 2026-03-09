@@ -1,14 +1,23 @@
-export interface MosaicTile {
+interface WidgetBase {
   id: string;
   x: number;
   y: number;
   w: number;
   h: number;
   title: string;
-  type: 'widget' | 'link' | 'image' | 'bookmark';
-  content?: string;
-  configuration?: BookmarkWidgetConfig;
 }
+
+export interface ContentWidget extends WidgetBase {
+  type: 'widget' | 'link' | 'image';
+  content?: string;
+}
+
+export interface BookmarkWidget extends WidgetBase {
+  type: 'bookmark';
+  configuration: BookmarkWidgetConfig;
+}
+
+export type MosaicWidget = ContentWidget | BookmarkWidget;
 
 export interface BookmarkWidgetConfig {
   rootFolderId?: string;
@@ -23,6 +32,14 @@ export interface BookmarkItem {
   icon?: string;
 }
 
+export interface TilePosition {
+  id: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
 export interface MosaicGridOptions {
   columns: number;
   cellHeight: string;
@@ -35,5 +52,5 @@ export interface MosaicGridOptions {
 }
 
 export interface MosaicLayout {
-  tiles: MosaicTile[];
+  widgets: MosaicWidget[];
 }

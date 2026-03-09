@@ -1,5 +1,5 @@
 import { Component, ElementRef, input, viewChild, afterNextRender, OnDestroy, output, inject, effect, untracked, ChangeDetectionStrategy, signal } from '@angular/core';
-import { MosaicTile, MosaicGridOptions } from '../../domain/mosaic.models';
+import { MosaicWidget, MosaicGridOptions, TilePosition } from '../../domain/mosaic.models';
 import { GRID_ENGINE } from '../../ports/grid-engine.port';
 import { GridstackEngineAdapter } from '../../adapters/grid/gridstack.grid';
 import { BookmarkWidgetComponent } from '../widgets/bookmark/bookmark';
@@ -16,11 +16,11 @@ import { BookmarkWidgetComponent } from '../widgets/bookmark/bookmark';
   ]
 })
 export class GridComponent implements OnDestroy {
-  tiles = input.required<MosaicTile[]>();
-  tilesChange = output<MosaicTile[]>();
-  deleteTile = output<string>();
+  widgets = input.required<MosaicWidget[]>();
+  widgetsChange = output<MosaicWidget[]>();
+  deleteWidget = output<string>();
 
-  protected selectedTile = signal<MosaicTile | null>(null);
+  protected selectedWidget = signal<MosaicWidget | null>(null);
 
   private gridEngine = inject(GRID_ENGINE);
   private gridContainer = viewChild<ElementRef<HTMLElement>>('gridContainer');
@@ -32,10 +32,10 @@ export class GridComponent implements OnDestroy {
     });
 
     effect(() => {
-      this.tiles();
+      this.widgets();
       untracked(() => {
         if (!this.isUpdatingFromEngine) {
-          // New tiles might have been added to the DOM by Angular, tell Gridstack to adopt them
+          // New widgets might have been added to the DOM by Angular, tell Gridstack to adopt them
           setTimeout(() => this.gridEngine.refresh(), 0);
         }
       });
@@ -57,74 +57,68 @@ export class GridComponent implements OnDestroy {
       }
     };
 
-    this.gridEngine.init(el, options, (updatedTiles) => {
+    this.gridEngine.init(el, options, (updatedWidgets) => {
       this.isUpdatingFromEngine = true;
-      this.syncChanges(updatedTiles);
+      this.syncChanges(updatedWidgets);
       this.isUpdatingFromEngine = false;
     });
   }
 
-  private syncChanges(engineTiles: Partial<MosaicTile>[]) {
-    const currentTiles = this.tiles();
+  private syncChanges(engineWidgets: TilePosition[]) {
+    const currentWidgets = this.widgets();
     let hasChanged = false;
 
-    const updatedTiles = currentTiles.map(tile => {
-      const match = engineTiles.find(t => t.id === tile.id);
+    const updatedWidgets = currentWidgets.map(widget => {
+      const match = engineWidgets.find(w => w.id === widget.id);
       if (match) {
-        const changed = 
-          tile.x !== match.x || 
-          tile.y !== match.y || 
-          tile.w !== match.w || 
-          tile.h !== match.h;
-        
+        const changed =
+          widget.x !== match.x ||
+          widget.y !== match.y ||
+          widget.w !== match.w ||
+          widget.h !== match.h;
+
         if (changed) {
           hasChanged = true;
-          return {
-            ...tile,
-            x: match.x ?? tile.x,
-            y: match.y ?? tile.y,
-            w: match.w ?? tile.w,
-            h: match.h ?? tile.h
-          };
+          return { ...widget, x: match.x, y: match.y, w: match.w, h: match.h };
         }
       }
-      return tile;
+      return widget;
     });
 
     if (hasChanged) {
-      this.tilesChange.emit(updatedTiles);
+      this.widgetsChange.emit(updatedWidgets);
     }
   }
 
-  protected openSettings(tile: MosaicTile) {
-    this.selectedTile.set(tile);
+  protected openSettings(widget: MosaicWidget) {
+    this.selectedWidget.set(widget);
   }
 
   protected closeSettings() {
-    this.selectedTile.set(null);
+    this.selectedWidget.set(null);
   }
 
   protected removeWidget() {
-    const tile = this.selectedTile();
-    if (tile) {
-      this.gridEngine.removeWidget(tile.id);
-      this.deleteTile.emit(tile.id);
+    const widget = this.selectedWidget();
+    if (widget) {
+      this.gridEngine.removeWidget(widget.id);
+      this.deleteWidget.emit(widget.id);
       this.closeSettings();
     }
   }
 
   protected toggleBookmarkMode() {
-    const tile = this.selectedTile();
-    if (tile && tile.type === 'bookmark' && tile.configuration) {
-      const newMode: 'grid' | 'list' = tile.configuration.displayMode === 'grid' ? 'list' : 'grid';
-      const updatedTiles = this.tiles().map(t => 
-        t.id === tile.id 
-          ? { ...t, configuration: { ...t.configuration!, displayMode: newMode } }
-          : t
-      );
-      this.tilesChange.emit(updatedTiles);
-      // Update selected tile to reflect change in UI immediately
-      this.selectedTile.set({ ...tile, configuration: { ...tile.configuration!, displayMode: newMode } });
+    const widget = this.selectedWidget();
+    if (widget && widget.type === 'bookmark') {
+      const newMode: 'grid' | 'list' = widget.configuration.displayMode === 'grid' ? 'list' : 'grid';
+      const updatedWidgets = this.widgets().map(w => {
+        if (w.id === widget.id && w.type === 'bookmark') {
+          return { ...w, configuration: { ...w.configuration, displayMode: newMode } };
+        }
+        return w;
+      });
+      this.widgetsChange.emit(updatedWidgets);
+      this.selectedWidget.set({ ...widget, configuration: { ...widget.configuration, displayMode: newMode } });
     }
   }
 

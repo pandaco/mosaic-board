@@ -73,12 +73,12 @@
     width: 100%;
     margin: 0 -10px; // Offsetting the 10px grid margin
 
-    .placeholder-tiles {
+    .placeholder-widgets {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
       gap: 1.5rem;
 
-      .tile-preview {
+      .widget-preview {
         aspect-ratio: 1;
         background-color: white;
         border-radius: 12px;

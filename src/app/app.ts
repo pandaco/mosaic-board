@@ -1,11 +1,11 @@
 import { Component, signal, inject, resource, linkedSignal, ChangeDetectionStrategy } from '@angular/core';
 import { GridComponent } from './mosaic/ui/grid/grid.component';
-import { MosaicTile } from './mosaic/domain/mosaic.models';
+import { MosaicWidget } from './mosaic/domain/mosaic.models';
 import { STORAGE_SERVICE } from './mosaic/ports/storage.port';
 
 const STORAGE_KEY = 'mosaic_layout';
 
-const DEFAULT_TILES: MosaicTile[] = [
+const DEFAULT_WIDGETS: MosaicWidget[] = [
   { id: '1', x: 0, y: 0, w: 2, h: 1, title: 'Ma première tuile', type: 'widget', content: 'Contenu 1' },
   { id: '2', x: 2, y: 0, w: 2, h: 1, title: 'Liens rapides', type: 'link', content: 'Contenu 2' },
   { id: '3', x: 0, y: 1, w: 2, h: 1, title: 'Image', type: 'image', content: 'Contenu 3' },
@@ -28,28 +28,28 @@ export class App {
   protected isAddModalOpen = signal(false);
 
   protected layoutResource = resource({
-    loader: () => this.storage.load<MosaicTile[]>(STORAGE_KEY),
+    loader: () => this.storage.load<MosaicWidget[]>(STORAGE_KEY),
   });
 
-  protected tiles = linkedSignal<MosaicTile[] | null, MosaicTile[]>({
+  protected widgets = linkedSignal<MosaicWidget[] | null, MosaicWidget[]>({
     source: () => this.layoutResource.value(),
-    computation: (newLayout) => newLayout ?? DEFAULT_TILES,
+    computation: (newLayout) => newLayout ?? DEFAULT_WIDGETS,
   });
 
-  onTilesChange(updatedTiles: MosaicTile[]) {
-    if (this.layoutResource.isLoading() || updatedTiles.length === 0) {
+  onWidgetsChange(updatedWidgets: MosaicWidget[]) {
+    if (this.layoutResource.isLoading() || updatedWidgets.length === 0) {
       return;
     }
 
-    this.tiles.set(updatedTiles);
-    this.storage.save(STORAGE_KEY, updatedTiles)
+    this.widgets.set(updatedWidgets);
+    this.storage.save(STORAGE_KEY, updatedWidgets)
       .catch(error => console.error('Failed to save layout:', error));
   }
 
-  onDeleteTile(id: string) {
-    const updatedTiles = this.tiles().filter(t => t.id !== id);
-    this.tiles.set(updatedTiles);
-    this.storage.save(STORAGE_KEY, updatedTiles)
+  onDeleteWidget(id: string) {
+    const updatedWidgets = this.widgets().filter(w => w.id !== id);
+    this.widgets.set(updatedWidgets);
+    this.storage.save(STORAGE_KEY, updatedWidgets)
       .catch(error => console.error('Failed to save layout after deletion:', error));
   }
 
@@ -62,26 +62,25 @@ export class App {
   }
 
   protected addWidget(type: 'widget' | 'link' | 'image' | 'bookmark') {
-    const newWidget: MosaicTile = {
-      id: crypto.randomUUID(),
-      x: 0,
-      y: 0,
-      w: 2,
-      h: 1,
-      title: type === 'bookmark' ? 'Bookmarks' : (type === 'link' ? 'Bookmark' : 'New Widget'),
-      type: type,
-      content: type === 'link' ? 'https://google.com' : (type === 'bookmark' ? undefined : 'New Content'),
-      configuration: type === 'bookmark' ? {
-        rootFolderId: '1',
-        displayMode: 'grid'
-      } : undefined
-    };
+    const newWidget: MosaicWidget = type === 'bookmark'
+      ? {
+          id: crypto.randomUUID(), x: 0, y: 0, w: 2, h: 1,
+          title: 'Bookmarks',
+          type: 'bookmark',
+          configuration: { rootFolderId: '1', displayMode: 'grid' }
+        }
+      : {
+          id: crypto.randomUUID(), x: 0, y: 0, w: 2, h: 1,
+          title: type === 'link' ? 'Bookmark' : 'New Widget',
+          type,
+          content: type === 'link' ? 'https://google.com' : undefined
+        };
 
-    const updatedTiles = [newWidget, ...this.tiles()];
-    this.tiles.set(updatedTiles);
-    this.storage.save(STORAGE_KEY, updatedTiles)
+    const updatedWidgets = [newWidget, ...this.widgets()];
+    this.widgets.set(updatedWidgets);
+    this.storage.save(STORAGE_KEY, updatedWidgets)
       .catch(error => console.error('Failed to save layout after addition:', error));
-    
+
     this.closeAddModal();
   }
 }

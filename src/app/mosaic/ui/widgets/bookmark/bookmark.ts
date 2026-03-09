@@ -1,5 +1,5 @@
 import { Component, input, inject, resource, signal, computed } from '@angular/core';
-import { MosaicTile, BookmarkWidgetConfig, BookmarkItem } from '../../../domain/mosaic.models';
+import { BookmarkWidget, BookmarkItem } from '../../../domain/mosaic.models';
 import { BOOKMARKS_SERVICE } from '../../../ports/bookmarks.port';
 
 @Component({
@@ -37,7 +37,7 @@ import { BOOKMARKS_SERVICE } from '../../../ports/bookmarks.port';
   styles: [`
     :host { display: block; height: 100%; width: 100%; overflow: auto; }
     .bookmark-widget-container { padding: 8px; }
-    
+
     .bookmark-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
@@ -108,15 +108,15 @@ import { BOOKMARKS_SERVICE } from '../../../ports/bookmarks.port';
   `]
 })
 export class BookmarkWidgetComponent {
-  tile = input.required<MosaicTile>();
-  config = computed(() => this.tile().configuration as BookmarkWidgetConfig);
-  
+  widget = input.required<BookmarkWidget>();
+  config = computed(() => this.widget().configuration);
+
   private bookmarksService = inject(BOOKMARKS_SERVICE);
   private currentFolderId = signal<string | undefined>(undefined);
 
   protected bookmarkResource = resource({
     loader: () => {
-      const folderId = this.currentFolderId() ?? this.config()?.rootFolderId ?? '1';
+      const folderId = this.currentFolderId() ?? this.config().rootFolderId ?? '1';
       return this.bookmarksService.getFolderContents(folderId);
     }
   });

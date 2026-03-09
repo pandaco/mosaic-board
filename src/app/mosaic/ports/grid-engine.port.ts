@@ -1,5 +1,5 @@
 import { InjectionToken } from '@angular/core';
-import { MosaicGridOptions, MosaicTile } from '../domain/mosaic.models';
+import { MosaicGridOptions, TilePosition } from '../domain/mosaic.models';
 
 /**
  * Port (Interface) for any Grid Engine implementation.
@@ -9,8 +9,8 @@ export interface GridEnginePort {
   /**
    * Initializes the grid on the given HTML container.
    */
-  init(container: HTMLElement, options: MosaicGridOptions, onLayoutChange: (tiles: Partial<MosaicTile>[]) => void): void;
-  
+  init(container: HTMLElement, options: MosaicGridOptions, onLayoutChange: (widgets: TilePosition[]) => void): void;
+
   /**
    * Cleans up the grid engine and removes event listeners.
    */

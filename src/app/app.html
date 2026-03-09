@@ -15,10 +15,10 @@
     @if (layoutResource.isLoading()) {
       <div class="loading">Chargement du layout...</div>
     } @else {
-      <app-grid 
-        [tiles]="tiles()" 
-        (tilesChange)="onTilesChange($event)"
-        (deleteTile)="onDeleteTile($event)" />
+      <app-grid
+        [widgets]="widgets()"
+        (widgetsChange)="onWidgetsChange($event)"
+        (deleteWidget)="onDeleteWidget($event)" />
     }
   </div>
 </main>

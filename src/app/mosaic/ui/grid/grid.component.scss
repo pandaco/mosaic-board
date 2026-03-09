@@ -17,7 +17,7 @@
   }
 }
 
-.mosaic-tile-item {
+.mosaic-widget-item {
   user-select: none;
 
   &.has-open-settings {
@@ -25,7 +25,7 @@
   }
 }
 
-.mosaic-tile-content {
+.mosaic-widget-content {
   position: absolute;
   top: 5px;
   left: 5px;
@@ -42,7 +42,7 @@
   z-index: 1;
 }
 
-.tile-header {
+.widget-header {
   padding: 10px 14px;
   display: flex;
   justify-content: space-between;
@@ -52,7 +52,7 @@
   cursor: grab;
   overflow: visible;
 
-  .tile-title {
+  .widget-title {
     font-size: 0.85rem;
     font-weight: 600;
     color: #555;
@@ -90,7 +90,7 @@
   }
 }
 
-.tile-body {
+.widget-body {
   flex: 1;
   padding: 12px;
   display: flex;
@@ -133,7 +133,7 @@
 
   &.delete-btn {
     color: #e53e3e;
-    
+
     &:hover {
       background: #fee2e2; // More visible red background on hover
       color: #c53030;
@@ -186,7 +186,7 @@
 
   .grid-stack-item.ui-draggable-dragging {
     z-index: 100 !important;
-    .mosaic-tile-content {
+    .mosaic-widget-content {
       box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
       opacity: 0.9;
       transform: scale(1.03) rotate(1deg);

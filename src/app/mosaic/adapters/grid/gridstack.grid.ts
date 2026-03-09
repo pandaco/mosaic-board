@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { GridStack, GridStackNode, GridStackOptions } from 'gridstack';
-import { MosaicGridOptions, MosaicTile } from '../../domain/mosaic.models';
+import { MosaicGridOptions, TilePosition } from '../../domain/mosaic.models';
 import { GridEnginePort } from '../../ports/grid-engine.port';
 
 /**
@@ -11,7 +11,7 @@ import { GridEnginePort } from '../../ports/grid-engine.port';
 export class GridstackEngineAdapter implements GridEnginePort {
   private gridEngine?: GridStack;
 
-  init(container: HTMLElement, options: MosaicGridOptions, onLayoutChange: (tiles: Partial<MosaicTile>[]) => void): void {
+  init(container: HTMLElement, options: MosaicGridOptions, onLayoutChange: (widgets: TilePosition[]) => void): void {
     const gridStackOptions: GridStackOptions = {
       column: options.columns,
       cellHeight: options.cellHeight,
@@ -19,8 +19,8 @@ export class GridstackEngineAdapter implements GridEnginePort {
       animate: options.animate,
       float: true,
       itemClass: 'grid-stack-item', // Keep standard for CSS
-      draggable: { 
-        handle: '.tile-header',
+      draggable: {
+        handle: '.widget-header',
         scroll: true,
         appendTo: 'body',
       },
@@ -35,8 +35,8 @@ export class GridstackEngineAdapter implements GridEnginePort {
 
     // Manual initialization of widgets to map data-mosaic-* attributes
     // Use setTimeout 0 to ensure DOM is perfectly ready if needed, but in afterNextRender it's fine
-    const items = container.querySelectorAll('.mosaic-tile-item');
-    
+    const items = container.querySelectorAll('.mosaic-widget-item');
+
     items.forEach(el => {
       const htmlEl = el as HTMLElement;
       this.gridEngine?.makeWidget(htmlEl, {
@@ -51,9 +51,9 @@ export class GridstackEngineAdapter implements GridEnginePort {
 
     this.gridEngine.on('change', () => {
       // items contains only what changed. We sync the whole layout for our domain.
-      const updatedTiles = this.syncLayout();
-      if (updatedTiles.length > 0) {
-        onLayoutChange(updatedTiles);
+      const updatedWidgets = this.syncLayout();
+      if (updatedWidgets.length > 0) {
+        onLayoutChange(updatedWidgets);
       }
     });
 
@@ -74,11 +74,11 @@ export class GridstackEngineAdapter implements GridEnginePort {
     });
   }
 
-  private syncLayout(): Partial<MosaicTile>[] {
+  private syncLayout(): TilePosition[] {
     if (!this.gridEngine) return [];
 
     const items = this.gridEngine.getGridItems();
-    const result = items.map(item => {
+    return items.map(item => {
       const el = item as HTMLElement;
       const node = item.gridstackNode as GridStackNode;
       // Critical: read ID from DOM attribute if Gridstack hasn't mapped it to the node yet
@@ -91,9 +91,7 @@ export class GridstackEngineAdapter implements GridEnginePort {
         w: node?.w ?? 1,
         h: node?.h ?? 1,
       };
-    }).filter(tile => !!tile.id);
-    
-    return result;
+    }).filter(widget => !!widget.id);
   }
 
   destroy(): void {
@@ -103,7 +101,7 @@ export class GridstackEngineAdapter implements GridEnginePort {
 
   removeWidget(id: string): void {
     if (!this.gridEngine) return;
-    
+
     // Find the widget element by our domain ID
     const items = this.gridEngine.getGridItems();
     const itemToRemove = items.find(item => {
@@ -125,8 +123,8 @@ export class GridstackEngineAdapter implements GridEnginePort {
 
     const container = this.gridEngine.el;
     // Find elements that are not yet initialized by Gridstack
-    const items = container.querySelectorAll('.mosaic-tile-item:not(.grid-stack-item)');
-    
+    const items = container.querySelectorAll('.mosaic-widget-item:not(.grid-stack-item)');
+
     items.forEach(el => {
       const htmlEl = el as HTMLElement;
       this.gridEngine?.makeWidget(htmlEl, {
