@@ -146,6 +146,12 @@
   }
 }
 
+.dropdown-divider {
+  height: 1px;
+  background: rgba(0, 0, 0, 0.05);
+  margin: 4px 8px;
+}
+
 .dropdown-overlay {
   position: fixed;
   top: 0;

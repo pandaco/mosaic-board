@@ -61,16 +61,20 @@ export class App {
     this.isAddModalOpen.set(false);
   }
 
-  protected addWidget(type: 'widget' | 'link' | 'image') {
+  protected addWidget(type: 'widget' | 'link' | 'image' | 'bookmark') {
     const newWidget: MosaicTile = {
       id: crypto.randomUUID(),
       x: 0,
       y: 0,
       w: 2,
       h: 1,
-      title: type === 'link' ? 'Bookmark' : 'New Widget',
+      title: type === 'bookmark' ? 'Bookmarks' : (type === 'link' ? 'Bookmark' : 'New Widget'),
       type: type,
-      content: type === 'link' ? 'https://google.com' : 'New Content'
+      content: type === 'link' ? 'https://google.com' : (type === 'bookmark' ? undefined : 'New Content'),
+      configuration: type === 'bookmark' ? {
+        rootFolderId: '1',
+        displayMode: 'grid'
+      } : undefined
     };
 
     const updatedTiles = [newWidget, ...this.tiles()];

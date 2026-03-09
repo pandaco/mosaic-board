@@ -2,10 +2,12 @@ import { Component, ElementRef, input, viewChild, afterNextRender, OnDestroy, ou
 import { MosaicTile, MosaicGridOptions } from '../../domain/mosaic.models';
 import { GRID_ENGINE } from '../../ports/grid-engine.port';
 import { GridstackEngineAdapter } from '../../adapters/grid/gridstack.grid';
+import { BookmarkWidgetComponent } from '../widgets/bookmark/bookmark';
 
 @Component({
   selector: 'app-grid',
   standalone: true,
+  imports: [BookmarkWidgetComponent],
   templateUrl: './grid.component.html',
   styleUrl: './grid.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -108,6 +110,21 @@ export class GridComponent implements OnDestroy {
       this.gridEngine.removeWidget(tile.id);
       this.deleteTile.emit(tile.id);
       this.closeSettings();
+    }
+  }
+
+  protected toggleBookmarkMode() {
+    const tile = this.selectedTile();
+    if (tile && tile.type === 'bookmark' && tile.configuration) {
+      const newMode: 'grid' | 'list' = tile.configuration.displayMode === 'grid' ? 'list' : 'grid';
+      const updatedTiles = this.tiles().map(t => 
+        t.id === tile.id 
+          ? { ...t, configuration: { ...t.configuration!, displayMode: newMode } }
+          : t
+      );
+      this.tilesChange.emit(updatedTiles);
+      // Update selected tile to reflect change in UI immediately
+      this.selectedTile.set({ ...tile, configuration: { ...tile.configuration!, displayMode: newMode } });
     }
   }
 

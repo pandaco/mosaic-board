@@ -42,6 +42,14 @@
       </div>
       <div class="modal-body">
         <div class="widget-selection-grid">
+          <button class="widget-type-card" (click)="addWidget('bookmark')">
+            <div class="card-icon">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20,6h-8l-2-2H4C2.9,4,2.01,4.9,2.01,6L2,18c0,1.1,0.9,2,2,2h16c1.1,0,2-0.9,2-2V8C22,6.9,21.1,6,20,6z M20,18H4V8h16V18z"/>
+              </svg>
+            </div>
+            <span class="card-label">Bookmarks</span>
+          </button>
           <button class="widget-type-card" (click)="addWidget('link')">
             <div class="card-icon">
               <svg viewBox="0 0 24 24" fill="currentColor">
