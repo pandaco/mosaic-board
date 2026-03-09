@@ -15,7 +15,8 @@ import { BOOKMARKS_SERVICE } from '../../../ports/bookmarks.port';
       } @else {
         <div class="bookmark-grid">
           @for (item of bookmarkResource.value() ?? []; track item.id) {
-            <div class="bookmark-item" [class.folder]="item.type === 'folder'" (click)="onItemClick(item)">
+            <button class="bookmark-item" [class.folder]="item.type === 'folder'"
+                    type="button" (click)="onItemClick(item)">
               <div class="item-icon-wrapper">
                 @if (item.type === 'folder') {
                   <svg viewBox="0 0 24 24" fill="currentColor" class="folder-icon">
@@ -26,7 +27,7 @@ import { BOOKMARKS_SERVICE } from '../../../ports/bookmarks.port';
                 }
               </div>
               <span class="item-title" [title]="item.title">{{ item.title }}</span>
-            </div>
+            </button>
           } @empty {
             <div class="empty-state">No bookmarks found in this folder</div>
           }
@@ -60,6 +61,11 @@ import { BOOKMARKS_SERVICE } from '../../../ports/bookmarks.port';
       cursor: pointer;
       transition: background 0.2s;
       text-align: center;
+      /* reset button defaults */
+      border: none;
+      background: transparent;
+      font: inherit;
+      color: inherit;
     }
 
     .list-mode .bookmark-item {
