@@ -3,17 +3,21 @@ import { MosaicWidget, MosaicGridOptions, TilePosition } from '../../domain/mosa
 import { GRID_ENGINE } from '../../ports/grid-engine.port';
 import { GridstackEngineAdapter } from '../../adapters/grid/gridstack.grid';
 import { BookmarkWidgetComponent } from '../widgets/bookmark/bookmark';
+import { FolderPickerComponent, FolderSelection } from '../folder-picker/folder-picker.component';
 
 @Component({
   selector: 'app-grid',
   standalone: true,
-  imports: [BookmarkWidgetComponent],
+  imports: [BookmarkWidgetComponent, FolderPickerComponent],
   templateUrl: './grid.component.html',
   styleUrl: './grid.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     { provide: GRID_ENGINE, useClass: GridstackEngineAdapter }
-  ]
+  ],
+  host: {
+    '(window:keydown.escape)': 'closeSettings()'
+  }
 })
 export class GridComponent implements OnDestroy {
   widgets = input.required<MosaicWidget[]>();
@@ -21,6 +25,7 @@ export class GridComponent implements OnDestroy {
   deleteWidget = output<string>();
 
   protected selectedWidget = signal<MosaicWidget | null>(null);
+  protected isFolderPickerOpen = signal(false);
 
   private gridEngine = inject(GRID_ENGINE);
   private gridContainer = viewChild<ElementRef<HTMLElement>>('gridContainer');
@@ -91,7 +96,11 @@ export class GridComponent implements OnDestroy {
   }
 
   protected openSettings(widget: MosaicWidget) {
-    this.selectedWidget.set(widget);
+    if (this.selectedWidget()?.id === widget.id) {
+      this.closeSettings();
+    } else {
+      this.selectedWidget.set(widget);
+    }
   }
 
   protected closeSettings() {
@@ -119,6 +128,55 @@ export class GridComponent implements OnDestroy {
       });
       this.widgetsChange.emit(updatedWidgets);
       this.selectedWidget.set({ ...widget, configuration: { ...widget.configuration, displayMode: newMode } });
+    }
+  }
+
+  protected openFolderPicker() {
+    this.isFolderPickerOpen.set(true);
+  }
+
+  protected onFolderSelected(folder: FolderSelection) {
+    const widget = this.selectedWidget();
+    if (widget && widget.type === 'bookmark') {
+      const updatedWidgets = this.widgets().map(w => {
+        if (w.id === widget.id && w.type === 'bookmark') {
+          return { ...w, title: folder.title, configuration: { ...w.configuration, rootFolderId: folder.id } };
+        }
+        return w;
+      });
+      this.widgetsChange.emit(updatedWidgets);
+    }
+    this.isFolderPickerOpen.set(false);
+    this.closeSettings();
+  }
+
+  protected togglePrivacyMode() {
+    const widget = this.selectedWidget();
+    if (widget && widget.type === 'bookmark') {
+      const newValue = !widget.configuration.useGoogleFavicons;
+      const updatedWidgets = this.widgets().map(w => {
+        if (w.id === widget.id && w.type === 'bookmark') {
+          return { ...w, configuration: { ...w.configuration, useGoogleFavicons: newValue } };
+        }
+        return w;
+      });
+      this.widgetsChange.emit(updatedWidgets);
+      this.selectedWidget.set({ ...widget, configuration: { ...widget.configuration, useGoogleFavicons: newValue } });
+    }
+  }
+
+  protected toggleShowItemCount() {
+    const widget = this.selectedWidget();
+    if (widget && widget.type === 'bookmark') {
+      const newValue = !widget.configuration.showItemCount;
+      const updatedWidgets = this.widgets().map(w => {
+        if (w.id === widget.id && w.type === 'bookmark') {
+          return { ...w, configuration: { ...w.configuration, showItemCount: newValue } };
+        }
+        return w;
+      });
+      this.widgetsChange.emit(updatedWidgets);
+      this.selectedWidget.set({ ...widget, configuration: { ...widget.configuration, showItemCount: newValue } });
     }
   }
 
