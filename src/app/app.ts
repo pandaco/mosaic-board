@@ -2,6 +2,7 @@ import { Component, signal, inject, resource, linkedSignal, ChangeDetectionStrat
 import { GridComponent } from './mosaic/ui/grid/grid.component';
 import { MosaicWidget } from './mosaic/domain/mosaic.models';
 import { STORAGE_SERVICE } from './mosaic/ports/storage.port';
+import { APP_VERSION } from './version';
 
 const STORAGE_KEY = 'mosaic_layout';
 
@@ -23,6 +24,7 @@ const DEFAULT_WIDGETS: MosaicWidget[] = [
 })
 export class App {
   protected title = 'Mosaic Board';
+  protected version = APP_VERSION;
   private storage = inject(STORAGE_SERVICE);
 
   protected isAddModalOpen = signal(false);

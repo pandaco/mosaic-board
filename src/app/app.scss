@@ -30,11 +30,23 @@
       width: auto;
     }
 
+    .app-title-group {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+    }
+
     .app-name {
       font-size: 1.75rem;
       font-weight: 200;
       letter-spacing: 0.05em;
       color: #1d1d1f;
+    }
+
+    .app-version {
+      font-size: 0.7rem;
+      font-weight: 400;
+      color: #86868b;
     }
   }
 
