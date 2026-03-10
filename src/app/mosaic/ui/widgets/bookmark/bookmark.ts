@@ -40,11 +40,20 @@ interface FolderEntry {
                   <svg viewBox="0 0 24 24" fill="currentColor" class="folder-icon">
                     <path d="M10,4H4C2.9,4,2.01,4.9,2.01,6L2,18c0,1.1,0.9,2,2,2h16c1.1,0,2-0.9,2-2V8c0-1.1-0.9-2-2-2h-8L10,4z"/>
                   </svg>
+                } @else if (config().useGoogleFavicons && item.icon) {
+                  <img [src]="item.icon" alt="" class="favicon" (error)="handleIconError($event)" />
                 } @else {
-                  <img [src]="item.icon || 'favicon.ico'" alt="" class="favicon" (error)="handleIconError($event)" />
+                  <svg viewBox="0 0 24 24" fill="currentColor" class="link-icon">
+                    <path d="M3.9,12c0-1.71,1.39-3.1,3.1-3.1h4V7H7c-2.76,0-5,2.24-5,5s2.24,5,5,5h4v-1.9H7C5.29,15.1,3.9,13.71,3.9,12z M8,13h8v-2H8V13z M17,7h-4v1.9h4c1.71,0,3.1,1.39,3.1,3.1s-1.39,3.1-3.1,3.1h-4V17h4c2.76,0,5-2.24,5-5S19.76,7,17,7z"/>
+                  </svg>
                 }
               </div>
-              <span class="item-title" [title]="item.title">{{ item.title }}</span>
+              <div class="item-title-container">
+                <span class="item-title" [title]="item.title">{{ item.title }}</span>
+                @if (config().showItemCount && item.type === 'folder' && item.childrenCount !== undefined) {
+                  <span class="item-count">({{ item.childrenCount }})</span>
+                }
+              </div>
             </button>
           } @empty {
             <div class="empty-state">No bookmarks found in this folder</div>
@@ -137,20 +146,42 @@ interface FolderEntry {
       height: 20px;
     }
 
-    .folder-icon { color: #86868b; }
+    .folder-icon, .link-icon { color: #86868b; }
+    .link-icon { width: 20px; height: 20px; }
     .favicon { width: 24px; height: 24px; border-radius: 4px; }
     .list-mode .favicon { width: 16px; height: 16px; }
+
+    .item-title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .list-mode .item-title-container {
+      flex-direction: row;
+      justify-content: flex-start;
+      gap: 4px;
+    }
 
     .item-title {
       font-size: 0.75rem;
       font-weight: 500;
       color: #1d1d1f;
-      width: 100%;
+      max-width: 100%;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
 
+    .item-count {
+      font-size: 0.7rem;
+      color: #86868b;
+      font-weight: 400;
+    }
+
+    .list-mode .item-count { font-size: 0.8rem; }
     .list-mode .item-title { font-size: 0.85rem; }
 
     .loading-state, .error-state, .empty-state {

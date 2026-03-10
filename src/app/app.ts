@@ -67,7 +67,7 @@ export class App {
           id: crypto.randomUUID(), x: 0, y: 0, w: 2, h: 1,
           title: 'Bookmarks',
           type: 'bookmark',
-          configuration: { rootFolderId: '1', displayMode: 'grid' }
+          configuration: { rootFolderId: '1', displayMode: 'grid', useGoogleFavicons: false, showItemCount: true }
         }
       : {
           id: crypto.randomUUID(), x: 0, y: 0, w: 2, h: 1,

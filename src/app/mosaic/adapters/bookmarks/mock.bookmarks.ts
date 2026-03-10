@@ -6,8 +6,8 @@ import { BookmarkItem } from '../../domain/mosaic.models';
 export class MockBookmarksAdapter implements BookmarksPort {
   private mockData: Record<string, BookmarkItem[]> = {
     'root': [
-      { id: '1', title: 'Work', type: 'folder' },
-      { id: '2', title: 'Social', type: 'folder' },
+      { id: '1', title: 'Work', type: 'folder', childrenCount: 2 },
+      { id: '2', title: 'Social', type: 'folder', childrenCount: 0 },
       { id: '3', title: 'Angular', url: 'https://angular.dev', type: 'link', icon: 'https://www.google.com/s2/favicons?sz=64&domain_url=angular.dev' },
     ],
     '1': [

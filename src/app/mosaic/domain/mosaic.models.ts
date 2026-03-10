@@ -22,6 +22,8 @@ export type MosaicWidget = ContentWidget | BookmarkWidget;
 export interface BookmarkWidgetConfig {
   rootFolderId?: string;
   displayMode: 'grid' | 'list';
+  useGoogleFavicons: boolean;
+  showItemCount: boolean;
 }
 
 export interface BookmarkItem {
@@ -30,6 +32,7 @@ export interface BookmarkItem {
   url?: string;
   type: 'folder' | 'link';
   icon?: string;
+  childrenCount?: number;
 }
 
 export interface TilePosition {
