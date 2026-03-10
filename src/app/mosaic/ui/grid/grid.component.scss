@@ -20,9 +20,6 @@
 .mosaic-widget-item {
   user-select: none;
 
-  &.has-open-settings {
-    z-index: 1000 !important; // Bring to front when settings are open
-  }
 }
 
 .mosaic-widget-content {
@@ -105,9 +102,7 @@
 }
 
 .settings-dropdown {
-  position: absolute;
-  top: calc(100% + 6px);
-  right: 0;
+  position: fixed;
   background: white;
   min-width: 220px;
   border-radius: 8px;

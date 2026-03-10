@@ -1,5 +1,5 @@
-import { Component, ElementRef, input, viewChild, afterNextRender, OnDestroy, output, inject, effect, untracked, ChangeDetectionStrategy, signal } from '@angular/core';
-import { MosaicWidget, MosaicGridOptions, TilePosition } from '../../domain/mosaic.models';
+import { Component, ElementRef, input, viewChild, afterNextRender, OnDestroy, output, inject, effect, untracked, ChangeDetectionStrategy, signal, computed } from '@angular/core';
+import { MosaicWidget, BookmarkWidget, MosaicGridOptions, TilePosition } from '../../domain/mosaic.models';
 import { GRID_ENGINE } from '../../ports/grid-engine.port';
 import { GridstackEngineAdapter } from '../../adapters/grid/gridstack.grid';
 import { BookmarkWidgetComponent } from '../widgets/bookmark/bookmark.component';
@@ -26,6 +26,11 @@ export class GridComponent implements OnDestroy {
 
   protected selectedWidget = signal<MosaicWidget | null>(null);
   protected isFolderPickerOpen = signal(false);
+  protected dropdownPosition = signal<{ top: number; right: number } | null>(null);
+  protected selectedBookmarkWidget = computed<BookmarkWidget | null>(() => {
+    const w = this.selectedWidget();
+    return w?.type === 'bookmark' ? w : null;
+  });
 
   private gridEngine = inject(GRID_ENGINE);
   private gridContainer = viewChild<ElementRef<HTMLElement>>('gridContainer');
@@ -95,10 +100,13 @@ export class GridComponent implements OnDestroy {
     }
   }
 
-  protected openSettings(widget: MosaicWidget) {
+  protected openSettings(widget: MosaicWidget, event: MouseEvent) {
     if (this.selectedWidget()?.id === widget.id) {
       this.closeSettings();
     } else {
+      const btn = event.currentTarget as HTMLElement;
+      const rect = btn.getBoundingClientRect();
+      this.dropdownPosition.set({ top: rect.bottom + 6, right: window.innerWidth - rect.right });
       this.selectedWidget.set(widget);
     }
   }
