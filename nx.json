@@ -62,7 +62,7 @@
     "version": {
       "conventionalCommits": true,
       "fallbackCurrentVersionResolver": "disk",
-      "preVersionCommand": "node scripts/sync-extension-version.mjs && git add public/manifest.json",
+      "versionActions": "./scripts/version-actions.cjs",
       "git": {
         "commit": true,
         "tag": true
