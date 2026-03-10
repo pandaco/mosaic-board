@@ -2,7 +2,7 @@ import { Component, ElementRef, input, viewChild, afterNextRender, OnDestroy, ou
 import { MosaicWidget, MosaicGridOptions, TilePosition } from '../../domain/mosaic.models';
 import { GRID_ENGINE } from '../../ports/grid-engine.port';
 import { GridstackEngineAdapter } from '../../adapters/grid/gridstack.grid';
-import { BookmarkWidgetComponent } from '../widgets/bookmark/bookmark';
+import { BookmarkWidgetComponent } from '../widgets/bookmark/bookmark.component';
 import { FolderPickerComponent, FolderSelection } from '../folder-picker/folder-picker.component';
 
 @Component({
