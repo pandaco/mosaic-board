@@ -20,7 +20,8 @@
     <div class="bookmark-grid">
       @for (item of bookmarkResource.value() ?? []; track item.id) {
         <button class="bookmark-item" [class.folder]="item.type === 'folder'"
-                type="button" (click)="onItemClick(item)" [title]="item.url || item.title">
+                type="button" (click)="onItemClick(item)" 
+                [title]="item.title + (item.url ? '\n' + item.url : '')">
           <div class="item-icon-wrapper">
             @if (item.type === 'folder') {
               <svg viewBox="0 0 24 24" fill="currentColor" class="folder-icon">
@@ -35,7 +36,7 @@
             }
           </div>
           <div class="item-title-container">
-            <span class="item-title" [title]="item.title">{{ item.title }}</span>
+            <span class="item-title">{{ item.title }}</span>
             @if (config().showItemCount && item.type === 'folder' && item.childrenCount !== undefined) {
               <span class="item-count">({{ item.childrenCount }})</span>
             }

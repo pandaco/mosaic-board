@@ -24,6 +24,7 @@ export class ChromeBookmarksAdapter implements BookmarksPort {
         const items: BookmarkItem[] = children.map((child) => ({
           id: child.id,
           title: child.title || 'Root',
+          url: child.url,
           type: child.url ? 'link' : 'folder',
           icon: child.url ? getFaviconUrl(child.url) : undefined,
           childrenCount: child.children ? child.children.length : undefined,
