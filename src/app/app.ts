@@ -24,7 +24,9 @@ const DEFAULT_WIDGETS: MosaicWidget[] = [
 })
 export class App {
   protected title = 'Mosaic Board';
-  protected version = APP_VERSION;
+  protected version = typeof chrome !== 'undefined' && chrome.runtime?.getManifest
+    ? chrome.runtime.getManifest().version
+    : APP_VERSION;
   private storage = inject(STORAGE_SERVICE);
 
   protected isAddModalOpen = signal(false);
