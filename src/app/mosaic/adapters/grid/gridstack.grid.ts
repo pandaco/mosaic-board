@@ -50,11 +50,7 @@ export class GridstackEngineAdapter implements GridEnginePort {
     });
 
     this.gridEngine.on('change', () => {
-      // items contains only what changed. We sync the whole layout for our domain.
-      const updatedWidgets = this.syncLayout();
-      if (updatedWidgets.length > 0) {
-        onLayoutChange(updatedWidgets);
-      }
+      this.throttledSync(onLayoutChange);
     });
 
     this.gridEngine.on('dragstart', () => {
@@ -72,6 +68,19 @@ export class GridstackEngineAdapter implements GridEnginePort {
     this.gridEngine.on('resizestop', () => {
       container.classList.remove('grid-is-resizing');
     });
+  }
+
+  private throttledSyncTimer?: ReturnType<typeof setTimeout>;
+  private throttledSync(onLayoutChange: (widgets: TilePosition[]) => void) {
+    if (this.throttledSyncTimer) return;
+
+    this.throttledSyncTimer = setTimeout(() => {
+      const updatedWidgets = this.syncLayout();
+      if (updatedWidgets.length > 0) {
+        onLayoutChange(updatedWidgets);
+      }
+      this.throttledSyncTimer = undefined;
+    }, 100); // 100ms throttle
   }
 
   private syncLayout(): TilePosition[] {
@@ -136,5 +145,20 @@ export class GridstackEngineAdapter implements GridEnginePort {
         autoPosition: true, // Improved for new widgets: let Gridstack find the best spot if 0,0 is taken
       });
     });
+  }
+
+  updateWidget(id: string, updates: Partial<TilePosition>): void {
+    if (!this.gridEngine) return;
+
+    const items = this.gridEngine.getGridItems();
+    const itemToUpdate = items.find(item => {
+      const el = item as HTMLElement;
+      const node = item.gridstackNode as GridStackNode;
+      return node?.id === id || el.getAttribute('data-mosaic-id') === id;
+    });
+
+    if (itemToUpdate) {
+      this.gridEngine.update(itemToUpdate, updates);
+    }
   }
 }

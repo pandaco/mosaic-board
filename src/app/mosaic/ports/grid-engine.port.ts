@@ -25,6 +25,11 @@ export interface GridEnginePort {
    * Refreshes the grid engine to detect and initialize new elements.
    */
   refresh(): void;
+
+  /**
+   * Updates a widget's position or size.
+   */
+  updateWidget(id: string, updates: Partial<TilePosition>): void;
 }
 
 /**
