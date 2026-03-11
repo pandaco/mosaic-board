@@ -64,6 +64,7 @@ export interface TilePosition {
 export interface MosaicGridOptions {
   columns: number;
   cellHeight: string;
+  minRow: number;
   margin: number;
   animate: boolean;
   placeholder?: {

@@ -16,6 +16,7 @@ export class GridstackEngineAdapter implements GridEnginePort {
     const gridStackOptions: GridStackOptions = {
       column: options.columns,
       cellHeight: options.cellHeight,
+      minRow: options.minRow,
       margin: options.margin,
       animate: options.animate,
       float: true,
