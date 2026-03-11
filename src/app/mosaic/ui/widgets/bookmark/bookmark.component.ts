@@ -1,4 +1,5 @@
 import { Component, input, inject, resource, signal, computed, ChangeDetectionStrategy } from '@angular/core';
+import { NgOptimizedImage } from '@angular/common';
 import { BookmarkWidget, BookmarkItem } from '../../../domain/mosaic.models';
 import { BOOKMARKS_SERVICE } from '../../../ports/bookmarks.port';
 
@@ -10,7 +11,7 @@ interface FolderEntry {
 @Component({
   selector: 'app-bookmark-widget',
   standalone: true,
-  imports: [],
+  imports: [NgOptimizedImage],
   templateUrl: './bookmark.component.html',
   styleUrl: './bookmark.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
