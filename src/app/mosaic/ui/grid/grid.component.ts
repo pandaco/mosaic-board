@@ -56,12 +56,16 @@ export class GridComponent implements OnDestroy {
     });
   }
 
+  private readonly GRID_COLUMNS = 12;
+
   private initGrid() {
     const el = this.gridContainer()?.nativeElement;
     if (!el) return;
 
+    el.style.setProperty('--grid-columns', String(this.GRID_COLUMNS));
+
     const options: MosaicGridOptions = {
-      columns: 6,
+      columns: this.GRID_COLUMNS,
       cellHeight: '200px',
       margin: 10,
       animate: true,
