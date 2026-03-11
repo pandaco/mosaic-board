@@ -84,26 +84,55 @@
   .mosaic-container {
     width: 100%;
     margin: 0 -10px; // Offsetting the 10px grid margin
+  }
 
-    .placeholder-widgets {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 1.5rem;
+  .loading, .error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 60vh;
+    color: #86868b;
+    gap: 1rem;
+  }
 
-      .widget-preview {
-        aspect-ratio: 1;
-        background-color: white;
-        border-radius: 12px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 500;
-        color: #86868b;
-        border: 1px solid rgba(0, 0, 0, 0.05);
+  .error {
+    color: #ff3b30;
+    
+    button {
+      background: #0071e3;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      
+      &:hover {
+        background: #0077ed;
       }
     }
   }
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(0, 113, 227, 0.1);
+    border-top: 3px solid #0071e3;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+
+    &.small {
+      width: 20px;
+      height: 20px;
+      border-width: 2px;
+    }
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 // Modal Styles

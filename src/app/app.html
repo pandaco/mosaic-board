@@ -15,8 +15,16 @@
 
 <main class="dashboard">
   <div class="mosaic-container">
-    @if (layoutResource.isLoading()) {
-      <div class="loading">Chargement du layout...</div>
+    @if (isLoading()) {
+      <div class="loading">
+        <div class="spinner"></div>
+        Chargement du layout...
+      </div>
+    } @else if (error()) {
+      <div class="error">
+        <p>Erreur lors du chargement du layout</p>
+        <button (click)="reload()">Réessayer</button>
+      </div>
     } @else {
       <app-grid
         [widgets]="widgets()"
