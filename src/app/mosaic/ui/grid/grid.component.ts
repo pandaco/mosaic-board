@@ -35,6 +35,7 @@ export class GridComponent implements OnDestroy {
   private gridEngine = inject(GRID_ENGINE);
   private gridContainer = viewChild<ElementRef<HTMLElement>>('gridContainer');
   private isUpdatingFromEngine = false;
+  private refreshTimer?: ReturnType<typeof setTimeout>;
 
   constructor() {
     afterNextRender(() => {
@@ -46,7 +47,7 @@ export class GridComponent implements OnDestroy {
       untracked(() => {
         if (!this.isUpdatingFromEngine) {
           // New widgets might have been added to the DOM by Angular, tell Gridstack to adopt them
-          setTimeout(() => this.gridEngine.refresh(), 0);
+          this.refreshTimer = setTimeout(() => this.gridEngine.refresh(), 0);
         }
       });
     });
@@ -217,6 +218,7 @@ export class GridComponent implements OnDestroy {
   }
 
   ngOnDestroy() {
+    clearTimeout(this.refreshTimer);
     this.gridEngine.destroy();
   }
 }
