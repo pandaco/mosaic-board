@@ -18,12 +18,12 @@
     @if (isLoading()) {
       <div class="loading">
         <div class="spinner"></div>
-        Chargement du layout...
+        Loading layout...
       </div>
     } @else if (error()) {
       <div class="error">
-        <p>Erreur lors du chargement du layout</p>
-        <button (click)="reload()">Réessayer</button>
+        <p>Failed to load layout</p>
+        <button (click)="reload()">Retry</button>
       </div>
     } @else {
       <app-grid

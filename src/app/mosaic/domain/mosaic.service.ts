@@ -6,9 +6,9 @@ import { z } from 'zod';
 const STORAGE_KEY = 'mosaic_layout';
 
 const DEFAULT_WIDGETS: MosaicWidget[] = [
-  { id: '1', x: 0, y: 0, w: 2, h: 1, title: 'Ma première tuile', type: 'widget', content: 'Contenu 1' },
-  { id: '2', x: 2, y: 0, w: 2, h: 1, title: 'Liens rapides', type: 'link', content: 'Contenu 2' },
-  { id: '3', x: 0, y: 1, w: 2, h: 1, title: 'Image', type: 'image', content: 'Contenu 3' },
+  { id: '1', x: 0, y: 0, w: 2, h: 1, title: 'My first tile', type: 'widget', content: 'Content 1' },
+  { id: '2', x: 2, y: 0, w: 2, h: 1, title: 'Quick links', type: 'link', content: 'Content 2' },
+  { id: '3', x: 0, y: 1, w: 2, h: 1, title: 'Image', type: 'image', content: 'Content 3' },
 ];
 
 @Injectable({
