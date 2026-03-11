@@ -1,30 +1,48 @@
-interface WidgetBase {
-  id: string;
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-  title: string;
-}
+import { z } from 'zod';
 
-export interface ContentWidget extends WidgetBase {
-  type: 'widget' | 'link' | 'image';
-  content?: string;
-}
+export const BookmarkWidgetConfigSchema = z.object({
+  rootFolderId: z.string().optional(),
+  displayMode: z.enum(['grid', 'list']),
+  useGoogleFavicons: z.boolean(),
+  showItemCount: z.boolean(),
+});
 
-export interface BookmarkWidget extends WidgetBase {
-  type: 'bookmark';
-  configuration: BookmarkWidgetConfig;
-}
+export const ContentWidgetSchema = z.object({
+  id: z.string(),
+  x: z.number(),
+  y: z.number(),
+  w: z.number(),
+  h: z.number(),
+  title: z.string(),
+  type: z.enum(['widget', 'link', 'image']),
+  content: z.string().optional(),
+});
 
-export type MosaicWidget = ContentWidget | BookmarkWidget;
+export const BookmarkWidgetSchema = z.object({
+  id: z.string(),
+  x: z.number(),
+  y: z.number(),
+  w: z.number(),
+  h: z.number(),
+  title: z.string(),
+  type: z.literal('bookmark'),
+  configuration: BookmarkWidgetConfigSchema,
+});
 
-export interface BookmarkWidgetConfig {
-  rootFolderId?: string;
-  displayMode: 'grid' | 'list';
-  useGoogleFavicons: boolean;
-  showItemCount: boolean;
-}
+export const MosaicWidgetSchema = z.discriminatedUnion('type', [
+  ContentWidgetSchema,
+  BookmarkWidgetSchema,
+]);
+
+export const MosaicLayoutSchema = z.object({
+  widgets: z.array(MosaicWidgetSchema),
+});
+
+export type BookmarkWidgetConfig = z.infer<typeof BookmarkWidgetConfigSchema>;
+export type ContentWidget = z.infer<typeof ContentWidgetSchema>;
+export type BookmarkWidget = z.infer<typeof BookmarkWidgetSchema>;
+export type MosaicWidget = z.infer<typeof MosaicWidgetSchema>;
+export type MosaicLayout = z.infer<typeof MosaicLayoutSchema>;
 
 export interface BookmarkItem {
   id: string;
@@ -52,8 +70,4 @@ export interface MosaicGridOptions {
     enabled: boolean;
     className?: string;
   };
-}
-
-export interface MosaicLayout {
-  widgets: MosaicWidget[];
 }
