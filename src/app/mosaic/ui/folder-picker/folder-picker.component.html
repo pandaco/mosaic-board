@@ -1,5 +1,13 @@
-<div class="picker-overlay" (click)="cancelled.emit()" role="presentation">
-  <div class="picker-modal" (click)="$event.stopPropagation()"
+<div class="picker-overlay"
+     (click)="cancelled.emit()"
+     (keydown.enter)="cancelled.emit()"
+     (keydown.space)="cancelled.emit()"
+     role="button"
+     tabindex="0"
+     aria-label="Cancel and close folder picker">
+  <div class="picker-modal" 
+       (click)="$event.stopPropagation()"
+       (keydown)="$event.stopPropagation()"
        role="dialog" aria-modal="true">
 
     <div class="picker-header">
