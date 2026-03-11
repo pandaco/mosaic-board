@@ -71,7 +71,7 @@ export class MosaicService {
   addWidget(type: 'widget' | 'link' | 'image' | 'bookmark') {
     const newWidget: MosaicWidget = type === 'bookmark'
       ? {
-          id: crypto.randomUUID(), x: 0, y: 0, w: 6, h: 1,
+          id: crypto.randomUUID(), x: 0, y: 0, w: 6, h: 2,
           title: 'Bookmarks',
           type: 'bookmark',
           configuration: { displayMode: 'grid', useGoogleFavicons: false, showItemCount: true }
