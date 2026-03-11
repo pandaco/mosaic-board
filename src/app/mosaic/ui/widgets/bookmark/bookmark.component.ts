@@ -45,9 +45,8 @@ export class BookmarkWidgetComponent {
   }
 
   protected handleIconError(event: Event) {
-    const img = event.target as HTMLImageElement;
-    if (!img.src.endsWith('favicon.ico')) {
-      img.src = 'favicon.ico';
-    }
+    // Hide the broken image; the template's @else branch (link SVG) is the canonical fallback,
+    // but NgOptimizedImage renders a real <img> so we hide it on load failure instead.
+    (event.target as HTMLImageElement).style.display = 'none';
   }
 }
