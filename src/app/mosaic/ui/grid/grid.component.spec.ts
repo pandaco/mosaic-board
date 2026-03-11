@@ -10,13 +10,19 @@ describe('GridComponent', () => {
   // Mock simple du moteur de grille
   const mockGridEngine: GridEnginePort = {
     init: vi.fn(),
-    destroy: vi.fn()
+    destroy: vi.fn(),
+    removeWidget: vi.fn(),
+    refresh: vi.fn(),
+    updateWidget: vi.fn()
   };
 
   beforeEach(async () => {
     // Réinitialiser les mocks avant chaque test
     mockGridEngine.init = vi.fn();
     mockGridEngine.destroy = vi.fn();
+    mockGridEngine.removeWidget = vi.fn();
+    mockGridEngine.refresh = vi.fn();
+    mockGridEngine.updateWidget = vi.fn();
 
     await TestBed.configureTestingModule({
       imports: [GridComponent]
