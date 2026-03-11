@@ -12,6 +12,11 @@ export class LocalStorageAdapter implements StoragePort {
 
   async load<T>(key: string): Promise<T | null> {
     const data = localStorage.getItem(key);
-    return data ? JSON.parse(data) : null;
+    if (!data) return null;
+    try {
+      return JSON.parse(data) as T;
+    } catch {
+      return null;
+    }
   }
 }
