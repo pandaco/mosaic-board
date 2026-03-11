@@ -10,6 +10,7 @@ import { GridEnginePort } from '../../ports/grid-engine.port';
 @Injectable()
 export class GridstackEngineAdapter implements GridEnginePort {
   private gridEngine?: GridStack;
+  private widgetElements = new Map<string, HTMLElement>();
 
   init(container: HTMLElement, options: MosaicGridOptions, onLayoutChange: (widgets: TilePosition[]) => void): void {
     const gridStackOptions: GridStackOptions = {
@@ -46,6 +47,20 @@ export class GridstackEngineAdapter implements GridEnginePort {
         w: parseInt(htmlEl.getAttribute('data-mosaic-w') ?? '1', 10),
         h: parseInt(htmlEl.getAttribute('data-mosaic-h') ?? '1', 10),
         autoPosition: false, // Force use of our coordinates
+      });
+    });
+
+    this.gridEngine.on('added', (_: Event, nodes: GridStackNode[]) => {
+      nodes.forEach(node => {
+        const el = node.el as HTMLElement | undefined;
+        const id = node.id ?? el?.getAttribute('data-mosaic-id');
+        if (id && el) this.widgetElements.set(id, el);
+      });
+    });
+
+    this.gridEngine.on('removed', (_: Event, nodes: GridStackNode[]) => {
+      nodes.forEach(node => {
+        if (node.id) this.widgetElements.delete(node.id);
       });
     });
 
@@ -106,22 +121,16 @@ export class GridstackEngineAdapter implements GridEnginePort {
   destroy(): void {
     this.gridEngine?.destroy();
     this.gridEngine = undefined;
+    this.widgetElements.clear();
   }
 
   removeWidget(id: string): void {
     if (!this.gridEngine) return;
 
-    // Find the widget element by our domain ID
-    const items = this.gridEngine.getGridItems();
-    const itemToRemove = items.find(item => {
-      const el = item as HTMLElement;
-      const node = item.gridstackNode as GridStackNode;
-      return node?.id === id || el.getAttribute('data-mosaic-id') === id;
-    });
-
-    if (itemToRemove) {
+    const el = this.widgetElements.get(id);
+    if (el) {
       // removeDOM = false because Angular manages the DOM via signals
-      this.gridEngine.removeWidget(itemToRemove, false);
+      this.gridEngine.removeWidget(el, false);
     } else {
       console.error(`[Gridstack] Could not find widget to remove with ID: ${id}`);
     }
@@ -150,15 +159,9 @@ export class GridstackEngineAdapter implements GridEnginePort {
   updateWidget(id: string, updates: Partial<TilePosition>): void {
     if (!this.gridEngine) return;
 
-    const items = this.gridEngine.getGridItems();
-    const itemToUpdate = items.find(item => {
-      const el = item as HTMLElement;
-      const node = item.gridstackNode as GridStackNode;
-      return node?.id === id || el.getAttribute('data-mosaic-id') === id;
-    });
-
-    if (itemToUpdate) {
-      this.gridEngine.update(itemToUpdate, updates);
+    const el = this.widgetElements.get(id);
+    if (el) {
+      this.gridEngine.update(el, updates);
     }
   }
 }
