@@ -124,6 +124,34 @@ export class GridComponent implements OnDestroy {
     }
   }
 
+  protected handleWidgetKeyDown(event: KeyboardEvent, widget: MosaicWidget) {
+    const { key, shiftKey } = event;
+    const step = 1;
+    let updates: Partial<TilePosition> | null = null;
+
+    switch (key) {
+      case 'ArrowUp':
+        updates = shiftKey ? { h: Math.max(1, widget.h - step) } : { y: Math.max(0, widget.y - step) };
+        break;
+      case 'ArrowDown':
+        updates = shiftKey ? { h: widget.h + step } : { y: widget.y + step };
+        break;
+      case 'ArrowLeft':
+        updates = shiftKey ? { w: Math.max(1, widget.w - step) } : { x: Math.max(0, widget.x - step) };
+        break;
+      case 'ArrowRight':
+        updates = shiftKey ? { w: Math.max(1, widget.w + step) } : { x: widget.x + step };
+        break;
+    }
+
+    if (updates) {
+      event.preventDefault();
+      this.gridEngine.updateWidget(widget.id, updates);
+      
+      // Gridstack will trigger 'change' event which will sync back to Angular
+    }
+  }
+
   protected toggleBookmarkMode() {
     const widget = this.selectedWidget();
     if (widget && widget.type === 'bookmark') {

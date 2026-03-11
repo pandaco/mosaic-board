@@ -6,10 +6,15 @@
          [attr.data-mosaic-x]="widget.x"
          [attr.data-mosaic-y]="widget.y"
          [attr.data-mosaic-w]="widget.w"
-         [attr.data-mosaic-h]="widget.h">
-      <div class="mosaic-widget-content grid-stack-item-content" (click)="closeSettings()">
+         [attr.data-mosaic-h]="widget.h"
+         role="listitem"
+         aria-roledescription="draggable"
+         [attr.aria-labelledby]="'title-' + widget.id"
+         tabindex="0"
+         (keydown)="handleWidgetKeyDown($event, widget)">
+      <div class="mosaic-widget-content grid-stack-item-content">
         <div class="widget-header">
-          <span class="widget-title">{{ widget.title }}</span>
+          <span class="widget-title" [id]="'title-' + widget.id">{{ widget.title }}</span>
           <div class="settings-container">
             <button
               class="settings-btn"
