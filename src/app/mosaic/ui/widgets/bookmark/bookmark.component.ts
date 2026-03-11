@@ -35,7 +35,7 @@ export class BookmarkWidgetComponent {
   protected onItemClick(item: BookmarkItem) {
     if (item.type === 'folder') {
       this.folderStack.update(stack => [...stack, { id: item.id, title: item.title }]);
-    } else if (item.url) {
+    } else if (item.url && /^https?:\/\//.test(item.url)) {
       window.open(item.url, '_blank');
     }
   }
