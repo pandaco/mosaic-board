@@ -154,18 +154,8 @@ export class GridComponent implements OnDestroy {
   }
 
   protected toggleBookmarkMode() {
-    const widget = this.selectedWidget();
-    if (widget && widget.type === 'bookmark') {
-      const newMode: 'grid' | 'list' = widget.configuration.displayMode === 'grid' ? 'list' : 'grid';
-      const updatedWidgets = this.widgets().map(w => {
-        if (w.id === widget.id && w.type === 'bookmark') {
-          return { ...w, configuration: { ...w.configuration, displayMode: newMode } };
-        }
-        return w;
-      });
-      this.widgetsChange.emit(updatedWidgets);
-      this.selectedWidget.set({ ...widget, configuration: { ...widget.configuration, displayMode: newMode } });
-    }
+    const w = this.selectedBookmarkWidget();
+    if (w) this.updateBookmarkConfig('displayMode', w.configuration.displayMode === 'grid' ? 'list' : 'grid');
   }
 
   protected openFolderPicker() {
@@ -175,46 +165,31 @@ export class GridComponent implements OnDestroy {
   protected onFolderSelected(folder: FolderSelection) {
     const widget = this.selectedWidget();
     if (widget && widget.type === 'bookmark') {
-      const updatedWidgets = this.widgets().map(w => {
-        if (w.id === widget.id && w.type === 'bookmark') {
-          return { ...w, title: folder.title, configuration: { ...w.configuration, rootFolderId: folder.id } };
-        }
-        return w;
-      });
-      this.widgetsChange.emit(updatedWidgets);
+      const updated = { ...widget, title: folder.title, configuration: { ...widget.configuration, rootFolderId: folder.id } };
+      this.widgetsChange.emit(this.widgets().map(w => w.id === widget.id ? updated : w));
+      this.selectedWidget.set(updated);
     }
     this.isFolderPickerOpen.set(false);
     this.closeSettings();
   }
 
   protected togglePrivacyMode() {
-    const widget = this.selectedWidget();
-    if (widget && widget.type === 'bookmark') {
-      const newValue = !widget.configuration.useGoogleFavicons;
-      const updatedWidgets = this.widgets().map(w => {
-        if (w.id === widget.id && w.type === 'bookmark') {
-          return { ...w, configuration: { ...w.configuration, useGoogleFavicons: newValue } };
-        }
-        return w;
-      });
-      this.widgetsChange.emit(updatedWidgets);
-      this.selectedWidget.set({ ...widget, configuration: { ...widget.configuration, useGoogleFavicons: newValue } });
-    }
+    const w = this.selectedBookmarkWidget();
+    if (w) this.updateBookmarkConfig('useGoogleFavicons', !w.configuration.useGoogleFavicons);
   }
 
   protected toggleShowItemCount() {
+    const w = this.selectedBookmarkWidget();
+    if (w) this.updateBookmarkConfig('showItemCount', !w.configuration.showItemCount);
+  }
+
+  private updateBookmarkConfig<K extends keyof BookmarkWidget['configuration']>(key: K, value: BookmarkWidget['configuration'][K]): void {
     const widget = this.selectedWidget();
-    if (widget && widget.type === 'bookmark') {
-      const newValue = !widget.configuration.showItemCount;
-      const updatedWidgets = this.widgets().map(w => {
-        if (w.id === widget.id && w.type === 'bookmark') {
-          return { ...w, configuration: { ...w.configuration, showItemCount: newValue } };
-        }
-        return w;
-      });
-      this.widgetsChange.emit(updatedWidgets);
-      this.selectedWidget.set({ ...widget, configuration: { ...widget.configuration, showItemCount: newValue } });
-    }
+    if (!widget || widget.type !== 'bookmark') return;
+
+    const updated = { ...widget, configuration: { ...widget.configuration, [key]: value } };
+    this.widgetsChange.emit(this.widgets().map(w => w.id === widget.id ? updated : w));
+    this.selectedWidget.set(updated);
   }
 
   ngOnDestroy() {
