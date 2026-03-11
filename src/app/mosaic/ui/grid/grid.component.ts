@@ -57,16 +57,20 @@ export class GridComponent implements OnDestroy {
   }
 
   private readonly GRID_COLUMNS = 12;
+  private readonly GRID_CELL_HEIGHT = 140;
+  private readonly GRID_MIN_ROWS = 6;
 
   private initGrid() {
     const el = this.gridContainer()?.nativeElement;
     if (!el) return;
 
     el.style.setProperty('--grid-columns', String(this.GRID_COLUMNS));
+    el.style.setProperty('--grid-cell-height', `${this.GRID_CELL_HEIGHT}px`);
 
     const options: MosaicGridOptions = {
       columns: this.GRID_COLUMNS,
-      cellHeight: '200px',
+      cellHeight: `${this.GRID_CELL_HEIGHT}px`,
+      minRow: this.GRID_MIN_ROWS,
       margin: 10,
       animate: true,
       placeholder: {
