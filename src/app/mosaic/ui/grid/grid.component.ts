@@ -24,7 +24,10 @@ export class GridComponent implements OnDestroy {
   widgetsChange = output<MosaicWidget[]>();
   deleteWidget = output<string>();
 
-  protected selectedWidget = signal<MosaicWidget | null>(null);
+  private selectedWidgetId = signal<string | null>(null);
+  protected selectedWidget = computed<MosaicWidget | null>(() =>
+    this.widgets().find(w => w.id === this.selectedWidgetId()) ?? null
+  );
   protected isFolderPickerOpen = signal(false);
   protected dropdownPosition = signal<{ top: number; right: number } | null>(null);
   protected selectedBookmarkWidget = computed<BookmarkWidget | null>(() => {
@@ -102,18 +105,18 @@ export class GridComponent implements OnDestroy {
   }
 
   protected openSettings(widget: MosaicWidget, event: MouseEvent) {
-    if (this.selectedWidget()?.id === widget.id) {
+    if (this.selectedWidgetId() === widget.id) {
       this.closeSettings();
     } else {
       const btn = event.currentTarget as HTMLElement;
       const rect = btn.getBoundingClientRect();
       this.dropdownPosition.set({ top: rect.bottom + 6, right: window.innerWidth - rect.right });
-      this.selectedWidget.set(widget);
+      this.selectedWidgetId.set(widget.id);
     }
   }
 
   protected closeSettings() {
-    this.selectedWidget.set(null);
+    this.selectedWidgetId.set(null);
   }
 
   protected removeWidget() {
@@ -167,7 +170,6 @@ export class GridComponent implements OnDestroy {
     if (widget && widget.type === 'bookmark') {
       const updated = { ...widget, title: folder.title, configuration: { ...widget.configuration, rootFolderId: folder.id } };
       this.widgetsChange.emit(this.widgets().map(w => w.id === widget.id ? updated : w));
-      this.selectedWidget.set(updated);
     }
     this.isFolderPickerOpen.set(false);
     this.closeSettings();
@@ -189,7 +191,7 @@ export class GridComponent implements OnDestroy {
 
     const updated = { ...widget, configuration: { ...widget.configuration, [key]: value } };
     this.widgetsChange.emit(this.widgets().map(w => w.id === widget.id ? updated : w));
-    this.selectedWidget.set(updated);
+    // selectedWidget is a computed derived from widgets(); no manual sync needed
   }
 
   ngOnDestroy() {
