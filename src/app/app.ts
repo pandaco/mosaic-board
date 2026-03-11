@@ -28,10 +28,15 @@ export class App {
   protected widgets = this.mosaicService.widgets;
   protected isLoading = this.mosaicService.isLoading;
   protected error = this.mosaicService.error;
+  protected saveError = this.mosaicService.saveError;
   protected isAddModalOpen = signal(false);
 
   protected reload() {
     this.mosaicService.reload();
+  }
+
+  protected dismissSaveError() {
+    this.mosaicService.dismissSaveError();
   }
 
   onWidgetsChange(updatedWidgets: MosaicWidget[]) {

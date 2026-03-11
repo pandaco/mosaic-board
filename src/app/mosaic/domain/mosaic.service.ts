@@ -1,4 +1,4 @@
-import { Injectable, inject, resource, linkedSignal } from '@angular/core';
+import { Injectable, inject, resource, linkedSignal, signal } from '@angular/core';
 import { MosaicWidget, MosaicWidgetSchema } from './mosaic.models';
 import { STORAGE_SERVICE } from '../ports/storage.port';
 import { z } from 'zod';
@@ -47,6 +47,7 @@ export class MosaicService {
   // Exporting some state to UI
   isLoading = this.layoutResource.isLoading;
   error = this.layoutResource.error;
+  saveError = signal<string | null>(null);
 
   reload() {
     this.layoutResource.reload();
@@ -95,8 +96,12 @@ export class MosaicService {
     }
   }
 
+  dismissSaveError() {
+    this.saveError.set(null);
+  }
+
   private handleStorageError(operation: string, error: unknown) {
     console.error(`Storage error during ${operation}:`, error);
-    // Here we could also set a global error signal if needed
+    this.saveError.set('Your changes could not be saved. Check available storage space.');
   }
 }

@@ -13,6 +13,13 @@
   </nav>
 </header>
 
+@if (saveError()) {
+  <div class="save-error-banner" role="alert">
+    <span>{{ saveError() }}</span>
+    <button class="banner-dismiss" (click)="dismissSaveError()" aria-label="Dismiss">✕</button>
+  </div>
+}
+
 <main class="dashboard">
   <div class="mosaic-container">
     @if (isLoading()) {
