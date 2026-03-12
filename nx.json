@@ -64,14 +64,18 @@
       "fallbackCurrentVersionResolver": "disk",
       "versionActions": "./scripts/version-actions.cjs",
       "git": {
-        "commit": true,
-        "tag": true
+        "commit": false,
+        "tag": false
       }
     },
     "changelog": {
       "workspaceChangelog": {
         "createRelease": false,
         "file": "CHANGELOG.md"
+      },
+      "git": {
+        "commit": false,
+        "tag": false
       }
     }
   },

@@ -1,13 +1,15 @@
 {
   "name": "mosaic-board",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "license": "MIT",
   "scripts": {
     "start": "nx serve",
     "build": "nx build",
     "test": "nx test",
     "release:version": "nx release version --projects mosaic-board",
-    "release:version:dry-run": "nx release version --projects mosaic-board --dry-run"
+    "release:version:dry-run": "nx release version --projects mosaic-board --dry-run",
+    "release": "node scripts/release.mjs",
+    "release:dry-run": "node scripts/release.mjs --dry-run"
   },
   "private": true,
   "dependencies": {
