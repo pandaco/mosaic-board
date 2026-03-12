@@ -41,6 +41,13 @@ if (isDryRun) {
   version = JSON.parse(readFileSync('./package.json', 'utf8')).version;
 }
 
+// Step 2b: abort if tag already exists
+const existingTag = spawnSync('git', ['tag', '-l', `v${version}`], { encoding: 'utf8' });
+if (existingTag.stdout.trim() === `v${version}`) {
+  console.error(`\nError: tag v${version} already exists. Nothing to release.\n`);
+  process.exit(1);
+}
+
 // Step 3: generate changelog (no git commit)
 console.log(`\nGenerating changelog for v${version}...\n`);
 const changelogResult = spawnSync(
