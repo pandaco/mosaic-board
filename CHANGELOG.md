@@ -1,3 +1,13 @@
+## 0.0.5 (2026-03-12)
+
+### 🩹 Fixes
+
+- **release:** abort early if tag already exists
+
+### ❤️ Thank You
+
+- Alexandre
+
 ## 0.0.4 (2026-03-12)
 
 ### 🚀 Features
